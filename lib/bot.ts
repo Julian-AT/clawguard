@@ -14,7 +14,11 @@ const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 export const bot = new Chat({
   userName: process.env.GITHUB_BOT_USERNAME || "clawguard",
   adapters: {
-    github: createGitHubAdapter(),
+    github: createGitHubAdapter( {
+      appId: process.env.GITHUB_APP_ID!,
+      privateKey: process.env.GITHUB_PRIVATE_KEY!,
+      webhookSecret: process.env.GITHUB_WEBHOOK_SECRET!,
+    }),
   },
   state: createRedisState(),
 });
