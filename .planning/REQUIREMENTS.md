@@ -9,22 +9,22 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 
 ### Webhook & Bot Integration
 
-- [ ] **HOOK-01**: GitHub webhook endpoint receives @mention events and routes them to the analysis pipeline
-- [ ] **HOOK-02**: Chat SDK GitHub adapter handles PR thread interactions (post messages, edit messages, post cards)
-- [ ] **HOOK-03**: Background processing via `after()` / `waitUntil` keeps serverless function alive during analysis
-- [ ] **HOOK-04**: Webhook signature verification prevents unauthorized requests
-- [ ] **HOOK-05**: Idempotent event handling prevents duplicate analysis from webhook retries
+- [x] **HOOK-01**: GitHub webhook endpoint receives @mention events and routes them to the analysis pipeline
+- [x] **HOOK-02**: Chat SDK GitHub adapter handles PR thread interactions (post messages, edit messages, post cards)
+- [x] **HOOK-03**: Background processing via `after()` / `waitUntil` keeps serverless function alive during analysis
+- [x] **HOOK-04**: Webhook signature verification prevents unauthorized requests
+- [x] **HOOK-05**: Idempotent event handling prevents duplicate analysis from webhook retries
 
 ### Security Analysis Pipeline
 
-- [x] **SCAN-01**: Vercel Sandbox clones target repo and checks out the PR branch for isolated analysis
+- [ ] **SCAN-01**: Vercel Sandbox clones target repo and checks out the PR branch for isolated analysis
 - [ ] **SCAN-02**: Phase 1 (Code Quality Review) — summarizes PR, identifies code smells, architectural impact
 - [ ] **SCAN-03**: Phase 2 (Vulnerability Scan) — detects injection flaws, hardcoded secrets, auth gaps, CSRF, IDOR, path traversal, unsafe eval, data exposure, insecure crypto, race conditions, open redirects, missing validation
 - [ ] **SCAN-04**: Phase 3 (Threat Model) — maps attack surfaces, generates attack path analysis, assesses compound risk
 - [ ] **SCAN-05**: Each finding includes: severity, type, file:line location, CWE ID, OWASP Top 10 category, description, attack scenario, data flow chain (source → transform → sink), before/after code fix, compliance mapping
 - [ ] **SCAN-06**: Security score calculated: 0-100 numeric with A-F grade (deductions: CRITICAL=-25, HIGH=-15, MEDIUM=-8, LOW=-3, INFO=-1)
-- [x] **SCAN-07**: Structured JSON output stored in Upstash Redis keyed by `{owner}/{repo}/pr/{number}`
-- [x] **SCAN-08**: ToolLoopAgent uses Vercel AI Gateway (model configurable via config)
+- [ ] **SCAN-07**: Structured JSON output stored in Upstash Redis keyed by `{owner}/{repo}/pr/{number}`
+- [ ] **SCAN-08**: ToolLoopAgent uses Vercel AI Gateway (model configurable via config)
 - [ ] **SCAN-09**: Custom policies from `.clawguard/policies.yml` injected into agent system prompt
 
 ### Auto-Fix & Commit Loop
@@ -137,19 +137,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOOK-01 | Phase 1 | Pending |
-| HOOK-02 | Phase 1 | Pending |
-| HOOK-03 | Phase 1 | Pending |
-| HOOK-04 | Phase 1 | Pending |
-| HOOK-05 | Phase 1 | Pending |
-| SCAN-01 | Phase 1 | Complete |
+| HOOK-01 | Phase 1 | Complete |
+| HOOK-02 | Phase 1 | Complete |
+| HOOK-03 | Phase 1 | Complete |
+| HOOK-04 | Phase 1 | Complete |
+| HOOK-05 | Phase 1 | Complete |
+| SCAN-01 | Phase 1 | Pending |
 | SCAN-02 | Phase 2 | Pending |
 | SCAN-03 | Phase 2 | Pending |
 | SCAN-04 | Phase 2 | Pending |
 | SCAN-05 | Phase 2 | Pending |
 | SCAN-06 | Phase 2 | Pending |
-| SCAN-07 | Phase 1 | Complete |
-| SCAN-08 | Phase 1 | Complete |
+| SCAN-07 | Phase 1 | Pending |
+| SCAN-08 | Phase 1 | Pending |
 | SCAN-09 | Phase 5 | Pending |
 | FIX-01 | Phase 3 | Pending |
 | FIX-02 | Phase 3 | Pending |
