@@ -32,9 +32,9 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 - [x] **FIX-01**: Agent generates fix for a specific finding in a new Vercel Sandbox
 - [x] **FIX-02**: Fix is validated in sandbox (tsc --noEmit, linter, or available validation tools)
 - [x] **FIX-03**: Validated fix is committed to PR branch via Octokit Contents API with descriptive commit message
-- [ ] **FIX-04**: Bot confirms fix in PR thread with commit details
-- [ ] **FIX-05**: "Fix All" processes all CRITICAL and HIGH findings sequentially
-- [ ] **FIX-06**: After all fixes committed, full re-audit runs on updated code
+- [x] **FIX-04**: Bot confirms fix in PR thread with commit details
+- [x] **FIX-05**: "Fix All" processes all CRITICAL and HIGH findings sequentially
+- [x] **FIX-06**: After all fixes committed, full re-audit runs on updated code
 - [x] **FIX-07**: New summary card posted with updated security score
 
 ### PR Summary Card
@@ -154,9 +154,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIX-01 | Phase 3 | Complete |
 | FIX-02 | Phase 3 | Complete |
 | FIX-03 | Phase 3 | Complete |
-| FIX-04 | Phase 3 | Pending |
-| FIX-05 | Phase 3 | Pending |
-| FIX-06 | Phase 3 | Pending |
+| FIX-04 | Phase 3 | Complete |
+| FIX-05 | Phase 3 | Complete |
+| FIX-06 | Phase 3 | Complete |
 | FIX-07 | Phase 3 | Complete |
 | CARD-01 | Phase 2 | Complete |
 | CARD-02 | Phase 2 | Complete |
