@@ -63,12 +63,12 @@ Plans:
   3. "Fix All" processes all CRITICAL and HIGH findings sequentially, committing each validated fix
   4. After all fixes are committed, a full re-audit runs automatically and a new summary card is posted with the updated security score
   5. Action buttons (Auto-Fix per finding, Auto-Fix All, View Report) appear in the summary card
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md — Fix pipeline core: types, apply, validate, commit, agent modules + tests
+- [ ] 03-02-PLAN.md — Summary card JSX conversion with action labels and LinkButton
+- [ ] 03-03-PLAN.md — Fix orchestrator, bot integration with intent detection and re-audit flow
 
 ### Phase 4: Interactive Web Report
 **Goal**: Users can view a rich, interactive security report for any audited PR at a shareable URL with professional dark-theme enterprise aesthetic
