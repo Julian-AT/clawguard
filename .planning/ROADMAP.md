@@ -46,12 +46,12 @@ Plans:
   2. The summary card displays a security score (0-100 numeric with A-F grade), severity count badges, and a top findings table with severity, type, and file location
   3. Each finding in stored results includes severity, type, file:line location, CWE ID, OWASP Top 10 category, description, attack scenario, data flow chain, before/after code fix, and compliance mapping
   4. The summary card includes a "View Full Report" link pointing to `/report/[owner]/[repo]/[pr]`
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md — Types, scoring, summary card builder, and Redis type update
+- [ ] 02-02-PLAN.md — 3-phase analysis agents and pipeline orchestrator
+- [ ] 02-03-PLAN.md — Bot integration with live progress updates and card posting
 
 ### Phase 3: Auto-Fix & Commit Loop
 **Goal**: The agent autonomously fixes vulnerabilities by generating patches in a sandbox, validating them, committing to the PR branch, and re-auditing to prove the fixes work
