@@ -35,14 +35,14 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 - [ ] **FIX-04**: Bot confirms fix in PR thread with commit details
 - [ ] **FIX-05**: "Fix All" processes all CRITICAL and HIGH findings sequentially
 - [ ] **FIX-06**: After all fixes committed, full re-audit runs on updated code
-- [ ] **FIX-07**: New summary card posted with updated security score
+- [x] **FIX-07**: New summary card posted with updated security score
 
 ### PR Summary Card
 
 - [x] **CARD-01**: JSX summary card posted to PR thread with security score (grade + numeric), severity count badges
 - [x] **CARD-02**: Card includes top findings table with severity, type, and location
 - [x] **CARD-03**: Card includes "View Full Report →" link to interactive report page
-- [ ] **CARD-04**: Action buttons: Auto-Fix (per finding), Auto-Fix All, View Report
+- [x] **CARD-04**: Action buttons: Auto-Fix (per finding), Auto-Fix All, View Report
 
 ### Follow-Up Chat
 
@@ -157,11 +157,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIX-04 | Phase 3 | Pending |
 | FIX-05 | Phase 3 | Pending |
 | FIX-06 | Phase 3 | Pending |
-| FIX-07 | Phase 3 | Pending |
+| FIX-07 | Phase 3 | Complete |
 | CARD-01 | Phase 2 | Complete |
 | CARD-02 | Phase 2 | Complete |
 | CARD-03 | Phase 2 | Complete |
-| CARD-04 | Phase 3 | Pending |
+| CARD-04 | Phase 3 | Complete |
 | CHAT-01 | Phase 5 | Pending |
 | CHAT-02 | Phase 5 | Pending |
 | CHAT-03 | Phase 5 | Pending |

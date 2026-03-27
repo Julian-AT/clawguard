@@ -67,7 +67,7 @@ Plans:
 
 Plans:
 - [ ] 03-01-PLAN.md — Fix pipeline core: types, apply, validate, commit, agent modules + tests
-- [ ] 03-02-PLAN.md — Summary card JSX conversion with action labels and LinkButton
+- [x] 03-02-PLAN.md — Summary card JSX conversion with action labels and LinkButton
 - [ ] 03-03-PLAN.md — Fix orchestrator, bot integration with intent detection and re-audit flow
 
 ### Phase 4: Interactive Web Report
@@ -130,7 +130,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation & Bot Wiring | 0/2 | Not started | - |
 | 2. Security Analysis Pipeline | 3/3 | Complete | 2026-03-27 |
-| 3. Auto-Fix & Commit Loop | 0/3 | Not started | - |
+| 3. Auto-Fix & Commit Loop | 1/3 | In Progress|  |
 | 4. Interactive Web Report | 0/3 | Not started | - |
 | 5. Chat, Config & Dashboard | 0/3 | Not started | - |
 | 6. Demo Hardening | 0/2 | Not started | - |
