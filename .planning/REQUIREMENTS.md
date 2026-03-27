@@ -9,11 +9,11 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 
 ### Webhook & Bot Integration
 
-- [ ] **HOOK-01**: GitHub webhook endpoint receives @mention events and routes them to the analysis pipeline
-- [ ] **HOOK-02**: Chat SDK GitHub adapter handles PR thread interactions (post messages, edit messages, post cards)
-- [ ] **HOOK-03**: Background processing via `after()` / `waitUntil` keeps serverless function alive during analysis
-- [ ] **HOOK-04**: Webhook signature verification prevents unauthorized requests
-- [ ] **HOOK-05**: Idempotent event handling prevents duplicate analysis from webhook retries
+- [x] **HOOK-01**: GitHub webhook endpoint receives @mention events and routes them to the analysis pipeline
+- [x] **HOOK-02**: Chat SDK GitHub adapter handles PR thread interactions (post messages, edit messages, post cards)
+- [x] **HOOK-03**: Background processing via `after()` / `waitUntil` keeps serverless function alive during analysis
+- [x] **HOOK-04**: Webhook signature verification prevents unauthorized requests
+- [x] **HOOK-05**: Idempotent event handling prevents duplicate analysis from webhook retries
 
 ### Security Analysis Pipeline
 
@@ -137,11 +137,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOOK-01 | Phase 1 | Pending |
-| HOOK-02 | Phase 1 | Pending |
-| HOOK-03 | Phase 1 | Pending |
-| HOOK-04 | Phase 1 | Pending |
-| HOOK-05 | Phase 1 | Pending |
+| HOOK-01 | Phase 1 | Complete |
+| HOOK-02 | Phase 1 | Complete |
+| HOOK-03 | Phase 1 | Complete |
+| HOOK-04 | Phase 1 | Complete |
+| HOOK-05 | Phase 1 | Complete |
 | SCAN-01 | Phase 1 | Pending |
 | SCAN-02 | Phase 2 | Pending |
 | SCAN-03 | Phase 2 | Pending |

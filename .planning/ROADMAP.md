@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [ ] 01-01-PLAN.md — Project scaffold & core modules (Redis client, Sandbox review pipeline)
-- [ ] 01-02-PLAN.md — Bot integration, webhook handler, tests & end-to-end verification
+- [x] 01-02-PLAN.md — Bot integration, webhook handler, tests & end-to-end verification
 
 ### Phase 2: Security Analysis Pipeline
 **Goal**: The 3-phase security audit (code quality, vulnerability scan, threat model) produces structured findings with severity scores and CWE/OWASP mappings, and posts a summary card with results to the PR thread
