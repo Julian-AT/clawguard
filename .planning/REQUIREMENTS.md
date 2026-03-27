@@ -21,8 +21,8 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 - [ ] **SCAN-02**: Phase 1 (Code Quality Review) — summarizes PR, identifies code smells, architectural impact
 - [ ] **SCAN-03**: Phase 2 (Vulnerability Scan) — detects injection flaws, hardcoded secrets, auth gaps, CSRF, IDOR, path traversal, unsafe eval, data exposure, insecure crypto, race conditions, open redirects, missing validation
 - [ ] **SCAN-04**: Phase 3 (Threat Model) — maps attack surfaces, generates attack path analysis, assesses compound risk
-- [ ] **SCAN-05**: Each finding includes: severity, type, file:line location, CWE ID, OWASP Top 10 category, description, attack scenario, data flow chain (source → transform → sink), before/after code fix, compliance mapping
-- [ ] **SCAN-06**: Security score calculated: 0-100 numeric with A-F grade (deductions: CRITICAL=-25, HIGH=-15, MEDIUM=-8, LOW=-3, INFO=-1)
+- [x] **SCAN-05**: Each finding includes: severity, type, file:line location, CWE ID, OWASP Top 10 category, description, attack scenario, data flow chain (source → transform → sink), before/after code fix, compliance mapping
+- [x] **SCAN-06**: Security score calculated: 0-100 numeric with A-F grade (deductions: CRITICAL=-25, HIGH=-15, MEDIUM=-8, LOW=-3, INFO=-1)
 - [ ] **SCAN-07**: Structured JSON output stored in Upstash Redis keyed by `{owner}/{repo}/pr/{number}`
 - [ ] **SCAN-08**: ToolLoopAgent uses Vercel AI Gateway (model configurable via config)
 - [ ] **SCAN-09**: Custom policies from `.clawguard/policies.yml` injected into agent system prompt
@@ -39,9 +39,9 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 
 ### PR Summary Card
 
-- [ ] **CARD-01**: JSX summary card posted to PR thread with security score (grade + numeric), severity count badges
-- [ ] **CARD-02**: Card includes top findings table with severity, type, and location
-- [ ] **CARD-03**: Card includes "View Full Report →" link to interactive report page
+- [x] **CARD-01**: JSX summary card posted to PR thread with security score (grade + numeric), severity count badges
+- [x] **CARD-02**: Card includes top findings table with severity, type, and location
+- [x] **CARD-03**: Card includes "View Full Report →" link to interactive report page
 - [ ] **CARD-04**: Action buttons: Auto-Fix (per finding), Auto-Fix All, View Report
 
 ### Follow-Up Chat
@@ -146,8 +146,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCAN-02 | Phase 2 | Pending |
 | SCAN-03 | Phase 2 | Pending |
 | SCAN-04 | Phase 2 | Pending |
-| SCAN-05 | Phase 2 | Pending |
-| SCAN-06 | Phase 2 | Pending |
+| SCAN-05 | Phase 2 | Complete |
+| SCAN-06 | Phase 2 | Complete |
 | SCAN-07 | Phase 1 | Pending |
 | SCAN-08 | Phase 1 | Pending |
 | SCAN-09 | Phase 5 | Pending |
@@ -158,9 +158,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIX-05 | Phase 3 | Pending |
 | FIX-06 | Phase 3 | Pending |
 | FIX-07 | Phase 3 | Pending |
-| CARD-01 | Phase 2 | Pending |
-| CARD-02 | Phase 2 | Pending |
-| CARD-03 | Phase 2 | Pending |
+| CARD-01 | Phase 2 | Complete |
+| CARD-02 | Phase 2 | Complete |
+| CARD-03 | Phase 2 | Complete |
 | CARD-04 | Phase 3 | Pending |
 | CHAT-01 | Phase 5 | Pending |
 | CHAT-02 | Phase 5 | Pending |

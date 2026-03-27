@@ -49,7 +49,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Types, scoring, summary card builder, and Redis type update
+- [x] 02-01-PLAN.md — Types, scoring, summary card builder, and Redis type update
 - [ ] 02-02-PLAN.md — 3-phase analysis agents and pipeline orchestrator
 - [ ] 02-03-PLAN.md — Bot integration with live progress updates and card posting
 
