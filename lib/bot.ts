@@ -41,11 +41,10 @@ bot.onNewMention(async (thread, message) => {
       baseBranch: pr.base.ref,
     });
 
-    // TODO(02-02): reviewPullRequest will return AuditResult after pipeline refactor
     await storeAuditResult({
       key: `${owner}/${repo}/pr/${prNumber}`,
       data: {
-        result: reviewResult as unknown as import("./analysis/types").AuditResult,
+        result: reviewResult,
         timestamp: new Date().toISOString(),
         pr: { owner, repo, number: prNumber, title: pr.title },
         status: "complete",
