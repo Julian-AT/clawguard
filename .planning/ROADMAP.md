@@ -31,12 +31,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A Vercel Sandbox successfully clones the target repo and checks out the PR branch
   4. Analysis results are stored in Upstash Redis and retrievable by `{owner}/{repo}/pr/{number}` key
   5. Duplicate webhook deliveries for the same event do not trigger duplicate processing
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Project scaffold & core modules (Redis client, Sandbox review pipeline)
+- [ ] 01-02-PLAN.md — Bot integration, webhook handler, tests & end-to-end verification
 
 ### Phase 2: Security Analysis Pipeline
 **Goal**: The 3-phase security audit (code quality, vulnerability scan, threat model) produces structured findings with severity scores and CWE/OWASP mappings, and posts a summary card with results to the PR thread
@@ -129,7 +128,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Bot Wiring | 0/3 | Not started | - |
+| 1. Foundation & Bot Wiring | 0/2 | Not started | - |
 | 2. Security Analysis Pipeline | 0/3 | Not started | - |
 | 3. Auto-Fix & Commit Loop | 0/3 | Not started | - |
 | 4. Interactive Web Report | 0/3 | Not started | - |
