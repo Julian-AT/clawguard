@@ -29,9 +29,9 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 
 ### Auto-Fix & Commit Loop
 
-- [ ] **FIX-01**: Agent generates fix for a specific finding in a new Vercel Sandbox
-- [ ] **FIX-02**: Fix is validated in sandbox (tsc --noEmit, linter, or available validation tools)
-- [ ] **FIX-03**: Validated fix is committed to PR branch via Octokit Contents API with descriptive commit message
+- [x] **FIX-01**: Agent generates fix for a specific finding in a new Vercel Sandbox
+- [x] **FIX-02**: Fix is validated in sandbox (tsc --noEmit, linter, or available validation tools)
+- [x] **FIX-03**: Validated fix is committed to PR branch via Octokit Contents API with descriptive commit message
 - [ ] **FIX-04**: Bot confirms fix in PR thread with commit details
 - [ ] **FIX-05**: "Fix All" processes all CRITICAL and HIGH findings sequentially
 - [ ] **FIX-06**: After all fixes committed, full re-audit runs on updated code
@@ -151,9 +151,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCAN-07 | Phase 1 | Pending |
 | SCAN-08 | Phase 1 | Pending |
 | SCAN-09 | Phase 5 | Pending |
-| FIX-01 | Phase 3 | Pending |
-| FIX-02 | Phase 3 | Pending |
-| FIX-03 | Phase 3 | Pending |
+| FIX-01 | Phase 3 | Complete |
+| FIX-02 | Phase 3 | Complete |
+| FIX-03 | Phase 3 | Complete |
 | FIX-04 | Phase 3 | Pending |
 | FIX-05 | Phase 3 | Pending |
 | FIX-06 | Phase 3 | Pending |

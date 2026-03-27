@@ -66,7 +66,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Fix pipeline core: types, apply, validate, commit, agent modules + tests
+- [x] 03-01-PLAN.md — Fix pipeline core: types, apply, validate, commit, agent modules + tests
 - [x] 03-02-PLAN.md — Summary card JSX conversion with action labels and LinkButton
 - [ ] 03-03-PLAN.md — Fix orchestrator, bot integration with intent detection and re-audit flow
 
