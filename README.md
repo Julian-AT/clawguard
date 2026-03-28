@@ -36,7 +36,7 @@ Static scanners and linters are fast but often miss cross-file and abuse-path co
 Product UI assets live under [`public/`](public/) (same files power the landing **#features** carousel). The interactive report (`/report/[owner]/[repo]/[pr]`) covers verdict, findings-by-severity, PR summary and sequence diagrams, threat model, and compliance cross-walks.
 
 <p align="center">
-  <img src="public/Screenshot%202026-03-28%20at%2010.11.22.png" alt="Interactive security report: verdict, score gauge, OWASP distribution" width="900" />
+  <img src="public/clawguard_readme.gif" alt="Interactive security report: verdict, score gauge, OWASP distribution" width="900" />
 </p>
 
 ---
