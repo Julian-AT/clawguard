@@ -302,3 +302,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Landing marketing CTAs — matches reference template (inset highlight + soft outer shadow) */
+@layer utilities {
+  .landing-btn-accent {
+    @apply inline-flex items-center justify-center rounded-full border border-white/12 bg-secondary text-sm font-normal tracking-wide text-primary-foreground shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] transition-[transform,background-color] ease-out hover:bg-secondary/80 active:scale-95 dark:text-secondary-foreground;
+  }
+  .landing-btn-outline {
+    @apply inline-flex items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-sm font-normal tracking-wide text-primary transition-[transform,background-color] ease-out hover:bg-white/80 active:scale-95 dark:border-[#27272A] dark:bg-background dark:hover:bg-background/80;
+  }
+}

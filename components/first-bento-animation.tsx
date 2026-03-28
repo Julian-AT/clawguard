@@ -61,7 +61,7 @@ export function FirstBentoAnimation() {
       >
         <div className="flex items-end justify-end gap-3">
           <motion.div
-            className="max-w-[280px] bg-primary text-primary-foreground p-4 rounded-2xl ml-auto shadow-[0_0_10px_rgba(0,0,0,0.05)]"
+            className="max-w-[280px] bg-secondary text-white p-4 rounded-2xl ml-auto shadow-[0_0_10px_rgba(0,0,0,0.05)]"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{

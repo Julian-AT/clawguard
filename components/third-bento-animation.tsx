@@ -258,7 +258,7 @@ export function NumberFlowCounter({
 export function ThirdBentoAnimation({
   data,
   toolTipValues,
-  color = "var(--primary)",
+  color = "var(--secondary)",
   startAnimationDelay = 0,
   once = false,
 }: {

@@ -119,7 +119,7 @@ export function Navbar() {
             <div className="flex flex-row items-center gap-1 md:gap-3 shrink-0">
               <div className="flex items-center space-x-6">
                 <Link
-                  className="bg-primary h-8 hidden md:flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-primary-foreground w-fit px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-primary/90"
+                  className="landing-btn-accent h-8 hidden w-fit px-4 md:flex"
                   href={siteConfig.hero.cta.primary.href}
                 >
                   {siteConfig.hero.cta.primary.text}
@@ -211,7 +211,7 @@ export function Navbar() {
                 <div className="flex flex-col gap-2">
                   <Link
                     href={siteConfig.hero.cta.primary.href}
-                    className="bg-primary h-8 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-primary-foreground w-full px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-primary/90 transition-all ease-out active:scale-95"
+                    className="landing-btn-accent h-8 w-full px-4"
                   >
                     {siteConfig.hero.cta.primary.text}
                   </Link>

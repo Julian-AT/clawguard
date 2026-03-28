@@ -5,21 +5,6 @@ import { SecondBentoAnimation } from "@/components/second-bento-animation";
 import { ThirdBentoAnimation } from "@/components/third-bento-animation";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { Globe } from "@/components/ui/globe";
-import { cn } from "@/lib/utils";
-
-export const Highlight = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <span className={cn("p-1 py-0.5 font-medium dark:font-semibold text-primary", className)}>
-      {children}
-    </span>
-  );
-};
 
 export const BLUR_FADE_DELAY = 0.15;
 
@@ -42,11 +27,11 @@ export const siteConfig = {
       { id: 1, name: "Home", href: "#hero" },
       { id: 2, name: "How it Works", href: "#bento" },
       { id: 3, name: "Features", href: "#features" },
-      { id: 4, name: "Pricing", href: "#pricing" },
+      { id: 4, name: "FAQ", href: "#faq" },
     ],
   },
   hero: {
-    badgeIcon: <Shield className="size-4 text-primary" aria-hidden />,
+    badgeIcon: <Shield className="size-4 text-secondary" aria-hidden />,
     badge: "Introducing ClawGuard",
     title: "AI security for every pull request",
     description:
@@ -337,28 +322,6 @@ export const siteConfig = {
       },
     ],
   },
-  benefits: [
-    {
-      id: 1,
-      text: "Catch issues before merge with every PR touchpoint.",
-      image: "/Device-6.png",
-    },
-    {
-      id: 2,
-      text: "Reduce back-and-forth between security and engineering.",
-      image: "/Device-7.png",
-    },
-    {
-      id: 3,
-      text: "Shareable reports stakeholders actually read.",
-      image: "/Device-8.png",
-    },
-    {
-      id: 4,
-      text: "Optional auto-fix commits that keep velocity high.",
-      image: "/Device-1.png",
-    },
-  ],
   growthSection: {
     title: "Built for Secure Growth",
     description:
@@ -635,153 +598,6 @@ export const siteConfig = {
       image: "https://randomuser.me/api/portraits/men/91.jpg",
     },
   },
-  pricing: {
-    title: "Pricing that scales with your repos",
-    description:
-      "Start free for open source and small teams. Upgrade when you need higher limits and priority analysis.",
-    pricingItems: [
-      {
-        name: "Free",
-        href: "/report/demo",
-        price: "$0",
-        period: "month",
-        yearlyPrice: "$0",
-        features: [
-          "Public repo PR audits",
-          "Interactive report link",
-          "Community support",
-          "Dashboard sign-in with GitHub",
-        ],
-        description: "For individuals and OSS maintainers",
-        buttonText: "Try demo report",
-        buttonColor: "bg-accent text-primary",
-        isPopular: false,
-      },
-      {
-        name: "Team",
-        href: "/dashboard",
-        price: "$12",
-        period: "month",
-        yearlyPrice: "$120",
-        features: [
-          "Private repositories",
-          "Higher monthly audit quota",
-          "Auto-fix commits to PR branches",
-          "Score trends and org dashboard",
-          "Slack or Discord notifications",
-          "Email support",
-        ],
-        description: "For growing engineering orgs",
-        buttonText: "Open dashboard",
-        buttonColor: "bg-primary text-primary-foreground",
-        isPopular: true,
-      },
-      {
-        name: "Enterprise",
-        href: "#",
-        price: "Custom",
-        period: "month",
-        yearlyPrice: "Custom",
-        features: [
-          "SSO and audit logs",
-          "Custom policies and allowlists",
-          "Dedicated support and SLAs",
-          "VPC or self-hosted options (roadmap)",
-        ],
-        description: "For regulated and large-scale teams",
-        buttonText: "Contact sales",
-        buttonColor: "bg-primary text-primary-foreground",
-        isPopular: false,
-      },
-    ],
-  },
-  testimonialSection: {
-    title: "Teams shipping safer code",
-    description:
-      "Engineering and security leads use ClawGuard to keep reviews fast and findings actionable.",
-  },
-  testimonials: [
-    {
-      id: "1",
-      name: "Alex Rivera",
-      role: "CTO at InnovateTech",
-      img: "https://randomuser.me/api/portraits/men/91.jpg",
-      description: (
-        <p>
-          We finally have PR-level security that doesn&apos;t feel like a separate audit cycle.
-          <Highlight>
-            The interactive report made severity and fixes obvious to every reviewer.
-          </Highlight>
-        </p>
-      ),
-    },
-    {
-      id: "2",
-      name: "Samantha Lee",
-      role: "Engineering lead at NextGen Solutions",
-      img: "https://randomuser.me/api/portraits/women/12.jpg",
-      description: (
-        <p>
-          ClawGuard fits how we already work in GitHub.
-          <Highlight>
-            Mention once, get a full pass plus optional commits back to the branch.
-          </Highlight>
-        </p>
-      ),
-    },
-    {
-      id: "3",
-      name: "Raj Patel",
-      role: "Founder at StartUp Grid",
-      img: "https://randomuser.me/api/portraits/men/45.jpg",
-      description: (
-        <p>
-          Small team, big surface area—we needed automation without noise.
-          <Highlight>Auto-fix and re-audit closed issues before they hit production.</Highlight>
-        </p>
-      ),
-    },
-    {
-      id: "4",
-      name: "Emily Chen",
-      role: "Product Manager at Digital Wave",
-      img: "https://randomuser.me/api/portraits/women/83.jpg",
-      description: (
-        <p>
-          Stakeholders wanted clarity, not raw scanner output.
-          <Highlight>
-            OWASP mapping and diagrams in the report sold the prioritization for us.
-          </Highlight>
-        </p>
-      ),
-    },
-    {
-      id: "5",
-      name: "Michael Brown",
-      role: "Security engineer at FinTech Innovations",
-      img: "https://randomuser.me/api/portraits/men/1.jpg",
-      description: (
-        <p>
-          Single deployment on Vercel keeps ops simple.
-          <Highlight>Webhook, report page, and dashboard without standing up more infra.</Highlight>
-        </p>
-      ),
-    },
-    {
-      id: "6",
-      name: "Linda Wu",
-      role: "VP of Engineering at LogiChain",
-      img: "https://randomuser.me/api/portraits/women/5.jpg",
-      description: (
-        <p>
-          We track trends across repos from the dashboard.
-          <Highlight>
-            Good for proving progress to leadership without spreadsheet theater.
-          </Highlight>
-        </p>
-      ),
-    },
-  ],
   faqSection: {
     title: "Frequently asked questions",
     description:
@@ -828,8 +644,7 @@ export const siteConfig = {
   ctaSection: {
     id: "cta",
     title: "Secure your PRs today",
-    backgroundImage:
-      "https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&w=2000&q=80",
+    backgroundImage: "/agent-cta-background.png",
     button: {
       text: "View demo report",
       href: "/report/demo",

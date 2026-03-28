@@ -17,16 +17,16 @@ interface BoxConfig {
 const boxConfigs: BoxConfig[] = [
   {
     title: "Bento grid",
-    className: "bg-primary text-primary-foreground",
+    className: "bg-secondary text-white",
   },
   {
     title: "Landing Page",
-    className: "bg-primary/40 text-primary-foreground",
+    className: "bg-secondary/40 text-white",
   },
   {
     title: "Add Task",
     className:
-      "bg-primary/20 border border-primary border-dashed text-primary",
+      "bg-secondary/20 border border-secondary border-dashed text-secondary",
   },
 ];
 

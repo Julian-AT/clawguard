@@ -11,7 +11,7 @@ export function CTASection() {
       className="flex flex-col items-center justify-center w-full"
     >
       <div className="w-full">
-        <div className="h-[400px] md:h-[400px] overflow-hidden shadow-xl w-full border border-border rounded-xl bg-primary/25 relative z-20">
+        <div className="h-[400px] md:h-[400px] overflow-hidden shadow-xl w-full border border-border rounded-xl bg-secondary relative z-20">
           <Image
             src={ctaSection.backgroundImage}
             alt="Agent CTA Background"
