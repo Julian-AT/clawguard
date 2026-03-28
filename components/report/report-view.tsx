@@ -4,6 +4,9 @@ import { ReportHeader } from "@/components/report/report-header";
 import { ScoreGauge } from "@/components/report/score-gauge";
 import { SeverityBadges } from "@/components/report/severity-badges";
 import { OwaspChart } from "@/components/report/owasp-chart";
+import { FindingsList } from "@/components/report/findings-list";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 
 interface ReportViewProps {
   result: AuditResult;
@@ -48,15 +51,34 @@ export function ReportView({
           </div>
         </div>
 
-        {/* Findings placeholder -- wired in Task 03 */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">
-            Findings ({result.findings.length})
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Detailed findings view loading...
-          </p>
-        </div>
+        <Separator />
+
+        {/* Tabbed content */}
+        <Tabs defaultValue="findings">
+          <TabsList>
+            <TabsTrigger value="findings">
+              Findings ({result.findings.length})
+            </TabsTrigger>
+            <TabsTrigger value="threat-model">Threat Model</TabsTrigger>
+            <TabsTrigger value="compliance">Compliance</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="findings" className="mt-4">
+            <FindingsList findings={result.findings} />
+          </TabsContent>
+
+          <TabsContent value="threat-model" className="mt-4">
+            <p className="text-sm text-muted-foreground py-4">
+              Threat model analysis will be displayed here.
+            </p>
+          </TabsContent>
+
+          <TabsContent value="compliance" className="mt-4">
+            <p className="text-sm text-muted-foreground py-4">
+              Compliance mapping table will be displayed here.
+            </p>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
