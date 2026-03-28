@@ -7,6 +7,8 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { MermaidDiagram } from "@/components/report/mermaid-diagram";
+import { CodeDiff } from "@/components/report/code-diff";
 
 interface FindingCardProps {
   finding: Finding;
@@ -20,6 +22,26 @@ const severityColor: Record<string, string> = {
   LOW: "bg-blue-500 text-white",
   INFO: "bg-gray-500 text-white",
 };
+
+function buildDataFlowChart(
+  nodes: { label: string; type: string }[]
+): string {
+  if (nodes.length === 0) return "graph LR\n  A[No data]";
+
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lines = ["graph LR"];
+  for (let i = 0; i < nodes.length; i++) {
+    const id = letters[i] ?? `N${i}`;
+    const label = nodes[i].label.replace(/[[\]]/g, "");
+    if (i === 0) {
+      lines.push(`  ${id}["${label}"]`);
+    } else {
+      const prevId = letters[i - 1] ?? `N${i - 1}`;
+      lines.push(`  ${prevId} --> ${id}["${label}"]`);
+    }
+  }
+  return lines.join("\n");
+}
 
 export function FindingCard({ finding, value }: FindingCardProps) {
   return (
@@ -91,17 +113,26 @@ export function FindingCard({ finding, value }: FindingCardProps) {
           </div>
         )}
 
-        {/* Mermaid diagram placeholder -- wired in Task 04 */}
-        {finding.dataFlow && (
-          <div className="text-xs text-muted-foreground">
-            Data flow: {finding.dataFlow.nodes.map((n) => n.label).join(" -> ")}
+        {/* Mermaid data flow diagram */}
+        {finding.dataFlow && finding.dataFlow.nodes.length > 0 && (
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+              Data Flow
+            </h4>
+            <MermaidDiagram
+              id={`dataflow-${value}`}
+              chart={buildDataFlowChart(finding.dataFlow.nodes)}
+            />
           </div>
         )}
 
-        {/* Code diff placeholder -- wired in Task 04 */}
+        {/* Before/after code diff */}
         {finding.fix && (
-          <div className="text-xs text-muted-foreground font-mono">
-            Fix available ({finding.fix.before.split("\n").length} lines)
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+              Suggested Fix
+            </h4>
+            <CodeDiff fix={finding.fix} />
           </div>
         )}
       </AccordionContent>
