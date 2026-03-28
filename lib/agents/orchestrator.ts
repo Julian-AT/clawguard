@@ -5,12 +5,7 @@ import type { ClawGuardConfig, PolicyRule } from "@/lib/config/schemas";
 import { handleError } from "@/lib/error-handler";
 import { PipelineMemory } from "./memory";
 import { getAgent, getAllAgents } from "./registry";
-import type {
-  AgentContext,
-  AgentResult,
-  OrchestratorResult,
-  SecurityAgentDefinition,
-} from "./types";
+import type { AgentContext, AgentResult, OrchestratorResult, AgentDefinition } from "./types";
 
 export interface OrchestratorInput {
   runId: string;
@@ -18,6 +13,9 @@ export interface OrchestratorInput {
   recon: ReconResult;
   config: ClawGuardConfig;
   policies: PolicyRule[];
+  /** For learnings/memory tools */
+  owner?: string;
+  repo?: string;
   agentNames?: string[];
   abortSignal?: AbortSignal;
   learningsBlock?: string;
@@ -29,11 +27,11 @@ export interface OrchestratorInput {
 }
 
 // Topological sort: returns layers of agents that can run in parallel
-function buildExecutionLayers(agents: SecurityAgentDefinition[]): SecurityAgentDefinition[][] {
+function buildExecutionLayers(agents: AgentDefinition[]): AgentDefinition[][] {
   const nameSet = new Set(agents.map((a) => a.name));
   const inDegree = new Map<string, number>();
   const graph = new Map<string, string[]>();
-  const agentMap = new Map<string, SecurityAgentDefinition>();
+  const agentMap = new Map<string, AgentDefinition>();
 
   for (const agent of agents) {
     agentMap.set(agent.name, agent);
@@ -45,12 +43,12 @@ function buildExecutionLayers(agents: SecurityAgentDefinition[]): SecurityAgentD
     }
   }
 
-  const layers: SecurityAgentDefinition[][] = [];
+  const layers: AgentDefinition[][] = [];
   let ready = agents.filter((a) => (inDegree.get(a.name) ?? 0) === 0);
 
   while (ready.length > 0) {
     layers.push(ready);
-    const next: SecurityAgentDefinition[] = [];
+    const next: AgentDefinition[] = [];
     for (const agent of ready) {
       for (const dependent of graph.get(agent.name) ?? []) {
         const newDeg = (inDegree.get(dependent) ?? 1) - 1;
@@ -75,11 +73,11 @@ export class AgentOrchestrator {
     const errors: Array<{ agent: string; error: string }> = [];
 
     // Resolve which agents to run
-    let agents: SecurityAgentDefinition[];
+    let agents: AgentDefinition[];
     if (input.agentNames?.length) {
       agents = input.agentNames
         .map((n) => getAgent(n))
-        .filter((a): a is SecurityAgentDefinition => a !== undefined);
+        .filter((a): a is AgentDefinition => a !== undefined);
     } else {
       agents = getAllAgents();
     }
@@ -114,6 +112,8 @@ export class AgentOrchestrator {
           recon: input.recon,
           config: input.config,
           policies: input.policies,
+          owner: input.owner,
+          repo: input.repo,
           priorFindings: memory.getAllFindings(),
           memory,
           abortSignal: input.abortSignal,

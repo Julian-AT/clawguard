@@ -1,7 +1,37 @@
 "use client";
 
-import { CheckCircle2, Loader2, Shield, XCircle } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  FileText,
+  GitBranch,
+  Loader2,
+  type LucideIcon,
+  Network,
+  Shield,
+  Sparkles,
+  TestTube2,
+  XCircle,
+  Zap,
+} from "lucide-react";
 import type { StreamEvent } from "./activity-feed";
+
+const AGENT_ICONS: Record<string, LucideIcon> = {
+  "security-scan": Shield,
+  "dependency-audit": GitBranch,
+  "secret-scanner": Shield,
+  "infrastructure-review": Network,
+  "api-security": Shield,
+  "compliance-auditor": FileText,
+  pentest: Shield,
+  "code-quality": Sparkles,
+  architecture: Network,
+  "test-coverage": TestTube2,
+  documentation: BookOpen,
+  performance: Zap,
+  "pr-summary": FileText,
+  learnings: Sparkles,
+};
 
 interface AgentState {
   name: string;
@@ -43,7 +73,8 @@ function deriveAgentStates(events: StreamEvent[]): AgentState[] {
   return [...agents.values()];
 }
 
-function statusIcon(status: AgentState["status"]) {
+function statusIcon(status: AgentState["status"], agentName: string) {
+  const Icon = AGENT_ICONS[agentName] ?? Shield;
   switch (status) {
     case "running":
       return <Loader2 className="h-4 w-4 text-blue-400 animate-spin" />;
@@ -52,7 +83,7 @@ function statusIcon(status: AgentState["status"]) {
     case "failed":
       return <XCircle className="h-4 w-4 text-red-400" />;
     default:
-      return <Shield className="h-4 w-4 text-zinc-500" />;
+      return <Icon className="h-4 w-4 text-zinc-500" />;
   }
 }
 
@@ -68,7 +99,7 @@ export function AgentStatusPanel({ events }: AgentStatusPanelProps) {
           key={agent.name}
           className="rounded-lg border border-border bg-card/50 px-3 py-2 flex items-center gap-2"
         >
-          {statusIcon(agent.status)}
+          {statusIcon(agent.status, agent.name)}
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium truncate">{agent.name}</p>
             {agent.status === "completed" && (

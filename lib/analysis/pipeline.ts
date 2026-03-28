@@ -16,7 +16,15 @@ import { runChangeAnalysis } from "./change-analysis";
 import { postProcessAudit } from "./post-process";
 import { runReconnaissance } from "./recon";
 import { runThreatSynthesis } from "./threat-synthesis";
-import type { AuditResult, PhaseResult, PRSummary, ReconResult } from "./types";
+import type {
+  AuditResult,
+  Finding,
+  PhaseResult,
+  PRSummary,
+  ReviewVerdictResult,
+  ReconResult,
+  TeamPattern,
+} from "./types";
 
 function resolveAgentNames(config: ClawGuardConfig): string[] | undefined {
   const all = getAllAgents();
@@ -132,14 +140,6 @@ export async function runSecurityPipeline(
     recon = await runReconnaissance(sandbox, diff, config);
     await onProgress?.({ stage: "recon", status: "complete" });
 
-    await onProgress?.({
-      stage: "change-analysis",
-      status: "running",
-      detail: config.analysis.generatePRSummary ? "PR summary & diagrams" : "Skipped",
-    });
-    const prSummary: PRSummary = await runChangeAnalysis(recon, config);
-    await onProgress?.({ stage: "change-analysis", status: "complete" });
-
     const { tools } = await createBashTool({ sandbox });
 
     const learningsBlock = await getLearningsBlockForScan(input.owner, input.repo, config);
@@ -160,6 +160,8 @@ export async function runSecurityPipeline(
       recon,
       config,
       policies,
+      owner: input.owner,
+      repo: input.repo,
       learningsBlock,
       knowledgeBlock,
       agentNames: resolveAgentNames(config),
@@ -176,12 +178,36 @@ export async function runSecurityPipeline(
     const scan = aggregateScanFromOrchestrator(orchestratorResult);
     await onProgress?.({ stage: "security-scan", status: "complete" });
 
+    const learningsResult = orchestratorResult.agentResults.find((r) => r.agentName === "learnings");
+    const learningsMeta = learningsResult?.metadata as
+      | {
+          finalFindings?: Finding[];
+          verdict?: ReviewVerdictResult;
+          teamPatterns?: TeamPattern[];
+        }
+      | undefined;
+    const findingsAfterLearnings =
+      learningsMeta?.finalFindings !== undefined ? learningsMeta.finalFindings : scan.findings;
+
+    await onProgress?.({
+      stage: "change-analysis",
+      status: "running",
+      detail: config.analysis.generatePRSummary ? "PR summary (agent + fallback)" : "Skipped",
+    });
+    let prSummary: PRSummary | undefined;
+    if (config.analysis.generatePRSummary) {
+      const prAgent = orchestratorResult.agentResults.find((r) => r.agentName === "pr-summary");
+      const fromAgent = prAgent?.metadata?.prSummary as PRSummary | undefined;
+      prSummary = fromAgent ?? (await runChangeAnalysis(recon, config));
+    }
+    await onProgress?.({ stage: "change-analysis", status: "complete" });
+
     await onProgress?.({
       stage: "threat-synthesis",
       status: "running",
       detail: "Threat model & deduplication",
     });
-    const threat = await runThreatSynthesis(tools, recon, scan.findings, scan.summary, config);
+    const threat = await runThreatSynthesis(tools, recon, findingsAfterLearnings, scan.summary, config);
     await onProgress?.({ stage: "threat-synthesis", status: "complete" });
 
     await onProgress?.({ stage: "post-processing", status: "running" });
@@ -197,7 +223,7 @@ export async function runSecurityPipeline(
     const phases: PhaseResult[] = [
       {
         phase: "security-scan",
-        findings: scan.findings,
+        findings: findingsAfterLearnings,
         summary: scan.summary,
       },
       {
@@ -253,6 +279,8 @@ export async function runSecurityPipeline(
       threatModel: processed.threatModel,
       recon,
       prSummary: config.analysis.generatePRSummary ? prSummary : undefined,
+      verdict: learningsMeta?.verdict,
+      teamPatterns: learningsMeta?.teamPatterns,
       metadata: {
         timestamp: new Date().toISOString(),
         filesChanged: recon.changedFiles.length,

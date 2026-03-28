@@ -23,7 +23,7 @@ export function filterIgnoredPaths(findings: Finding[], ignorePaths: string[]): 
 function dedupeFindings(findings: Finding[]): Finding[] {
   const seen = new Map<string, Finding>();
   for (const f of findings) {
-    const key = `${f.file}:${f.line}:${f.type}:${f.cweId}`;
+    const key = `${f.file}:${f.line}:${f.type}:${f.cweId ?? "none"}`;
     const existing = seen.get(key);
     if (!existing) {
       seen.set(key, f);

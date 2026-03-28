@@ -12,7 +12,7 @@ export interface AgentResult {
 
 export type AgentStatus = "pending" | "running" | "completed" | "failed" | "skipped";
 
-export interface SecurityAgentDefinition {
+export interface AgentDefinition {
   name: string;
   description: string;
   requiredSkills: string[];
@@ -24,6 +24,9 @@ export interface SecurityAgentDefinition {
   execute(context: AgentContext): Promise<AgentResult>;
 }
 
+/** @deprecated Use AgentDefinition */
+export type SecurityAgentDefinition = AgentDefinition;
+
 export interface AgentContext {
   runId: string;
   agentId: string;
@@ -31,6 +34,10 @@ export interface AgentContext {
   recon: ReconResult;
   config: import("@/lib/config/schemas").ClawGuardConfig;
   policies: import("@/lib/config/schemas").PolicyRule[];
+  /** GitHub owner (for learnings/memory tools) */
+  owner?: string;
+  /** GitHub repo name */
+  repo?: string;
   /** Findings from completed agents (for agents that depend on others) */
   priorFindings: Finding[];
   /** Shared memory between agents within a pipeline run */

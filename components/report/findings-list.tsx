@@ -29,10 +29,11 @@ export function FindingsList({ findings }: FindingsListProps) {
       if (!q) return true;
       return (
         f.file.toLowerCase().includes(q) ||
-        f.cweId.toLowerCase().includes(q) ||
+        (f.cweId?.toLowerCase().includes(q) ?? false) ||
         f.type.toLowerCase().includes(q) ||
-        f.owaspCategory.toLowerCase().includes(q) ||
-        (f.title?.toLowerCase().includes(q) ?? false)
+        (f.owaspCategory?.toLowerCase().includes(q) ?? false) ||
+        (f.title?.toLowerCase().includes(q) ?? false) ||
+        (f.category?.toLowerCase().includes(q) ?? false)
       );
     });
   }, [sorted, visible, query]);

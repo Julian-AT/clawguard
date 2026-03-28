@@ -4,6 +4,7 @@ import type { AuditResult, Finding } from "./types";
 const mockFindings: Finding[] = [
   {
     id: "VULN-001",
+    category: "security",
     severity: "CRITICAL",
     type: "SQL Injection",
     title: "Unsanitized user input in database query",
@@ -44,6 +45,7 @@ const mockFindings: Finding[] = [
   },
   {
     id: "VULN-002",
+    category: "security",
     severity: "CRITICAL",
     type: "Hardcoded Secret",
     title: "JWT secret hardcoded in source code",
@@ -80,6 +82,7 @@ const mockFindings: Finding[] = [
   },
   {
     id: "VULN-003",
+    category: "security",
     severity: "HIGH",
     type: "Missing Rate Limiting",
     title: "Authentication endpoint has no rate limiting",
@@ -110,6 +113,7 @@ const mockFindings: Finding[] = [
   },
   {
     id: "VULN-004",
+    category: "security",
     severity: "MEDIUM",
     type: "Path Traversal",
     title: "File path constructed from user input without sanitization",
@@ -147,6 +151,7 @@ const mockFindings: Finding[] = [
   },
   {
     id: "VULN-005",
+    category: "security",
     severity: "LOW",
     type: "Missing Security Headers",
     title: "Response missing X-Content-Type-Options header",
@@ -177,6 +182,7 @@ const mockFindings: Finding[] = [
   },
   {
     id: "VULN-006",
+    category: "security",
     severity: "INFO",
     type: "Console Logging",
     title: "Sensitive data logged to console",

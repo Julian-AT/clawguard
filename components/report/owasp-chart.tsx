@@ -33,6 +33,7 @@ function buildChartData(findings: Finding[]): ChartDatum[] {
   const grouped = new Map<string, { count: number; highestSeverity: Severity }>();
 
   for (const f of findings) {
+    if ((f.category ?? "security") !== "security" || !f.owaspCategory) continue;
     const existing = grouped.get(f.owaspCategory);
     if (!existing) {
       grouped.set(f.owaspCategory, { count: 1, highestSeverity: f.severity });

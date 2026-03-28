@@ -1,3 +1,4 @@
+import { FindingsByCategory } from "@/components/report/findings-by-category";
 import { ComplianceTab } from "@/components/report/compliance-tab";
 import { FindingsList } from "@/components/report/findings-list";
 import { OwaspChart } from "@/components/report/owasp-chart";
@@ -6,12 +7,24 @@ import { ReportHeader } from "@/components/report/report-header";
 import { ReportShell } from "@/components/report/report-shell";
 import { ScoreGauge } from "@/components/report/score-gauge";
 import { SeverityBadges } from "@/components/report/severity-badges";
+import { TeamPatterns } from "@/components/report/team-patterns";
 import { ThreatModelTab } from "@/components/report/threat-model-tab";
+import { VerdictBanner } from "@/components/report/verdict-banner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { countBySeverity } from "@/lib/analysis/scoring";
-import type { AuditResult } from "@/lib/analysis/types";
+import type { AuditResult, FindingCategory } from "@/lib/analysis/types";
+import { categoryLabel } from "@/lib/report/category-labels";
+
+const FINDING_CATEGORY_TABS: FindingCategory[] = [
+  "security",
+  "quality",
+  "architecture",
+  "testing",
+  "documentation",
+  "performance",
+];
 
 interface ReportViewProps {
   result: AuditResult;
@@ -34,6 +47,8 @@ export function ReportView({
   partialWarning,
 }: ReportViewProps) {
   const counts = countBySeverity(result.findings);
+  const countByCat = (cat: FindingCategory) =>
+    result.findings.filter((f) => (f.category ?? "security") === cat).length;
   const executive =
     result.summary?.trim() ||
     `Security audit for PR #${prNumber}: ${result.findings.length} finding(s), score ${result.score}/100 (${result.grade}).`;
@@ -55,6 +70,8 @@ export function ReportView({
             <AlertDescription className="text-foreground/90">{partialWarning}</AlertDescription>
           </Alert>
         )}
+
+        {result.verdict && <VerdictBanner verdict={result.verdict} />}
 
         <section className="rounded-xl border border-border bg-card/50 p-5 print:break-inside-avoid">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
@@ -79,8 +96,13 @@ export function ReportView({
         <Separator />
 
         <Tabs defaultValue="findings">
-          <TabsList>
-            <TabsTrigger value="findings">Findings ({result.findings.length})</TabsTrigger>
+          <TabsList className="flex flex-wrap h-auto gap-1">
+            <TabsTrigger value="findings">All ({result.findings.length})</TabsTrigger>
+            {FINDING_CATEGORY_TABS.map((cat) => (
+              <TabsTrigger key={cat} value={`cat-${cat}`}>
+                {categoryLabel(cat)} ({countByCat(cat)})
+              </TabsTrigger>
+            ))}
             <TabsTrigger value="pr-summary">PR Summary</TabsTrigger>
             <TabsTrigger value="threat-model">Threat Model</TabsTrigger>
             <TabsTrigger value="compliance">Compliance</TabsTrigger>
@@ -89,6 +111,12 @@ export function ReportView({
           <TabsContent value="findings" className="mt-4">
             <FindingsList findings={result.findings} />
           </TabsContent>
+
+          {FINDING_CATEGORY_TABS.map((cat) => (
+            <TabsContent key={cat} value={`cat-${cat}`} className="mt-4">
+              <FindingsByCategory findings={result.findings} category={cat} />
+            </TabsContent>
+          ))}
 
           <TabsContent value="pr-summary" className="mt-4">
             <PrSummaryTab prSummary={result.prSummary} />
@@ -102,6 +130,10 @@ export function ReportView({
             <ComplianceTab findings={result.findings} />
           </TabsContent>
         </Tabs>
+
+        {result.teamPatterns && result.teamPatterns.length > 0 && (
+          <TeamPatterns patterns={result.teamPatterns} />
+        )}
       </div>
     </ReportShell>
   );

@@ -18,4 +18,11 @@ export type SkillDomain =
   | "api"
   | "infrastructure"
   | "reporting"
-  | "orchestration";
+  | "orchestration"
+  | "architecture"
+  | "testing"
+  | "documentation"
+  | "performance"
+  | "review-tone"
+  | "diff-reading"
+  | "cvss";

@@ -167,7 +167,7 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
           <div className="mx-auto">
             <Shield className="h-12 w-12 text-primary animate-pulse" />
           </div>
-          <h1 className="text-lg font-semibold">Security Analysis in Progress</h1>
+          <h1 className="text-lg font-semibold">Multi-agent review in progress</h1>
           <p className="text-sm text-muted-foreground">
             Scanning{" "}
             <span className="font-mono text-foreground">
