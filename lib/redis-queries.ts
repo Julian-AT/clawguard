@@ -3,6 +3,14 @@ import { redis } from "@/lib/redis";
 
 const KEY_PATTERN = /^([^/]+)\/([^/]+)\/pr\/(\d+)$/;
 
+/**
+ * Stored audit JSON uses keys `owner/repo/pr/n` only. Broad SCAN patterns also match
+ * stream-prefixed keys (LIST for SSE) — GET on those returns WRONGTYPE.
+ */
+export function isAuditStorageKey(key: string): boolean {
+  return /^[^/:]+\/[^/:]+\/pr\/\d+$/.test(key);
+}
+
 export interface RepoKey {
   owner: string;
   repo: string;
@@ -28,6 +36,9 @@ export async function listReposWithAudits(): Promise<RepoKey[]> {
 
   const repos = new Map<string, RepoKey>();
   for (const key of keys) {
+    if (!isAuditStorageKey(key)) {
+      continue;
+    }
     const m = key.match(KEY_PATTERN);
     if (m) {
       repos.set(`${m[1]}/${m[2]}`, { owner: m[1], repo: m[2] });
@@ -54,7 +65,7 @@ export async function listPrAuditKeys(owner: string, repo: string): Promise<stri
     if (nextCursor === "0") break;
     cur = nextCursor;
   }
-  return keys.sort();
+  return keys.filter(isAuditStorageKey).sort();
 }
 
 export async function loadAuditDataForKeys(
@@ -62,13 +73,16 @@ export async function loadAuditDataForKeys(
 ): Promise<Array<{ key: string; data: AuditData }>> {
   const out: Array<{ key: string; data: AuditData }> = [];
   for (const key of keys) {
-    const raw = await redis.get<string>(key);
-    if (!raw) continue;
+    if (!isAuditStorageKey(key)) {
+      continue;
+    }
     try {
+      const raw = await redis.get<string>(key);
+      if (!raw) continue;
       const data = JSON.parse(raw) as AuditData;
       out.push({ key, data });
     } catch {
-      // skip
+      // skip corrupt JSON or unexpected type
     }
   }
   return out;

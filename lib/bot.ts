@@ -2,7 +2,7 @@ import type { GitHubRawMessage } from "@chat-adapter/github";
 import { createMemoryState } from "@chat-adapter/state-memory";
 import { createRedisState } from "@chat-adapter/state-redis";
 import { Octokit } from "@octokit/rest";
-import type { Thread } from "chat";
+import type { Message, Thread } from "chat";
 import { Chat } from "chat";
 import { formatPipelineStatusMessage } from "./bot-helpers";
 import { buildSummaryCard } from "./cards/summary-card";
@@ -15,6 +15,11 @@ import { runAuditPipeline } from "./github-audit-runner";
 import { classifyIntentWithLlm } from "./intent-classifier";
 import type { Intent } from "./intent-types";
 import { appendLearningRepo, extractLearningFromComment } from "./learnings";
+import { clawguardWebhookDebug } from "./clawguard-debug";
+import {
+  collectBotMentionHandles,
+  commentBodyMentionsBot,
+} from "./github-mention-pattern";
 import { getAuditResult } from "./redis";
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
@@ -257,8 +262,20 @@ async function runFixFlow(
   }
 }
 
-bot.onNewMention(async (thread, message) => {
+async function handleNewMentionAudit(
+  thread: Thread,
+  message: Message,
+  source: "onNewMention" | "onNewMessage-raw-body",
+) {
   const raw = message.raw as GitHubRawMessage;
+  const bodyRaw = raw.comment?.body ?? "";
+  clawguardWebhookDebug("handleNewMentionAudit", {
+    source,
+    messageTextPreview: message.text?.slice(0, 160),
+    commentBodyPreview: bodyRaw.slice(0, 160),
+    isMention: message.isMention,
+    threadId: thread.id,
+  });
   const owner = raw.repository.owner.login;
   const repo = raw.repository.name;
   const prNumber = raw.prNumber;
@@ -287,6 +304,25 @@ bot.onNewMention(async (thread, message) => {
       "## 🛡️ ClawGuard Security Audit\n\n❌ Something went wrong during the security analysis. Please try again.",
     );
   }
+}
+
+bot.onNewMention((thread, message) => handleNewMentionAudit(thread, message, "onNewMention"));
+
+const mentionHandles = collectBotMentionHandles(botUsername);
+clawguardWebhookDebug("registered mention handles", {
+  GITHUB_BOT_USERNAME: botUsername,
+  handles: mentionHandles,
+});
+
+// Chat SDK `message.text` can drop @mentions (link/user-node → plain text). Regex on
+// message.text then misses; subscribed threads never hit onNewMessage patterns anyway.
+bot.onNewMessage(/.+/s, (thread, message) => {
+  const raw = message.raw as GitHubRawMessage;
+  const body = raw.comment?.body ?? "";
+  if (!commentBodyMentionsBot(body, mentionHandles)) {
+    return Promise.resolve();
+  }
+  return handleNewMentionAudit(thread, message, "onNewMessage-raw-body");
 });
 
 bot.onSubscribedMessage(async (thread, message) => {
@@ -294,12 +330,27 @@ bot.onSubscribedMessage(async (thread, message) => {
   const body = raw.comment?.body ?? "";
   const botName = botUsername;
 
+  clawguardWebhookDebug("onSubscribedMessage", {
+    isMention: message.isMention,
+    threadId: thread.id,
+    bodyPreview: body.slice(0, 120),
+  });
+
   let intent = detectIntent(body, botName);
   if (intent.type === "unknown" && body.trim().length > 20) {
     const llm = await classifyIntentWithLlm(body, botName);
     if (llm && llm.type !== "unknown") {
       intent = llm;
     }
+  }
+
+  // Thread is subscribed: onNewMention / onNewMessage patterns are skipped. A new
+  // @mention with "analyze this" / typos is still unknown intent — treat as re-audit.
+  if (
+    intent.type === "unknown" &&
+    (message.isMention || commentBodyMentionsBot(body, mentionHandles))
+  ) {
+    intent = { type: "re-audit" };
   }
 
   if (intent.type === "unknown") return;

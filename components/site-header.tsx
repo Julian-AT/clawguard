@@ -22,7 +22,9 @@ function buildCrumbs(pathname: string): { label: string; href?: string }[] {
   if (parts[0] !== "dashboard") {
     return [{ label: "Dashboard", href: "/dashboard" }];
   }
-  const crumbs: { label: string; href?: string }[] = [{ label: "Dashboard", href: "/dashboard" }];
+  const crumbs: { label: string; href?: string }[] = [
+    { label: "Dashboard", href: "/dashboard" },
+  ];
   if (parts.length === 1) return crumbs;
 
   const ownerSeg = parts[1];
@@ -70,12 +72,12 @@ function buildCrumbs(pathname: string): { label: string; href?: string }[] {
 export function SiteHeader() {
   const pathname = usePathname();
   const crumbs = buildCrumbs(pathname);
-  const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? "https://github.com/apps";
+  const githubAppUrl =
+    process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? "https://github.com/apps";
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
       <Breadcrumb className="min-w-0 flex-1">
         <BreadcrumbList className="sm:flex-wrap">
           <BreadcrumbItem className="min-w-0 sm:hidden">
@@ -86,8 +88,12 @@ export function SiteHeader() {
           {crumbs.map((c, crumbIndex) => {
             const last = crumbIndex === crumbs.length - 1;
             return (
-              <React.Fragment key={`${pathname}-${c.label}-${c.href ?? "current"}`}>
-                {crumbIndex > 0 ? <BreadcrumbSeparator className="hidden sm:inline-flex" /> : null}
+              <React.Fragment
+                key={`${pathname}-${c.label}-${c.href ?? "current"}`}
+              >
+                {crumbIndex > 0 ? (
+                  <BreadcrumbSeparator className="hidden sm:inline-flex" />
+                ) : null}
                 <BreadcrumbItem className="hidden min-w-0 sm:inline-flex">
                   {last ? (
                     <BreadcrumbPage className="font-mono text-xs sm:text-sm">
@@ -109,7 +115,12 @@ export function SiteHeader() {
         </BreadcrumbList>
       </Breadcrumb>
       <div className="flex shrink-0 items-center gap-1">
-        <Button variant="ghost" size="sm" className="hidden gap-1.5 sm:inline-flex" asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hidden gap-1.5 sm:inline-flex"
+          asChild
+        >
           <a href={githubAppUrl} target="_blank" rel="noreferrer">
             GitHub App
             <ExternalLink className="size-3.5 opacity-70" />

@@ -1,4 +1,5 @@
 import { after } from "next/server";
+import { clawguardWebhookDebug } from "@/lib/clawguard-debug";
 import { isClawGuardAutomatedCommentBody } from "@/lib/github-automated-comment";
 import { getGithubTokenUserId } from "@/lib/github-pat-user";
 import { redis } from "@/lib/redis";
@@ -69,12 +70,15 @@ export async function POST(request: Request) {
     } else if (issue?.pull_request) {
       console.log("[webhook] issue_comment on PR #%s — routing to Chat SDK", issue.number);
     }
+    const cb = commentBodyFromPayload(body);
+    clawguardWebhookDebug("issue_comment body preview:", JSON.stringify(cb?.slice(0, 200)));
   }
 
   const deliveryId = request.headers.get("x-github-delivery");
   if (deliveryId) {
     const key = `webhook:delivery:${deliveryId}`;
     const isNew = await redis.set(key, "1", { nx: true, ex: 3600 });
+    clawguardWebhookDebug("redis delivery dedup", { deliveryId, isNew, key });
     if (!isNew) {
       console.log("[webhook] Duplicate delivery, skipping:", deliveryId);
       return new Response("OK", { status: 200 });
@@ -121,13 +125,20 @@ export async function POST(request: Request) {
       return new Response("GitHub adapter not configured", { status: 404 });
     }
 
+    clawguardWebhookDebug("invoking bot.webhooks.github handler");
     return await handler(forSdk, {
+      // Start the Chat SDK promise immediately; do not defer start inside after() only.
       waitUntil: (task) => {
-        after(() => {
-          Promise.resolve(task).catch((err) =>
-            console.error("[webhook] Background task error:", err),
-          );
-        });
+        clawguardWebhookDebug("waitUntil: Chat task scheduled");
+        const done = Promise.resolve(task)
+          .then(() => {
+            clawguardWebhookDebug("waitUntil: Chat task finished OK");
+          })
+          .catch((err) => {
+            console.error("[webhook] Background task error:", err);
+            clawguardWebhookDebug("waitUntil: Chat task threw", err);
+          });
+        after(() => done);
       },
     });
   } catch (err) {
