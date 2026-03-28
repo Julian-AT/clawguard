@@ -1,61 +1,44 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { AuditResult } from "../lib/analysis/types";
 
 // Use vi.hoisted for mock variables used in vi.mock factories
-const {
-  mockRunCommand,
-  mockStop,
-  mockSandboxCreate,
-  mockGenerate,
-  mockToolLoopAgent,
-  mockStepCountIs,
-  mockGateway,
-} = vi.hoisted(() => {
-  const mockRunCommand = vi.fn().mockResolvedValue({
-    stdout: vi.fn().mockResolvedValue("mock diff output"),
-  });
-  const mockStop = vi.fn().mockResolvedValue(undefined);
-  const mockSandboxCreate = vi.fn().mockResolvedValue({
-    runCommand: mockRunCommand,
-    stop: mockStop,
-  });
-  const mockGenerate = vi.fn().mockResolvedValue({
-    text: "No vulnerabilities found.",
-  });
-  // Use regular function (not arrow) so it works as a constructor with `new`
-  const mockToolLoopAgent = vi.fn().mockImplementation(function () {
-    return { generate: mockGenerate };
-  });
-  const mockStepCountIs = vi.fn().mockReturnValue(() => false);
-  const mockGateway = vi.fn().mockReturnValue("mock-model");
-
-  return {
-    mockRunCommand,
-    mockStop,
-    mockSandboxCreate,
-    mockGenerate,
-    mockToolLoopAgent,
-    mockStepCountIs,
-    mockGateway,
+const { mockRunSecurityPipeline } = vi.hoisted(() => {
+  const mockAuditResult: AuditResult = {
+    phases: {
+      quality: {
+        summary: "No quality issues",
+        findings: [],
+      },
+      vulnerability: {
+        summary: "No vulnerabilities",
+        findings: [],
+      },
+      threatModel: {
+        summary: "No threats",
+        findings: [],
+      },
+    },
+    allFindings: [],
+    score: 100,
+    grade: "A",
+    severityCounts: {
+      CRITICAL: 0,
+      HIGH: 0,
+      MEDIUM: 0,
+      LOW: 0,
+      INFO: 0,
+    },
   };
+
+  const mockRunSecurityPipeline = vi
+    .fn()
+    .mockResolvedValue(mockAuditResult);
+
+  return { mockRunSecurityPipeline };
 });
 
-vi.mock("@vercel/sandbox", () => ({
-  Sandbox: {
-    create: mockSandboxCreate,
-  },
-}));
-
-vi.mock("bash-tool", () => ({
-  createBashTool: vi.fn().mockResolvedValue({ tools: {} }),
-}));
-
-vi.mock("ai", () => ({
-  ToolLoopAgent: mockToolLoopAgent,
-  stepCountIs: mockStepCountIs,
-}));
-
-vi.mock("@ai-sdk/gateway", () => ({
-  gateway: mockGateway,
+vi.mock("../lib/analysis/pipeline", () => ({
+  runSecurityPipeline: mockRunSecurityPipeline,
 }));
 
 import { reviewPullRequest } from "../lib/review";
@@ -63,66 +46,9 @@ import { reviewPullRequest } from "../lib/review";
 describe("Review Pipeline", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset default implementations after clearAllMocks
-    mockRunCommand.mockResolvedValue({
-      stdout: vi.fn().mockResolvedValue("mock diff output"),
-    });
-    mockStop.mockResolvedValue(undefined);
-    mockSandboxCreate.mockResolvedValue({
-      runCommand: mockRunCommand,
-      stop: mockStop,
-    });
-    mockGenerate.mockResolvedValue({
-      text: "No vulnerabilities found.",
-    });
-    mockToolLoopAgent.mockImplementation(function () {
-      return { generate: mockGenerate };
-    });
-    mockGateway.mockReturnValue("mock-model");
   });
 
-  it("creates Sandbox with git source containing repo URL (SCAN-01)", async () => {
-    await reviewPullRequest({
-      owner: "test-owner",
-      repo: "test-repo",
-      prBranch: "feature/test",
-      baseBranch: "main",
-    });
-
-    expect(mockSandboxCreate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        source: expect.objectContaining({
-          type: "git",
-          url: expect.stringContaining("test-owner/test-repo"),
-        }),
-      })
-    );
-  });
-
-  it("uses AI Gateway model via ToolLoopAgent (SCAN-08)", async () => {
-    await reviewPullRequest({
-      owner: "test-owner",
-      repo: "test-repo",
-      prBranch: "feature/test",
-      baseBranch: "main",
-    });
-
-    expect(mockGateway).toHaveBeenCalledWith("anthropic/claude-sonnet-4.6");
-    expect(mockToolLoopAgent).toHaveBeenCalled();
-  });
-
-  it("cleans up sandbox in finally block (SCAN-01)", async () => {
-    await reviewPullRequest({
-      owner: "test-owner",
-      repo: "test-repo",
-      prBranch: "feature/test",
-      baseBranch: "main",
-    });
-
-    expect(mockStop).toHaveBeenCalled();
-  });
-
-  it("returns agent result text", async () => {
+  it("reviewPullRequest returns AuditResult", async () => {
     const result = await reviewPullRequest({
       owner: "test-owner",
       repo: "test-repo",
@@ -130,6 +56,57 @@ describe("Review Pipeline", () => {
       baseBranch: "main",
     });
 
-    expect(result).toBe("No vulnerabilities found.");
+    expect(result).toHaveProperty("score");
+    expect(result).toHaveProperty("grade");
+    expect(result).toHaveProperty("allFindings");
+    expect(result).toHaveProperty("phases");
+    expect(result.score).toBe(100);
+    expect(result.grade).toBe("A");
+    expect(result.allFindings).toEqual([]);
+    expect(result.phases.quality.summary).toBe("No quality issues");
+    expect(result.phases.vulnerability.summary).toBe("No vulnerabilities");
+    expect(result.phases.threatModel.summary).toBe("No threats");
+  });
+
+  it("reviewPullRequest passes onProgress to pipeline", async () => {
+    const onProgress = vi.fn().mockResolvedValue(undefined);
+
+    await reviewPullRequest(
+      {
+        owner: "test-owner",
+        repo: "test-repo",
+        prBranch: "feature/test",
+        baseBranch: "main",
+      },
+      onProgress
+    );
+
+    expect(mockRunSecurityPipeline).toHaveBeenCalledWith(
+      {
+        owner: "test-owner",
+        repo: "test-repo",
+        prBranch: "feature/test",
+        baseBranch: "main",
+      },
+      onProgress
+    );
+  });
+
+  it("reviewPullRequest delegates to runSecurityPipeline", async () => {
+    await reviewPullRequest({
+      owner: "test-owner",
+      repo: "test-repo",
+      prBranch: "feature/test",
+      baseBranch: "main",
+    });
+
+    expect(mockRunSecurityPipeline).toHaveBeenCalledTimes(1);
+    expect(mockRunSecurityPipeline).toHaveBeenCalledWith(
+      expect.objectContaining({
+        owner: "test-owner",
+        repo: "test-repo",
+      }),
+      undefined
+    );
   });
 });

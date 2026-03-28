@@ -30,7 +30,7 @@ vi.mock("@/lib/redis", () => ({
   },
 }));
 
-import { POST, maxDuration } from "../../app/api/webhooks/github/route";
+import { POST, maxDuration } from "@/app/api/webhooks/github/route";
 
 describe("Webhook Route Handler", () => {
   beforeEach(() => {
