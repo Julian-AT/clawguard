@@ -1,20 +1,23 @@
 "use client";
 
-import { BookOpen, Brain, LayoutDashboard, LineChart, LogOut, Sparkles } from "lucide-react";
+import {
+  BookOpen,
+  Brain,
+  CircleHelpIcon,
+  ExternalLinkIcon,
+  LayoutDashboardIcon,
+  LineChart,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
+
 import type { DashboardRepo, DashboardUser } from "@/components/dashboard/dashboard-shell";
 import { ClawGuardLogo } from "@/components/logo";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { NavMain } from "@/components/nav-main";
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -29,23 +32,6 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-
-function initials(user: DashboardUser): string {
-  const n = user.name?.trim();
-  if (n) {
-    const parts = n.split(/\s+/);
-    if (parts.length >= 2) {
-      const a = parts[0]?.charAt(0) ?? "";
-      const b = parts[1]?.charAt(0) ?? "";
-      const two = `${a}${b}`.toUpperCase();
-      return two || n.slice(0, 2).toUpperCase();
-    }
-    return n.slice(0, 2).toUpperCase();
-  }
-  const e = user.email?.trim();
-  if (e) return e.slice(0, 2).toUpperCase();
-  return "?";
-}
 
 /** Parse /dashboard routes: org pages use .../owner/learnings; repo pages use .../owner/repo[/tracking]. */
 function parseDashboardPath(pathname: string): {
@@ -77,10 +63,18 @@ function parseDashboardPath(pathname: string): {
   return { owner, repo, isOrgPage: false, isTracking };
 }
 
-export function AppSidebar({ repos, user }: { repos: DashboardRepo[]; user: DashboardUser }) {
+export function AppSidebar({
+  repos,
+  user,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  repos: DashboardRepo[];
+  user: DashboardUser;
+}) {
   const pathname = usePathname();
   const dashboardHome = pathname === "/dashboard";
   const ctx = parseDashboardPath(pathname);
+  const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? "https://github.com/apps";
 
   const sortedRepos = React.useMemo(
     () =>
@@ -91,8 +85,28 @@ export function AppSidebar({ repos, user }: { repos: DashboardRepo[]; user: Dash
   const showOrgLinks = Boolean(ctx.owner);
   const showTracking = Boolean(ctx.owner && ctx.repo && !ctx.isOrgPage);
 
+  const navMainItems = React.useMemo(() => {
+    const dashboardItem = {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: <LayoutDashboardIcon className="size-4" />,
+      isActive: dashboardHome,
+    };
+    const repoItems = sortedRepos.map((r) => {
+      const href = `/dashboard/${encodeURIComponent(r.owner)}/${encodeURIComponent(r.repo)}`;
+      const active = pathname === href || pathname.startsWith(`${href}/`);
+      return {
+        title: `${r.owner}/${r.repo}`,
+        url: href,
+        icon: <Sparkles className="size-4" />,
+        isActive: active,
+      };
+    });
+    return [dashboardItem, ...repoItems];
+  }, [dashboardHome, pathname, sortedRepos]);
+
   return (
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader className="border-b border-sidebar-border/80">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -114,49 +128,9 @@ export function AppSidebar({ repos, user }: { repos: DashboardRepo[]; user: Dash
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={dashboardHome} tooltip="Dashboard">
-                  <Link href="/dashboard">
-                    <LayoutDashboard />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <NavMain showQuickActions={false} items={navMainItems} />
 
-        {sortedRepos.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Repositories</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {sortedRepos.map((r) => {
-                  const href = `/dashboard/${encodeURIComponent(r.owner)}/${encodeURIComponent(r.repo)}`;
-                  const active = pathname === href || pathname.startsWith(`${href}/`);
-                  return (
-                    <SidebarMenuItem key={`${r.owner}/${r.repo}`}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={`${r.owner}/${r.repo}`}>
-                        <Link href={href}>
-                          <Sparkles />
-                          <span className="truncate font-mono text-xs">
-                            {r.owner}/{r.repo}
-                          </span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {showOrgLinks && ctx.owner && (
+        {showOrgLinks && ctx.owner ? (
           <>
             <SidebarSeparator />
             <SidebarGroup>
@@ -170,7 +144,7 @@ export function AppSidebar({ repos, user }: { repos: DashboardRepo[]; user: Dash
                       tooltip="Learnings"
                     >
                       <Link href={`/dashboard/${encodeURIComponent(ctx.owner)}/learnings`}>
-                        <BookOpen />
+                        <BookOpen className="size-4" />
                         <span>Learnings</span>
                       </Link>
                     </SidebarMenuButton>
@@ -182,12 +156,12 @@ export function AppSidebar({ repos, user }: { repos: DashboardRepo[]; user: Dash
                       tooltip="Knowledge"
                     >
                       <Link href={`/dashboard/${encodeURIComponent(ctx.owner)}/knowledge`}>
-                        <Brain />
+                        <Brain className="size-4" />
                         <span>Knowledge</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                  {showTracking && ctx.repo && (
+                  {showTracking && ctx.repo ? (
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         asChild
@@ -197,71 +171,44 @@ export function AppSidebar({ repos, user }: { repos: DashboardRepo[]; user: Dash
                         <Link
                           href={`/dashboard/${encodeURIComponent(ctx.owner)}/${encodeURIComponent(ctx.repo)}/tracking`}
                         >
-                          <LineChart />
+                          <LineChart className="size-4" />
                           <span>Tracking</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  )}
+                  ) : null}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </>
-        )}
+        ) : null}
+
+        <NavSecondary
+          className="mt-auto"
+          items={[
+            {
+              title: "GitHub App",
+              url: githubAppUrl,
+              icon: <ExternalLinkIcon className="size-4" />,
+              external: true,
+            },
+            {
+              title: "Help",
+              url: "/",
+              icon: <CircleHelpIcon className="size-4" />,
+            },
+          ]}
+        />
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/80">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
-                  <Avatar className="size-8 rounded-lg">
-                    <AvatarImage src={user.image ?? undefined} alt="" />
-                    <AvatarFallback className="rounded-lg text-xs">{initials(user)}</AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name ?? "Account"}</span>
-                    <span className="truncate text-xs text-sidebar-foreground/70">
-                      {user.email ?? ""}
-                    </span>
-                  </div>
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side="bottom"
-                align="end"
-                sideOffset={4}
-              >
-                <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar className="size-8 rounded-lg">
-                      <AvatarImage src={user.image ?? undefined} alt="" />
-                      <AvatarFallback className="rounded-lg text-xs">
-                        {initials(user)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-medium">{user.name ?? "Account"}</span>
-                      <span className="truncate text-xs text-muted-foreground">{user.email}</span>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/api/auth/signout?callbackUrl=/">
-                    <LogOut className="size-4" />
-                    Sign out
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <NavUser
+          user={{
+            name: user.name ?? "Account",
+            email: user.email ?? "",
+            avatar: user.image ?? "",
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

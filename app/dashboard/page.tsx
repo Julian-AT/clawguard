@@ -1,18 +1,46 @@
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import type { AuditTableRow } from "@/components/data-table";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
 import { getSession } from "@/lib/auth";
 import { listPrAuditKeys, listReposWithAudits, loadAuditDataForKeys } from "@/lib/redis-queries";
+
+function countCriticalFindings(result: { findings?: { severity: string }[] } | undefined): number {
+  if (!result?.findings?.length) return 0;
+  return result.findings.filter((f) => f.severity === "CRITICAL").length;
+}
 
 export default async function DashboardPage() {
   const session = await getSession();
 
   const repos = await listReposWithAudits();
+  const rows: AuditTableRow[] = [];
+  let totalCritical = 0;
+
   const repoSummaries = await Promise.all(
     repos.map(async (r) => {
       const keys = await listPrAuditKeys(r.owner, r.repo);
       const loaded = await loadAuditDataForKeys(keys);
       const complete = loaded.filter((x) => x.data.status === "complete" && x.data.result);
+
+      for (const { key, data } of complete) {
+        if (!data.result) continue;
+        const criticalCount = countCriticalFindings(data.result);
+        totalCritical += criticalCount;
+        rows.push({
+          id: key,
+          owner: r.owner,
+          repo: r.repo,
+          prNumber: data.pr.number,
+          title: data.pr.title,
+          status: data.status,
+          score: data.result.score,
+          grade: data.result.grade,
+          criticalCount,
+          updatedAt: data.timestamp,
+        });
+      }
+
       const sorted = [...complete].sort(
         (a, b) => new Date(b.data.timestamp).getTime() - new Date(a.data.timestamp).getTime(),
       );
@@ -27,13 +55,32 @@ export default async function DashboardPage() {
     }),
   );
 
+  rows.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
   const totalAudits = repoSummaries.reduce((s, r) => s + r.auditCount, 0);
   const scores = repoSummaries.map((r) => r.latestScore).filter((s): s is number => s != null);
   const avgLatest =
     scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
 
+  const byDay = new Map<string, { sum: number; count: number }>();
+  for (const row of rows) {
+    const day = new Date(row.updatedAt).toISOString().slice(0, 10);
+    const cur = byDay.get(day) ?? { sum: 0, count: 0 };
+    if (row.score != null) {
+      cur.sum += row.score;
+      cur.count += 1;
+    }
+    byDay.set(day, cur);
+  }
+  const auditSeries = [...byDay.entries()]
+    .map(([date, { sum, count }]) => ({
+      date,
+      score: count > 0 ? Math.round(sum / count) : 0,
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -41,68 +88,18 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Repositories</CardDescription>
-            <CardTitle className="text-3xl tabular-nums">{repoSummaries.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Completed audits</CardDescription>
-            <CardTitle className="text-3xl tabular-nums">{totalAudits}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Avg. latest score</CardDescription>
-            <CardTitle className="text-3xl tabular-nums">{avgLatest ?? "—"}</CardTitle>
-          </CardHeader>
-        </Card>
+      <SectionCards
+        repoCount={repoSummaries.length}
+        totalAudits={totalAudits}
+        avgScore={avgLatest}
+        criticalFindings={totalCritical}
+      />
+
+      <div className="px-4 lg:px-6">
+        <ChartAreaInteractive auditSeries={auditSeries.length > 0 ? auditSeries : undefined} />
       </div>
 
-      {repoSummaries.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No audits yet</CardTitle>
-            <CardDescription>
-              @mention ClawGuard on a PR to generate your first report. Audits appear here
-              automatically.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {repoSummaries.map((r) => (
-            <Link key={`${r.owner}/${r.repo}`} href={`/dashboard/${r.owner}/${r.repo}`}>
-              <Card className="h-full transition-colors hover:border-primary/40">
-                <CardHeader>
-                  <CardTitle className="font-mono text-base">
-                    {r.owner}/{r.repo}
-                  </CardTitle>
-                  <CardDescription>
-                    {r.auditCount} audit{r.auditCount === 1 ? "" : "s"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex items-center gap-3">
-                  {r.latestScore != null ? (
-                    <>
-                      <span className="text-2xl font-semibold tabular-nums">{r.latestScore}</span>
-                      <Badge variant="secondary">{r.latestGrade ?? "?"}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {r.latestAt ? new Date(r.latestAt).toLocaleDateString() : ""}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">No completed audits</span>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
+      <DataTable data={rows} />
     </div>
   );
 }
