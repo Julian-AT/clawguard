@@ -1,3 +1,6 @@
+/** Install/settings page for the ClawGuard GitHub App (`NEXT_PUBLIC_GITHUB_APP_URL` overrides in the UI). */
+export const GITHUB_APP_INSTALL_URL = "https://github.com/apps/clawguardbot" as const;
+
 export const siteConfig = {
   name: "ClawGuard",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",

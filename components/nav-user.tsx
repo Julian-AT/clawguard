@@ -1,7 +1,7 @@
 "use client";
 
+import { EllipsisVerticalIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,8 +11,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { EllipsisVerticalIcon, LogOutIcon } from "lucide-react";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 function initials(name: string | undefined, email: string | undefined): string {
   const n = name?.trim();
@@ -83,7 +87,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/api/auth/signout?callbackUrl=/">
+              <Link href="/logout?callbackUrl=/">
                 <LogOutIcon className="size-4" />
                 Sign out
               </Link>

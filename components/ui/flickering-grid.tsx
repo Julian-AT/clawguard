@@ -1,19 +1,14 @@
 "use client";
 
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn, colorWithOpacity, getRGBA } from "@/lib/utils";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
 
 interface FlickeringGridProps extends React.HTMLAttributes<HTMLDivElement> {
   squareSize?: number;
   gridGap?: number;
   flickerChance?: number;
-  color?: string; // Can be any valid CSS color including hex, rgb, rgba, hsl, var(--color)
+  color?: string;
   width?: number;
   height?: number;
   className?: string;
@@ -43,7 +38,6 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
   const [isInView, setIsInView] = useState(false);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
-  // Convert any CSS color to rgba for optimal canvas performance
   const memoizedColor = useMemo(() => {
     return getRGBA(color);
   }, [color]);
@@ -60,14 +54,12 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
     ) => {
       ctx.clearRect(0, 0, width, height);
 
-      // Create a separate canvas for the text mask
       const maskCanvas = document.createElement("canvas");
       maskCanvas.width = width;
       maskCanvas.height = height;
       const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
       if (!maskCtx) return;
 
-      // Draw text on mask canvas
       if (text) {
         maskCtx.save();
         maskCtx.scale(dpr, dpr);
@@ -79,7 +71,6 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
         maskCtx.restore();
       }
 
-      // Draw flickering squares with optimized RGBA colors
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
           const x = i * (squareSize + gridGap) * dpr;
@@ -87,20 +78,11 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
           const squareWidth = squareSize * dpr;
           const squareHeight = squareSize * dpr;
 
-          const maskData = maskCtx.getImageData(
-            x,
-            y,
-            squareWidth,
-            squareHeight,
-          ).data;
-          const hasText = maskData.some(
-            (value, index) => index % 4 === 0 && value > 0,
-          );
+          const maskData = maskCtx.getImageData(x, y, squareWidth, squareHeight).data;
+          const hasText = maskData.some((value, index) => index % 4 === 0 && value > 0);
 
           const opacity = squares[i * rows + j];
-          const finalOpacity = hasText
-            ? Math.min(1, opacity * 3 + 0.4)
-            : opacity;
+          const finalOpacity = hasText ? Math.min(1, opacity * 3 + 0.4) : opacity;
 
           ctx.fillStyle = colorWithOpacity(memoizedColor, finalOpacity);
           ctx.fillRect(x, y, squareWidth, squareHeight);
@@ -208,11 +190,7 @@ export const FlickeringGrid: React.FC<FlickeringGridProps> = ({
   }, [setupCanvas, updateSquares, drawGrid, width, height, isInView]);
 
   return (
-    <div
-      ref={containerRef}
-      className={cn(`h-full w-full ${className}`)}
-      {...props}
-    >
+    <div ref={containerRef} className={cn(`h-full w-full ${className}`)} {...props}>
       <canvas
         ref={canvasRef}
         className="pointer-events-none"

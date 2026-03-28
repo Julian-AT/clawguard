@@ -45,9 +45,7 @@ export async function GET(
               cursor++;
             }
 
-            const status = await redis.get<{ status?: string }>(
-              `${owner}/${repo}/pr/${pr}`,
-            );
+            const status = await redis.get<{ status?: string }>(`${owner}/${repo}/pr/${pr}`);
             if (status) {
               try {
                 const data = status;

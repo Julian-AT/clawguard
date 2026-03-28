@@ -2,8 +2,6 @@
 
 import * as React from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Card,
   CardAction,
@@ -13,10 +11,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from "@/components/ui/chart";
 import {
   Select,
@@ -26,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const description = "Audit score trend";
 
@@ -164,20 +163,19 @@ export function ChartAreaInteractive({
 
   const useAudit = auditSeries && auditSeries.length > 0;
   const referenceDate = React.useMemo(() => {
-    if (useAudit && auditSeries) {
-      const max = auditSeries.reduce(
+    if (useAudit && auditSeries && auditSeries.length > 0) {
+      const first = auditSeries[0];
+      return auditSeries.reduce(
         (acc, r) => (new Date(r.date) > acc ? new Date(r.date) : acc),
-        new Date(auditSeries[0]!.date),
+        new Date(first.date),
       );
-      return max;
     }
     return new Date("2024-06-30");
   }, [auditSeries, useAudit]);
 
   const filteredDemo = filterByRange(demoChartData, timeRange, referenceDate);
-  const filteredAudit = useAudit
-    ? filterByRange(auditSeries!, timeRange, referenceDate)
-    : [];
+  const filteredAudit =
+    useAudit && auditSeries ? filterByRange(auditSeries, timeRange, referenceDate) : [];
 
   return (
     <Card className="@container/card">
@@ -232,15 +230,8 @@ export function ChartAreaInteractive({
             className="aspect-auto h-[250px] w-full"
             initialDimension={{ width: 400, height: 250 }}
           >
-            <LineChart
-              data={filteredAudit}
-              margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
-            >
-              <CartesianGrid
-                vertical={false}
-                strokeDasharray="3 3"
-                className="stroke-border/50"
-              />
+            <LineChart data={filteredAudit} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/50" />
               <XAxis
                 dataKey="date"
                 tickLine={false}
@@ -291,15 +282,8 @@ export function ChartAreaInteractive({
             className="aspect-auto h-[250px] w-full"
             initialDimension={{ width: 400, height: 250 }}
           >
-            <LineChart
-              data={filteredDemo}
-              margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
-            >
-              <CartesianGrid
-                vertical={false}
-                strokeDasharray="3 3"
-                className="stroke-border/50"
-              />
+            <LineChart data={filteredDemo} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-border/50" />
               <XAxis
                 dataKey="date"
                 tickLine={false}

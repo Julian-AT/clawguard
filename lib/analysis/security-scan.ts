@@ -25,7 +25,6 @@ export type SecurityScanResult = {
   scanErrorMessage?: string;
 };
 
-
 async function runScanOnce(
   tools: ToolSet,
   prompt: string,

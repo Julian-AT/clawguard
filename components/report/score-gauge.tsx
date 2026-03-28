@@ -2,7 +2,7 @@
 
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts";
 import { Badge } from "@/components/ui/badge";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { GRADE_BADGE_CLASS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -51,12 +51,7 @@ export function ScoreGauge({ score, grade }: ScoreGaugeProps) {
           endAngle={0}
         >
           <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-          <RadialBar
-            background
-            dataKey="value"
-            angleAxisId={0}
-            cornerRadius={8}
-          />
+          <RadialBar background dataKey="value" angleAxisId={0} cornerRadius={8} />
         </RadialBarChart>
       </ChartContainer>
       <div className="absolute bottom-4 flex flex-col items-center gap-1 animate-in fade-in zoom-in-95 duration-500">

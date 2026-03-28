@@ -1,15 +1,24 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-
-import { LoginForm } from "@/components/login-form";
 import { ClawGuardLogo } from "@/components/logo";
+import { LogoutForm } from "@/components/logout-form";
 import { getSession } from "@/lib/auth";
 
-export default async function LoginPage() {
+type Props = {
+  searchParams: Promise<{ callbackUrl?: string | string[] }>;
+};
+
+export default async function LogoutPage({ searchParams }: Props) {
   const session = await getSession();
-  if (session?.user) {
-    redirect("/dashboard");
+  if (!session?.user) {
+    redirect("/");
   }
+
+  const sp = await searchParams;
+  const raw = sp.callbackUrl;
+  const first = Array.isArray(raw) ? raw[0] : raw;
+  const callbackUrl =
+    typeof first === "string" && first.startsWith("/") && !first.startsWith("//") ? first : "/";
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
@@ -20,7 +29,7 @@ export default async function LoginPage() {
           </div>
           ClawGuard
         </Link>
-        <LoginForm />
+        <LogoutForm callbackUrl={callbackUrl} />
       </div>
     </div>
   );

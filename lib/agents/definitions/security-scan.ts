@@ -2,10 +2,10 @@ import { gateway } from "@ai-sdk/gateway";
 import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { createBashTool } from "bash-tool";
 import { z } from "zod";
-import { buildSecurityScanPrompt } from "@/lib/analysis/recon-context";
 import { registerAgent } from "@/lib/agents/registry";
 import { createOnStepFinish } from "@/lib/agents/step-hooks";
 import type { AgentContext, AgentResult, SecurityAgentDefinition } from "@/lib/agents/types";
+import { buildSecurityScanPrompt } from "@/lib/analysis/recon-context";
 import { type Finding, FindingSchema } from "@/lib/analysis/types";
 import { injectSkills } from "@/lib/skills";
 
@@ -28,10 +28,7 @@ const securityScanAgent: SecurityAgentDefinition = {
   async execute(context: AgentContext): Promise<AgentResult> {
     const start = Date.now();
     const modelRef = `${context.config.model.provider}/${context.config.model.model}`;
-    const maxSteps = Math.min(
-      30,
-      context.config.scanning.maxSteps,
-    );
+    const maxSteps = Math.min(30, context.config.scanning.maxSteps);
     const depthHint =
       context.config.scanning.depth === "quick"
         ? "Keep analysis faster and slightly less exhaustive."
@@ -77,7 +74,9 @@ const securityScanAgent: SecurityAgentDefinition = {
 
     const onStepFinish = createOnStepFinish(AGENT_NAME, context);
 
-    async function runOnce(instructions: string): Promise<{ findings: Finding[]; summary: string }> {
+    async function runOnce(
+      instructions: string,
+    ): Promise<{ findings: Finding[]; summary: string }> {
       const loop = new ToolLoopAgent({
         model: gateway(modelRef),
         tools,

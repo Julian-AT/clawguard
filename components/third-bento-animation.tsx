@@ -1,9 +1,9 @@
 "use client";
 
-import { colorWithOpacity, getRGBA } from "@/lib/utils";
 import NumberFlow from "@number-flow/react";
 import { motion, useInView } from "motion/react";
-import { CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { colorWithOpacity, getRGBA } from "@/lib/utils";
 
 interface LineChartProps {
   data: number[];
@@ -24,27 +24,22 @@ export function LineChart({
 }: LineChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
 
-  // Create smooth curve points using bezier curves
   const createSmoothPath = (points: { x: number; y: number }[]) => {
     if (points.length < 2) return "";
 
     const path = points.reduce((acc, point, i, arr) => {
       if (i === 0) {
-        // Move to the first point
         return `M ${point.x} ${point.y}`;
       }
 
-      // Calculate control points for smooth curve
       const prev = arr[i - 1];
       const next = arr[i + 1];
       const smoothing = 0.2;
 
-      // If it's the last point, we don't need a curve
       if (i === arr.length - 1) {
         return `${acc} L ${point.x} ${point.y}`;
       }
 
-      // Calculate control points
       const cp1x = prev.x + (point.x - prev.x) * smoothing;
       const cp1y = prev.y + (point.y - prev.y) * smoothing;
       const cp2x = point.x - (next.x - prev.x) * smoothing;
@@ -56,16 +51,13 @@ export function LineChart({
     return path;
   };
 
-  // Convert data points to coordinates
   const coordinates = data.map((value, index) => ({
     x: (index / (data.length - 1)) * width,
-    y: height - (value / Math.max(...data)) * height * 0.8, // Add some padding at top
+    y: height - (value / Math.max(...data)) * height * 0.8,
   }));
 
-  // Create smooth path
   const smoothPath = createSmoothPath(coordinates);
 
-  // Find the middle point coordinates
   const middleIndex = Math.floor(data.length / 2);
   const middlePoint = coordinates[middleIndex];
 
@@ -77,9 +69,12 @@ export function LineChart({
       return;
     }
 
-    const timeoutId = setTimeout(() => {
-      setShowPulse(true);
-    }, (startAnimationDelay || 0) * 1000);
+    const timeoutId = setTimeout(
+      () => {
+        setShowPulse(true);
+      },
+      (startAnimationDelay || 0) * 1000,
+    );
 
     return () => clearTimeout(timeoutId);
   }, [shouldAnimate, startAnimationDelay]);
@@ -104,7 +99,6 @@ export function LineChart({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Gradient Definition */}
       <defs>
         <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={getColorWithOpacity(0.3)} />
@@ -112,7 +106,6 @@ export function LineChart({
         </linearGradient>
       </defs>
 
-      {/* Animated Area Fill */}
       <motion.path
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{
@@ -128,7 +121,6 @@ export function LineChart({
         fill="url(#lineGradient)"
       />
 
-      {/* Animated Line */}
       <motion.path
         initial={{ pathLength: 0 }}
         animate={{ pathLength: shouldAnimate ? 1 : 0 }}
@@ -144,7 +136,6 @@ export function LineChart({
         strokeLinecap="round"
       />
 
-      {/* Center dot with scale animation */}
       <motion.circle
         cx={middlePoint.x}
         cy={middlePoint.y}
@@ -162,35 +153,31 @@ export function LineChart({
         }}
       />
 
-      {/* Multiple pulsing waves */}
-      {showPulse && (
-        <>
-          {[0, 1, 2].map((index) => (
-            <motion.circle
-              key={index}
-              cx={middlePoint.x}
-              cy={middlePoint.y}
-              r="10"
-              stroke={color}
-              strokeWidth="2"
-              fill="none"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{
-                scale: [0.5, 2],
-                opacity: [0.8, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                delay: index * 0.67,
-                ease: "easeOut",
-                times: [0, 1],
-                repeatDelay: 0,
-              }}
-            />
-          ))}
-        </>
-      )}
+      {showPulse &&
+        [0, 1, 2].map((index) => (
+          <motion.circle
+            key={index}
+            cx={middlePoint.x}
+            cy={middlePoint.y}
+            r="10"
+            stroke={color}
+            strokeWidth="2"
+            fill="none"
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{
+              scale: [0.5, 2],
+              opacity: [0.8, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              delay: index * 0.67,
+              ease: "easeOut",
+              times: [0, 1],
+              repeatDelay: 0,
+            }}
+          />
+        ))}
     </svg>
   );
 }
@@ -214,9 +201,12 @@ export function NumberFlowCounter({
       return;
     }
 
-    const timeoutId = setTimeout(() => {
-      setShowCounter(true);
-    }, (startAnimationDelay || 0) * 1000);
+    const timeoutId = setTimeout(
+      () => {
+        setShowCounter(true);
+      },
+      (startAnimationDelay || 0) * 1000,
+    );
 
     return () => clearTimeout(timeoutId);
   }, [shouldAnimate, startAnimationDelay]);

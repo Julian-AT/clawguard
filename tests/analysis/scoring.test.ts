@@ -27,7 +27,7 @@ function makeFinding(overrides: Partial<Finding> = {}): Finding {
       ],
     },
     fix: {
-      before: "db.query(`SELECT * FROM users WHERE name = '${input}'`)",
+      before: `db.query(\`SELECT * FROM users WHERE name = '\${input}'\`)`,
       after: "db.query('SELECT * FROM users WHERE name = $1', [input])",
     },
     ...overrides,

@@ -1,8 +1,8 @@
 "use client";
 
+import { CirclePlusIcon, MailIcon } from "lucide-react";
 import Link from "next/link";
 import type * as React from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   SidebarGroup,
@@ -11,7 +11,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { CirclePlusIcon, MailIcon } from "lucide-react";
 
 export function NavMain({
   items,

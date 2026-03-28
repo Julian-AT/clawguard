@@ -71,11 +71,80 @@
       }
     },
     {
-      "includes": ["lib/landing-config.tsx"],
+      "includes": [
+        "lib/landing-config.tsx",
+        "components/landing-icons.tsx",
+        "components/github-mark-icon.tsx",
+        "components/third-bento-animation.tsx"
+      ],
       "linter": {
         "rules": {
           "a11y": {
             "noSvgWithoutTitle": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["components/fourth-bento-animation.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noStaticElementInteractions": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "components/first-bento-animation.tsx",
+        "components/sections/quote-section.tsx",
+        "components/ui/feature-slideshow.tsx",
+        "components/ui/hero-video-dialog.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noImgElement": "off"
+          },
+          "a11y": {
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off",
+            "useValidAnchor": "off",
+            "useIframeTitle": "off"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "components/ui/breadcrumb.tsx",
+        "components/ui/chart.tsx",
+        "components/ui/code-block.tsx",
+        "components/ui/field.tsx",
+        "components/ui/marquee.tsx",
+        "components/ui/orbiting-circle.tsx",
+        "components/ui/response-stream.tsx",
+        "components/ui/markdown.tsx",
+        "components/sections/faq-section.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useFocusableInteractive": "off",
+            "useSemanticElements": "off"
+          },
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
           }
         }
       }

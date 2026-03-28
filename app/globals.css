@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
@@ -62,12 +61,11 @@
   --animate-elliptical-orbit: elliptical-orbit 20s linear infinite;
   @keyframes orbit {
     0% {
-      transform: rotate(calc(var(--angle) * 1deg))
-        translateY(calc(var(--radius) * 1px)) rotate(calc(var(--angle) * -1deg));
+      transform: rotate(calc(var(--angle) * 1deg)) translateY(calc(var(--radius) * 1px))
+        rotate(calc(var(--angle) * -1deg));
     }
     100% {
-      transform: rotate(calc(var(--angle) * 1deg + 360deg))
-        translateY(calc(var(--radius) * 1px))
+      transform: rotate(calc(var(--angle) * 1deg + 360deg)) translateY(calc(var(--radius) * 1px))
         rotate(calc((var(--angle) * -1deg) - 360deg));
     }
   }
@@ -212,12 +210,14 @@
 
   @keyframes elliptical-orbit {
     from {
-      transform: rotate(var(--angle, 0)deg) translate(var(--h-radius, 160px), 0) rotate(calc(var(--angle, 0)deg * -1));
+      transform: rotate(var(--angle, 0) deg) translate(var(--h-radius, 160px), 0)
+        rotate(calc(var(--angle, 0) deg * -1));
     }
     to {
-      transform: rotate(calc(var(--angle, 0)deg + 360deg)) translate(var(--h-radius, 160px), 0) rotate(calc((var(--angle, 0)deg + 360deg) * -1));
+      transform: rotate(calc(var(--angle, 0) deg + 360deg)) translate(var(--h-radius, 160px), 0)
+        rotate(calc((var(--angle, 0) deg + 360deg) * -1));
     }
-  }  
+  }
 }
 
 :root {

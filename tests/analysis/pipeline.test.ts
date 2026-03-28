@@ -227,15 +227,17 @@ vi.mock("../../lib/analysis/recon", () => ({
 }));
 
 vi.mock("@/lib/agents/registry", () => ({
-  getAllAgents: vi.fn().mockReturnValue([
-    { name: "security-scan" },
-    { name: "dependency-audit" },
-    { name: "secret-scanner" },
-    { name: "infrastructure-review" },
-    { name: "api-security" },
-    { name: "compliance-auditor" },
-    { name: "pentest" },
-  ]),
+  getAllAgents: vi
+    .fn()
+    .mockReturnValue([
+      { name: "security-scan" },
+      { name: "dependency-audit" },
+      { name: "secret-scanner" },
+      { name: "infrastructure-review" },
+      { name: "api-security" },
+      { name: "compliance-auditor" },
+      { name: "pentest" },
+    ]),
   getAgent: vi.fn(),
   registerAgent: vi.fn(),
 }));
@@ -286,6 +288,7 @@ describe("Security Pipeline", () => {
   };
 
   beforeEach(() => {
+    process.env.GITHUB_TOKEN = "test-token";
     vi.clearAllMocks();
     mockRunCommand.mockResolvedValue({
       stdout: vi.fn().mockResolvedValue("mock diff output"),

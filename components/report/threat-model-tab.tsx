@@ -52,7 +52,9 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-sm font-medium text-foreground">{threatModel.mergeRecommendation}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {threatModel.mergeRecommendation}
+                </p>
               </CardContent>
             </Card>
           )}
@@ -80,7 +82,9 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
                 <Card size="sm" className="py-0">
                   <CardContent className="flex flex-col gap-1 py-3">
                     <div>
-                      <span className="font-mono text-xs text-muted-foreground mr-2">[{s.stride}]</span>
+                      <span className="font-mono text-xs text-muted-foreground mr-2">
+                        [{s.stride}]
+                      </span>
                       <span className="font-medium">{s.label}</span>
                       <span className="text-muted-foreground"> — {s.description}</span>
                     </div>
@@ -103,7 +107,9 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
                 </CardHeader>
                 <CardContent className="space-y-3 pt-0">
                   <p className="text-sm text-muted-foreground">{tb.description}</p>
-                  {tb.mermaidDiagram && <MermaidDiagram chart={tb.mermaidDiagram} id={`tb-${idx}`} />}
+                  {tb.mermaidDiagram && (
+                    <MermaidDiagram chart={tb.mermaidDiagram} id={`tb-${idx}`} />
+                  )}
                 </CardContent>
               </Card>
             ))}

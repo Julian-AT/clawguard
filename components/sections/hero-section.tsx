@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { HeroVideoSection } from "@/components/sections/hero-video-section";
 import { siteConfig } from "@/lib/landing-config";
-import Link from "next/link";
 
 export function HeroSection() {
   const { hero } = siteConfig;

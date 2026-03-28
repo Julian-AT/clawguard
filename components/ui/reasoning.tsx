@@ -1,32 +1,23 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { ChevronDownIcon } from "lucide-react";
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import type React from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Markdown } from "./markdown";
-import { useTextStream, type Mode } from "./response-stream";
+import { type Mode, useTextStream } from "./response-stream";
 
 type ReasoningContextType = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-const ReasoningContext = createContext<ReasoningContextType | undefined>(
-  undefined
-);
+const ReasoningContext = createContext<ReasoningContextType | undefined>(undefined);
 
 function useReasoningContext() {
   const context = useContext(ReasoningContext);
   if (!context) {
-    throw new Error(
-      "useReasoningContext must be used within a Reasoning provider"
-    );
+    throw new Error("useReasoningContext must be used within a Reasoning provider");
   }
   return context;
 }
@@ -38,12 +29,7 @@ export type ReasoningProps = {
   onOpenChange?: (open: boolean) => void;
 };
 
-function Reasoning({
-  children,
-  className,
-  open,
-  onOpenChange,
-}: ReasoningProps) {
+function Reasoning({ children, className, open, onOpenChange }: ReasoningProps) {
   const [internalOpen, setInternalOpen] = useState(true);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
@@ -72,11 +58,7 @@ export type ReasoningTriggerProps = {
   className?: string;
 } & React.HTMLAttributes<HTMLButtonElement>;
 
-function ReasoningTrigger({
-  children,
-  className,
-  ...props
-}: ReasoningTriggerProps) {
+function ReasoningTrigger({ children, className, ...props }: ReasoningTriggerProps) {
   const { isOpen, onOpenChange } = useReasoningContext();
 
   return (
@@ -86,12 +68,7 @@ function ReasoningTrigger({
       {...props}
     >
       <span className="text-primary">{children}</span>
-      <div
-        className={cn(
-          "transform transition-transform",
-          isOpen ? "rotate-180" : ""
-        )}
-      >
+      <div className={cn("transform transition-transform", isOpen ? "rotate-180" : "")}>
         <ChevronDownIcon className="size-4" />
       </div>
     </button>
@@ -103,11 +80,7 @@ export type ReasoningContentProps = {
   className?: string;
 } & React.HTMLAttributes<HTMLDivElement>;
 
-function ReasoningContent({
-  children,
-  className,
-  ...props
-}: ReasoningContentProps) {
+function ReasoningContent({ children, className, ...props }: ReasoningContentProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const { isOpen } = useReasoningContext();
@@ -133,10 +106,7 @@ function ReasoningContent({
   return (
     <div
       ref={contentRef}
-      className={cn(
-        "overflow-hidden transition-[max-height] duration-300 ease-out",
-        className
-      )}
+      className={cn("overflow-hidden transition-[max-height] duration-300 ease-out", className)}
       style={{
         maxHeight: isOpen ? contentRef.current?.scrollHeight : "0px",
       }}
@@ -183,7 +153,7 @@ function ReasoningResponse({
     <div
       className={cn(
         "text-muted-foreground prose prose-sm dark:prose-invert text-sm transition-opacity duration-300 ease-out",
-        className
+        className,
       )}
       style={{
         opacity: isOpen ? 1 : 0,
@@ -194,4 +164,4 @@ function ReasoningResponse({
   );
 }
 
-export { Reasoning, ReasoningTrigger, ReasoningContent, ReasoningResponse };
+export { Reasoning, ReasoningContent, ReasoningResponse, ReasoningTrigger };

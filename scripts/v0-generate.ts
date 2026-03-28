@@ -1,19 +1,7 @@
-/**
- * Dev-time script to generate/refine report components using v0 SDK.
- * Run manually: npx tsx scripts/v0-generate.ts
- *
- * Requires V0_API_KEY environment variable and a paid v0 plan.
- * This is OPTIONAL — all components can be built manually without v0.
- *
- * Usage:
- *   V0_API_KEY=xxx npx tsx scripts/v0-generate.ts --component score-gauge
- *   V0_API_KEY=xxx npx tsx scripts/v0-generate.ts --component finding-card
- */
-
 import { createClient } from "v0-sdk";
 
-const V0_API_KEY = process.env.V0_API_KEY;
-if (!V0_API_KEY) {
+const v0ApiKey = process.env.V0_API_KEY;
+if (!v0ApiKey) {
   console.error("V0_API_KEY not set. Skipping v0 generation.");
   console.error("All components are built manually — v0 is optional.");
   process.exit(0);
@@ -31,9 +19,8 @@ const prompts: Record<string, string> = {
 };
 
 async function generateComponent(componentName: string, prompt: string) {
-  const client = createClient({ apiKey: V0_API_KEY! });
+  const client = createClient({ apiKey: v0ApiKey });
 
-  // Init chat with template files for project context
   const chat = await client.chats.init({
     type: "files",
     files: [

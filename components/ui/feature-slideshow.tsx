@@ -1,14 +1,9 @@
 "use client";
 
-import React, {
-  forwardRef,
-  ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
 import * as Accordion from "@radix-ui/react-accordion";
 import { motion, useInView } from "motion/react";
+import type React from "react";
+import { forwardRef, type ReactNode, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -20,16 +15,13 @@ type AccordionItemProps = {
 const AccordionItem = forwardRef<HTMLDivElement, AccordionItemProps>(
   ({ children, className, ...props }, forwardedRef) => (
     <Accordion.Item
-      className={cn(
-        "mt-px overflow-hidden focus-within:relative focus-within:z-10",
-        className
-      )}
+      className={cn("mt-px overflow-hidden focus-within:relative focus-within:z-10", className)}
       {...props}
       ref={forwardedRef}
     >
       {children}
     </Accordion.Item>
-  )
+  ),
 );
 AccordionItem.displayName = "AccordionItem";
 
@@ -44,7 +36,7 @@ const AccordionTrigger = forwardRef<HTMLButtonElement, AccordionTriggerProps>(
       <Accordion.Trigger
         className={cn(
           "group flex h-[45px] flex-1 cursor-pointer items-center justify-between p-3 text-[15px] leading-none outline-none",
-          className
+          className,
         )}
         {...props}
         ref={forwardedRef}
@@ -52,7 +44,7 @@ const AccordionTrigger = forwardRef<HTMLButtonElement, AccordionTriggerProps>(
         {children}
       </Accordion.Trigger>
     </Accordion.Header>
-  )
+  ),
 );
 AccordionTrigger.displayName = "AccordionTrigger";
 
@@ -66,14 +58,14 @@ const AccordionContent = forwardRef<HTMLDivElement, AccordionContentProps>(
     <Accordion.Content
       className={cn(
         "overflow-hidden text-[15px] font-medium data-[state=closed]:animate-slide-up data-[state=open]:animate-slide-down",
-        className
+        className,
       )}
       {...props}
       ref={forwardedRef}
     >
       <div className="p-3">{children}</div>
     </Accordion.Content>
-  )
+  ),
 );
 AccordionContent.displayName = "AccordionContent";
 
@@ -129,9 +121,7 @@ export const Feature = ({
         const cardRect = card.getBoundingClientRect();
         const carouselRect = carouselRef.current.getBoundingClientRect();
         const offset =
-          cardRect.left -
-          carouselRect.left -
-          (carouselRect.width - cardRect.width) / 2;
+          cardRect.left - carouselRect.left - (carouselRect.width - cardRect.width) / 2;
 
         carouselRef.current.scrollTo({
           left: carouselRef.current.scrollLeft + offset,
@@ -141,29 +131,26 @@ export const Feature = ({
     }
   };
 
-  // interval for changing images
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) =>
-        prevIndex !== undefined ? (prevIndex + 1) % featureItems.length : 0
+        prevIndex !== undefined ? (prevIndex + 1) % featureItems.length : 0,
       );
     }, collapseDelay);
 
     return () => clearInterval(timer);
-  }, [collapseDelay, currentIndex, featureItems.length]);
+  }, [collapseDelay, featureItems.length]);
 
   useEffect(() => {
     const handleAutoScroll = () => {
-      const nextIndex =
-        (currentIndex !== undefined ? currentIndex + 1 : 0) %
-        featureItems.length;
+      const nextIndex = (currentIndex !== undefined ? currentIndex + 1 : 0) % featureItems.length;
       scrollToIndex(nextIndex);
     };
 
     const autoScrollTimer = setInterval(handleAutoScroll, collapseDelay);
 
     return () => clearInterval(autoScrollTimer);
-  }, [collapseDelay, currentIndex, featureItems.length]);
+  }, [collapseDelay, currentIndex, featureItems.length, scrollToIndex]);
 
   useEffect(() => {
     const carousel = carouselRef.current;
@@ -171,10 +158,7 @@ export const Feature = ({
       const handleScroll = () => {
         const scrollLeft = carousel.scrollLeft;
         const cardWidth = carousel.querySelector(".card")?.clientWidth || 0;
-        const newIndex = Math.min(
-          Math.floor(scrollLeft / cardWidth),
-          featureItems.length - 1
-        );
+        const newIndex = Math.min(Math.floor(scrollLeft / cardWidth), featureItems.length - 1);
         setCurrentIndex(newIndex);
       };
 
@@ -183,7 +167,6 @@ export const Feature = ({
     }
   }, [featureItems.length]);
 
-  // Handle image transition
   useEffect(() => {
     if (currentIndex !== previousIndex) {
       setImageLoaded(false);
@@ -191,7 +174,6 @@ export const Feature = ({
     }
   }, [currentIndex, previousIndex]);
 
-  // Replace the existing image rendering section with this optimized version
   const renderMedia = () => {
     const currentItem = featureItems[currentIndex];
 
@@ -204,16 +186,14 @@ export const Feature = ({
     if (currentItem.image) {
       return (
         <div className="relative h-full w-full overflow-hidden">
-          {/* Placeholder/Fallback */}
           <div
             className={cn(
               "absolute inset-0 rounded-xl border border-white/25 bg-(--landing-brand-fill)/35",
               "transition-all duration-150",
-              imageLoaded ? "opacity-0" : "opacity-100"
+              imageLoaded ? "opacity-0" : "opacity-100",
             )}
           />
 
-          {/* Main Image */}
           <motion.img
             key={currentIndex}
             src={currentItem.image}
@@ -221,7 +201,7 @@ export const Feature = ({
             className={cn(
               "aspect-auto h-full w-full rounded-xl border border-white/25 object-cover p-1",
               "transition-all duration-300",
-              imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"
+              imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl",
             )}
             initial={{
               opacity: 0,
@@ -276,9 +256,7 @@ export const Feature = ({
               type="single"
               defaultValue={`item-${currentIndex}`}
               value={`item-${currentIndex}`}
-              onValueChange={(value) =>
-                setCurrentIndex(Number(value.split("-")[1]))
-              }
+              onValueChange={(value) => setCurrentIndex(Number(value.split("-")[1]))}
             >
               {featureItems.map((item, index) => (
                 <AccordionItem
@@ -295,15 +273,11 @@ export const Feature = ({
                       "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
                       "bg-white/25",
                       {
-                        "bottom-0 top-0 h-full w-0.5 left-0":
-                          linePosition === "left",
-                        "bottom-0 top-0 h-full w-0.5 right-0":
-                          linePosition === "right",
-                        "left-0 right-0 top-0 h-0.5 w-full":
-                          linePosition === "top",
-                        "left-0 right-0 bottom-0 h-0.5 w-full":
-                          linePosition === "bottom",
-                      }
+                        "bottom-0 top-0 h-full w-0.5 left-0": linePosition === "left",
+                        "bottom-0 top-0 h-full w-0.5 right-0": linePosition === "right",
+                        "left-0 right-0 top-0 h-0.5 w-full": linePosition === "top",
+                        "left-0 right-0 bottom-0 h-0.5 w-full": linePosition === "bottom",
+                      },
                     )}
                     data-state={currentIndex === index ? "open" : "closed"}
                   >
@@ -312,24 +286,19 @@ export const Feature = ({
                         "absolute transition-all ease-linear",
                         lineColor,
                         {
-                          "left-0 top-0 w-full": ["left", "right"].includes(
-                            linePosition
-                          ),
-                          "left-0 top-0 h-full": ["top", "bottom"].includes(
-                            linePosition
-                          ),
+                          "left-0 top-0 w-full": ["left", "right"].includes(linePosition),
+                          "left-0 top-0 h-full": ["top", "bottom"].includes(linePosition),
                         },
                         currentIndex === index
                           ? ["left", "right"].includes(linePosition)
                             ? "h-full"
                             : "w-full"
                           : ["left", "right"].includes(linePosition)
-                          ? "h-0"
-                          : "w-0"
+                            ? "h-0"
+                            : "w-0",
                       )}
                       style={{
-                        transitionDuration:
-                          currentIndex === index ? `${collapseDelay}ms` : "0s",
+                        transitionDuration: currentIndex === index ? `${collapseDelay}ms` : "0s",
                       }}
                     />
                   </div>
@@ -373,15 +342,11 @@ export const Feature = ({
                     "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
                     "bg-white/25",
                     {
-                      "bottom-0 top-0 h-full w-0.5 left-0":
-                        linePosition === "left",
-                      "bottom-0 top-0 h-full w-0.5 right-0":
-                        linePosition === "right",
-                      "left-0 right-0 top-0 h-0.5 w-full":
-                        linePosition === "top",
-                      "left-0 right-0 bottom-0 h-0.5 w-full":
-                        linePosition === "bottom",
-                    }
+                      "bottom-0 top-0 h-full w-0.5 left-0": linePosition === "left",
+                      "bottom-0 top-0 h-full w-0.5 right-0": linePosition === "right",
+                      "left-0 right-0 top-0 h-0.5 w-full": linePosition === "top",
+                      "left-0 right-0 bottom-0 h-0.5 w-full": linePosition === "bottom",
+                    },
                   )}
                   data-state={currentIndex === index ? "open" : "closed"}
                 >
@@ -390,24 +355,19 @@ export const Feature = ({
                       "absolute transition-all ease-linear",
                       lineColor,
                       {
-                        "left-0 top-0 w-full": ["left", "right"].includes(
-                          linePosition
-                        ),
-                        "left-0 top-0 h-full": ["top", "bottom"].includes(
-                          linePosition
-                        ),
+                        "left-0 top-0 w-full": ["left", "right"].includes(linePosition),
+                        "left-0 top-0 h-full": ["top", "bottom"].includes(linePosition),
                       },
                       currentIndex === index
                         ? ["left", "right"].includes(linePosition)
                           ? "h-full"
                           : "w-full"
                         : ["left", "right"].includes(linePosition)
-                        ? "h-0"
-                        : "w-0"
+                          ? "h-0"
+                          : "w-0",
                     )}
                     style={{
-                      transitionDuration:
-                        currentIndex === index ? `${collapseDelay}ms` : "0s",
+                      transitionDuration: currentIndex === index ? `${collapseDelay}ms` : "0s",
                     }}
                   />
                 </div>

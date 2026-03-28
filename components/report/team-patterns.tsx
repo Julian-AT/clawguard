@@ -1,5 +1,5 @@
-import type { TeamPattern } from "@/lib/analysis/types";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import type { TeamPattern } from "@/lib/analysis/types";
 
 interface TeamPatternsProps {
   patterns: TeamPattern[];

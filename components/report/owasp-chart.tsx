@@ -1,13 +1,13 @@
 "use client";
 
 import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts";
-import type { Finding, Severity } from "@/lib/analysis/types";
 import {
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from "@/components/ui/chart";
+import type { Finding, Severity } from "@/lib/analysis/types";
 import { SEVERITY_CHART_COLORS } from "@/lib/constants";
 
 interface OwaspChartProps {

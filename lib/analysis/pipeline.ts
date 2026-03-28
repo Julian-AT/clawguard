@@ -21,8 +21,8 @@ import type {
   Finding,
   PhaseResult,
   PRSummary,
-  ReviewVerdictResult,
   ReconResult,
+  ReviewVerdictResult,
   TeamPattern,
 } from "./types";
 
@@ -46,11 +46,12 @@ function aggregateScanFromOrchestrator(orchestratorResult: OrchestratorResult): 
   scanErrorMessage?: string;
 } {
   const partialFailure =
-    orchestratorResult.errors.length > 0 ||
-    orchestratorResult.agentResults.some((r) => r.error);
+    orchestratorResult.errors.length > 0 || orchestratorResult.agentResults.some((r) => r.error);
   const parts = [
     ...orchestratorResult.errors.map((e) => `${e.agent}: ${e.error}`),
-    ...orchestratorResult.agentResults.filter((r) => r.error).map((r) => `${r.agentName}: ${r.error}`),
+    ...orchestratorResult.agentResults
+      .filter((r) => r.error)
+      .map((r) => `${r.agentName}: ${r.error}`),
   ].filter(Boolean);
   return {
     findings: orchestratorResult.findings,
@@ -109,12 +110,17 @@ export async function runSecurityPipeline(
     input.preloadedConfig ??
     (await loadRepoConfig(octokit, input.owner, input.repo, input.prBranch));
 
+  const githubToken = process.env.GITHUB_TOKEN;
+  if (!githubToken) {
+    throw new Error("GITHUB_TOKEN is required to clone the repository in the sandbox");
+  }
+
   const sandbox = await Sandbox.create({
     source: {
       type: "git",
       url: `https://github.com/${input.owner}/${input.repo}`,
       username: "x-access-token",
-      password: process.env.GITHUB_TOKEN!,
+      password: githubToken,
       depth: 50,
     },
     timeout: config.scanning.timeout,
@@ -178,7 +184,9 @@ export async function runSecurityPipeline(
     const scan = aggregateScanFromOrchestrator(orchestratorResult);
     await onProgress?.({ stage: "security-scan", status: "complete" });
 
-    const learningsResult = orchestratorResult.agentResults.find((r) => r.agentName === "learnings");
+    const learningsResult = orchestratorResult.agentResults.find(
+      (r) => r.agentName === "learnings",
+    );
     const learningsMeta = learningsResult?.metadata as
       | {
           finalFindings?: Finding[];
@@ -207,7 +215,13 @@ export async function runSecurityPipeline(
       status: "running",
       detail: "Threat model & deduplication",
     });
-    const threat = await runThreatSynthesis(tools, recon, findingsAfterLearnings, scan.summary, config);
+    const threat = await runThreatSynthesis(
+      tools,
+      recon,
+      findingsAfterLearnings,
+      scan.summary,
+      config,
+    );
     await onProgress?.({ stage: "threat-synthesis", status: "complete" });
 
     await onProgress?.({ stage: "post-processing", status: "running" });

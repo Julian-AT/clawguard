@@ -1,14 +1,14 @@
+import { LandingHashScroll } from "@/components/landing-hash-scroll";
 import { BentoSection } from "@/components/sections/bento-section";
 import { CompanyShowcase } from "@/components/sections/company-showcase";
-import { FeatureSection } from "@/components/sections/feature-section";
 import { CTASection } from "@/components/sections/cta-section";
 import { FAQSection } from "@/components/sections/faq-section";
+import { FeatureSection } from "@/components/sections/feature-section";
 import { FooterSection } from "@/components/sections/footer-section";
 import { GrowthSection } from "@/components/sections/growth-section";
 import { HeroSection } from "@/components/sections/hero-section";
 import { Navbar } from "@/components/sections/navbar";
 import { QuoteSection } from "@/components/sections/quote-section";
-import { LandingHashScroll } from "@/components/landing-hash-scroll";
 
 export default function Home() {
   return (

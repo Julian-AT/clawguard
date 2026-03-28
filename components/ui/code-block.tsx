@@ -1,8 +1,9 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import React, { useEffect, useState } from "react";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { codeToHtml } from "shiki";
+import { cn } from "@/lib/utils";
 
 export type CodeBlockProps = {
   children?: React.ReactNode;
@@ -15,7 +16,7 @@ function CodeBlock({ children, className, ...props }: CodeBlockProps) {
       className={cn(
         "not-prose flex w-full flex-col overflow-clip border",
         "border-border bg-card text-card-foreground rounded-xl",
-        className
+        className,
       )}
       {...props}
     >
@@ -48,18 +49,11 @@ function CodeBlockCode({
     highlight();
   }, [code, language, theme]);
 
-  const classNames = cn(
-    "w-full overflow-x-auto text-[13px] [&>pre]:px-4 [&>pre]:py-4",
-    className
-  );
+  const classNames = cn("w-full overflow-x-auto text-[13px] [&>pre]:px-4 [&>pre]:py-4", className);
 
   // SSR fallback: render plain code if not hydrated yet
   return highlightedHtml ? (
-    <div
-      className={classNames}
-      dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-      {...props}
-    />
+    <div className={classNames} dangerouslySetInnerHTML={{ __html: highlightedHtml }} {...props} />
   ) : (
     <div className={classNames} {...props}>
       <pre>
@@ -71,19 +65,12 @@ function CodeBlockCode({
 
 export type CodeBlockGroupProps = React.HTMLAttributes<HTMLDivElement>;
 
-function CodeBlockGroup({
-  children,
-  className,
-  ...props
-}: CodeBlockGroupProps) {
+function CodeBlockGroup({ children, className, ...props }: CodeBlockGroupProps) {
   return (
-    <div
-      className={cn("flex items-center justify-between", className)}
-      {...props}
-    >
+    <div className={cn("flex items-center justify-between", className)} {...props}>
       {children}
     </div>
   );
 }
 
-export { CodeBlockGroup, CodeBlockCode, CodeBlock };
+export { CodeBlock, CodeBlockCode, CodeBlockGroup };

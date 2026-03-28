@@ -25,9 +25,7 @@ export function FooterSection() {
           <div className="flex flex-col items-end justify-end md:flex-row md:items-center md:justify-end gap-y-5 lg:pl-10">
             {siteConfig.footerLinks.map((column) => (
               <ul key={column.title} className="flex flex-col gap-y-2">
-                <li className="mb-2 text-sm font-semibold text-primary">
-                  {column.title}
-                </li>
+                <li className="mb-2 text-sm font-semibold text-primary">{column.title}</li>
                 {column.links.map((link) => (
                   <li
                     key={link.id}

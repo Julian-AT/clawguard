@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 /** Scrolls to `location.hash` on `/` — Next.js client navigations do not always apply native hash scrolling. */
 export function LandingHashScroll() {

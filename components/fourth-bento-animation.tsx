@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  AnimatePresence,
-  motion,
-  useInView,
-  useMotionValue,
-  useSpring,
-} from "motion/react";
+import { AnimatePresence, motion, useInView, useMotionValue, useSpring } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 interface BoxConfig {
@@ -25,8 +19,7 @@ const boxConfigs: BoxConfig[] = [
   },
   {
     title: "Auto-fix",
-    className:
-      "border border-dashed border-white/35 bg-(--landing-brand-fill)/25 text-white",
+    className: "border border-dashed border-white/35 bg-(--landing-brand-fill)/25 text-white",
   },
 ];
 
@@ -74,20 +67,16 @@ export function FourthBentoAnimation({
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        const containerWidth =
-          containerRef.current.getBoundingClientRect().width;
+        const containerWidth = containerRef.current.getBoundingClientRect().width;
         const itemWidth = 250;
         const numberOfItems = 3;
         const totalItemsWidth = itemWidth * numberOfItems;
         const availableSpace = containerWidth - totalItemsWidth;
         const gap = availableSpace / (numberOfItems - 1);
 
-        const newTranslateXValues = Array.from(
-          { length: numberOfItems },
-          (_, index) => {
-            return ((itemWidth + gap) * index) / 2;
-          },
-        );
+        const newTranslateXValues = Array.from({ length: numberOfItems }, (_, index) => {
+          return ((itemWidth + gap) * index) / 2;
+        });
         setTranslateXValues(newTranslateXValues);
       }
     };
@@ -227,10 +216,7 @@ export function FourthBentoAnimation({
               key={index}
               initial={{
                 opacity: 0,
-                x:
-                  index % 2 === 0
-                    ? -50
-                    : containerRef.current?.getBoundingClientRect().width || 0,
+                x: index % 2 === 0 ? -50 : containerRef.current?.getBoundingClientRect().width || 0,
               }}
               animate={
                 isInView
@@ -243,8 +229,7 @@ export function FourthBentoAnimation({
                       x:
                         index % 2 === 0
                           ? -50
-                          : containerRef.current?.getBoundingClientRect()
-                              .width || 0,
+                          : containerRef.current?.getBoundingClientRect().width || 0,
                     }
               }
               exit={{ opacity: 0, x: index % 2 === 0 ? 50 : -50 }}

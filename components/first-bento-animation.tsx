@@ -1,14 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { Icons } from "@/components/landing-icons";
-import {
-  Reasoning,
-  ReasoningContent,
-  ReasoningResponse,
-} from "@/components/ui/reasoning";
 import { AnimatePresence, motion, useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { Icons } from "@/components/landing-icons";
+import { Reasoning, ReasoningContent, ReasoningResponse } from "@/components/ui/reasoning";
 
 export function ReasoningBasic() {
   const reasoningText = `Tracing the diff: new route accepts user input before validation, which can surface injection and auth-bypass risks. Cross-checking against OWASP ASVS and CWE-20: recommend parameterized queries, server-side validation, and tightening the status check so only maintainers can merge while findings are open.`;
@@ -43,10 +39,7 @@ export function FirstBentoAnimation() {
   }, [isInView]);
 
   return (
-    <div
-      ref={ref}
-      className="w-full h-full p-4 flex flex-col items-center justify-center gap-5"
-    >
+    <div ref={ref} className="w-full h-full p-4 flex flex-col items-center justify-center gap-5">
       <div className="pointer-events-none absolute bottom-0 left-0 h-20 w-full bg-gradient-to-t from-background to-transparent z-20"></div>
       <motion.div
         className="max-w-md mx-auto w-full flex flex-col gap-2"
@@ -70,8 +63,8 @@ export function FirstBentoAnimation() {
             }}
           >
             <p className="text-sm">
-              @clawguard can you audit this PR? We touched auth and a new API
-              route — want severity-ranked findings before we merge.
+              @clawguard can you audit this PR? We touched auth and a new API route — want
+              severity-ranked findings before we merge.
             </p>
           </motion.div>
           <div className="flex items-center bg-background rounded-full w-fit border border-border flex-shrink-0">

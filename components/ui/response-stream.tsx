@@ -1,7 +1,8 @@
 "use client";
 
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import React, { useCallback, useEffect, useRef, useState } from "react";
 
 export type Mode = "typewriter" | "fade";
 
@@ -40,9 +41,7 @@ function useTextStream({
 }: UseTextStreamOptions): UseTextStreamResult {
   const [displayedText, setDisplayedText] = useState("");
   const [isComplete, setIsComplete] = useState(false);
-  const [segments, setSegments] = useState<{ text: string; index: number }[]>(
-    []
-  );
+  const [segments, setSegments] = useState<{ text: string; index: number }[]>([]);
 
   const speedRef = useRef(speed);
   const modeRef = useRef(mode);
@@ -94,16 +93,14 @@ function useTextStream({
   }, []);
 
   const getFadeDuration = useCallback(() => {
-    if (typeof fadeDurationRef.current === "number")
-      return Math.max(10, fadeDurationRef.current);
+    if (typeof fadeDurationRef.current === "number") return Math.max(10, fadeDurationRef.current);
 
     const normalizedSpeed = Math.min(100, Math.max(1, speedRef.current));
     return Math.round(1000 / Math.sqrt(normalizedSpeed));
   }, []);
 
   const getSegmentDelay = useCallback(() => {
-    if (typeof segmentDelayRef.current === "number")
-      return Math.max(0, segmentDelayRef.current);
+    if (typeof segmentDelayRef.current === "number") return Math.max(0, segmentDelayRef.current);
 
     const normalizedSpeed = Math.min(100, Math.max(1, speedRef.current));
     return Math.max(1, Math.round(100 / Math.sqrt(normalizedSpeed)));
@@ -117,12 +114,10 @@ function useTextStream({
             granularity: "word",
           });
           const segmentIterator = segmenter.segment(text);
-          const newSegments = Array.from(segmentIterator).map(
-            (segment, index) => ({
-              text: segment.segment,
-              index,
-            })
-          );
+          const newSegments = Array.from(segmentIterator).map((segment, index) => ({
+            text: segment.segment,
+            index,
+          }));
           setSegments(newSegments);
         } catch (error) {
           const newSegments = text
@@ -137,7 +132,7 @@ function useTextStream({
         }
       }
     },
-    [onError]
+    [onError],
   );
 
   const markComplete = useCallback(() => {
@@ -179,10 +174,7 @@ function useTextStream({
         }
 
         const chunkSize = getChunkSize();
-        const endIndex = Math.min(
-          currentIndexRef.current + chunkSize,
-          text.length
-        );
+        const endIndex = Math.min(currentIndexRef.current + chunkSize, text.length);
         const newDisplayedText = text.slice(0, endIndex);
 
         setDisplayedText(newDisplayedText);
@@ -201,7 +193,7 @@ function useTextStream({
 
       animationRef.current = requestAnimationFrame(streamContent);
     },
-    [getProcessingDelay, getChunkSize, updateSegments, markComplete]
+    [getProcessingDelay, getChunkSize, updateSegments, markComplete],
   );
 
   const processAsyncIterable = useCallback(
@@ -227,7 +219,7 @@ function useTextStream({
         onError?.(error);
       }
     },
-    [updateSegments, markComplete, onError]
+    [updateSegments, markComplete, onError],
   );
 
   const startStreaming = useCallback(() => {
@@ -264,7 +256,7 @@ function useTextStream({
         streamRef.current.abort();
       }
     };
-  }, [textStream, startStreaming]);
+  }, [startStreaming]);
 
   return {
     displayedText,
@@ -304,13 +296,7 @@ function ResponseStream({
 }: ResponseStreamProps) {
   const animationEndRef = useRef<(() => void) | null>(null);
 
-  const {
-    displayedText,
-    isComplete,
-    segments,
-    getFadeDuration,
-    getSegmentDelay,
-  } = useTextStream({
+  const { displayedText, isComplete, segments, getFadeDuration, getSegmentDelay } = useTextStream({
     textStream,
     speed,
     mode,
@@ -365,16 +351,11 @@ function ResponseStream({
                 return (
                   <span
                     key={`${segment.text}-${idx}`}
-                    className={cn(
-                      "fade-segment",
-                      isWhitespace && "fade-segment-space"
-                    )}
+                    className={cn("fade-segment", isWhitespace && "fade-segment-space")}
                     style={{
                       animationDelay: `${idx * getSegmentDelay()}ms`,
                     }}
-                    onAnimationEnd={
-                      isLastSegment ? handleLastSegmentAnimationEnd : undefined
-                    }
+                    onAnimationEnd={isLastSegment ? handleLastSegmentAnimationEnd : undefined}
                   >
                     {segment.text}
                   </span>
@@ -394,4 +375,4 @@ function ResponseStream({
   return <Container className={className}>{renderContent()}</Container>;
 }
 
-export { useTextStream, ResponseStream };
+export { ResponseStream, useTextStream };

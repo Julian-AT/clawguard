@@ -22,8 +22,9 @@ export function createOnStepFinish(agentName: string, context: AgentContext) {
   return (event: { toolCalls?: Array<{ toolName?: string; input?: unknown }> }) => {
     stepCount += 1;
     const detail =
-      detailFromToolCalls((event.toolCalls ?? []) as Array<{ toolName?: string; input?: unknown }>) ??
-      `step ${stepCount}`;
+      detailFromToolCalls(
+        (event.toolCalls ?? []) as Array<{ toolName?: string; input?: unknown }>,
+      ) ?? `step ${stepCount}`;
     context.onAgentStep?.({ agentName, stepCount, detail });
     context.onStreamEvent?.("agent:step", { agentName, stepCount, detail });
     const last = event.toolCalls?.[event.toolCalls.length - 1];

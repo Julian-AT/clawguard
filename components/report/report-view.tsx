@@ -1,5 +1,5 @@
-import { FindingsByCategory } from "@/components/report/findings-by-category";
 import { ComplianceTab } from "@/components/report/compliance-tab";
+import { FindingsByCategory } from "@/components/report/findings-by-category";
 import { FindingsList } from "@/components/report/findings-list";
 import { OwaspChart } from "@/components/report/owasp-chart";
 import { PrSummaryTab } from "@/components/report/pr-summary-tab";

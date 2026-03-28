@@ -14,9 +14,7 @@ export function FeatureSection() {
         <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance">
           {title}
         </h2>
-        <p className="text-muted-foreground text-center text-balance font-medium">
-          {description}
-        </p>
+        <p className="text-muted-foreground text-center text-balance font-medium">{description}</p>
       </SectionHeader>
       <div className="w-full h-full lg:h-[450px] flex items-center justify-center">
         <FeatureComponent

@@ -1,9 +1,9 @@
+import { Shield } from "lucide-react";
 import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import type { AuditTableRow } from "@/components/data-table";
 import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
 import { getSession } from "@/lib/auth";
-import { Shield } from "lucide-react";
 import { listPrAuditKeys, listReposWithAudits, loadAuditDataForKeys } from "@/lib/redis-queries";
 
 function countCriticalFindings(result: { findings?: { severity: string }[] } | undefined): number {

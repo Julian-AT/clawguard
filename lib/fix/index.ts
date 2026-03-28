@@ -112,6 +112,11 @@ export async function fixAll(
 
   const { result: auditResult } = auditData;
 
+  const githubToken = process.env.GITHUB_TOKEN;
+  if (!githubToken) {
+    throw new Error("GITHUB_TOKEN is required to run fixes in the sandbox");
+  }
+
   const fixable = auditResult.findings
     .filter((f) => ["CRITICAL", "HIGH"].includes(f.severity))
     .sort((a, b) => (SEVERITY_ORDER[a.severity] ?? 99) - (SEVERITY_ORDER[b.severity] ?? 99));
@@ -121,7 +126,7 @@ export async function fixAll(
       type: "git",
       url: `https://github.com/${context.owner}/${context.repo}`,
       username: "x-access-token",
-      password: process.env.GITHUB_TOKEN!,
+      password: githubToken,
       depth: 50,
     },
     timeout: 10 * 60 * 1000,
@@ -150,7 +155,10 @@ export async function fixAll(
         continue;
       }
 
-      pendingFiles.set(finding.file, prep.content!);
+      if (!prep.content) {
+        throw new Error(`Missing prepared content for finding in ${finding.file}`);
+      }
+      pendingFiles.set(finding.file, prep.content);
       fixedFindings.push(finding);
       results.push({
         finding,

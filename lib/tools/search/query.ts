@@ -1,5 +1,5 @@
-import micromatch from "micromatch";
 import type { Sandbox } from "@vercel/sandbox";
+import micromatch from "micromatch";
 import type { SearchIndex } from "./ngram-index";
 import { extractCoveringNgrams, hashNgram } from "./ngram-index";
 

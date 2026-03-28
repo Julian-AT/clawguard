@@ -7,15 +7,13 @@ import {
   ExternalLinkIcon,
   LayoutDashboardIcon,
   LineChart,
+  PlayCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
-import type {
-  DashboardRepo,
-  DashboardUser,
-} from "@/components/dashboard/dashboard-shell";
+import type { DashboardRepo, DashboardUser } from "@/components/dashboard/dashboard-shell";
 import { GithubMarkIcon } from "@/components/github-mark-icon";
 import { ClawGuardLogo } from "@/components/logo";
 import { NavMain } from "@/components/nav-main";
@@ -35,10 +33,10 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { GITHUB_APP_INSTALL_URL } from "@/lib/site";
 
 const LAST_REPO_STORAGE_KEY = "clawguard.dashboard.repo";
 
-/** Parse /dashboard routes: org pages use .../owner/learnings; repo pages use .../owner/repo[/tracking]. */
 function parseDashboardPath(pathname: string): {
   owner?: string;
   repo?: string;
@@ -68,19 +66,13 @@ function parseDashboardPath(pathname: string): {
   return { owner, repo, isOrgPage: false, isTracking };
 }
 
-function parseRepoDashboardUrl(
-  url: string,
-): { owner: string; repo: string } | null {
+function parseRepoDashboardUrl(url: string): { owner: string; repo: string } | null {
   const m = url.match(/^\/dashboard\/([^/]+)\/([^/]+)$/);
   if (!m) return null;
   return { owner: decodeURIComponent(m[1]), repo: decodeURIComponent(m[2]) };
 }
 
-function repoListIncludes(
-  repos: DashboardRepo[],
-  owner: string,
-  repo: string,
-): boolean {
+function repoListIncludes(repos: DashboardRepo[], owner: string, repo: string): boolean {
   return repos.some((r) => r.owner === owner && r.repo === repo);
 }
 
@@ -94,15 +86,13 @@ export function AppSidebar({
 }) {
   const pathname = usePathname();
   const dashboardHome = pathname === "/dashboard";
+  const isDemoPage = pathname.startsWith("/dashboard/demo/demo");
   const ctx = parseDashboardPath(pathname);
-  const githubAppUrl =
-    process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? "https://github.com/apps";
+  const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? GITHUB_APP_INSTALL_URL;
 
   const sortedRepos = React.useMemo(
     () =>
-      [...repos].sort((a, b) =>
-        `${a.owner}/${a.repo}`.localeCompare(`${b.owner}/${b.repo}`, "en"),
-      ),
+      [...repos].sort((a, b) => `${a.owner}/${a.repo}`.localeCompare(`${b.owner}/${b.repo}`, "en")),
     [repos],
   );
 
@@ -172,10 +162,7 @@ export function AppSidebar({
         return parsed;
       }
     }
-    if (
-      persistedRepo &&
-      repoListIncludes(sortedRepos, persistedRepo.owner, persistedRepo.repo)
-    ) {
+    if (persistedRepo && repoListIncludes(sortedRepos, persistedRepo.owner, persistedRepo.repo)) {
       return persistedRepo;
     }
     return null;
@@ -184,13 +171,6 @@ export function AppSidebar({
   const orgOwner = ctx.owner ?? persistedRepo?.owner;
   const showOrgLinks = Boolean(orgOwner);
   const showTracking = Boolean(trackingTarget);
-
-  const trackingHref = trackingTarget
-    ? `/dashboard/${encodeURIComponent(trackingTarget.owner)}/${encodeURIComponent(trackingTarget.repo)}/tracking`
-    : "";
-  const trackingNavActive =
-    Boolean(trackingHref) &&
-    (pathname === trackingHref || pathname.startsWith(`${trackingHref}/`));
 
   const dashboardItem = React.useMemo(
     () => ({
@@ -202,13 +182,23 @@ export function AppSidebar({
     [dashboardHome],
   );
 
+  const demoItem = React.useMemo(
+    () => ({
+      title: "Demo",
+      url: "/dashboard/demo/demo",
+      icon: <PlayCircle className="size-4" />,
+      isActive: isDemoPage,
+    }),
+    [isDemoPage],
+  );
+
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader className="border-b border-sidebar-border/80">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="ClawGuard">
-              <Link href="/">
+              <Link href="/dashboard">
                 <div className="flex size-8 items-center justify-center rounded-md text-sidebar-primary-foreground">
                   <ClawGuardLogo className="size-8" />
                 </div>
@@ -226,6 +216,13 @@ export function AppSidebar({
 
       <SidebarContent>
         <NavMain showQuickActions={false} items={[dashboardItem]} />
+
+        {isDemoPage ? (
+          <>
+            <SidebarSeparator />
+            <NavMain showQuickActions={false} items={[demoItem]} />
+          </>
+        ) : null}
 
         {repoNavItems.length > 0 ? (
           <>
@@ -247,9 +244,7 @@ export function AppSidebar({
                       isActive={pathname.endsWith("/learnings")}
                       tooltip="Learnings"
                     >
-                      <Link
-                        href={`/dashboard/${encodeURIComponent(ctx.owner)}/learnings`}
-                      >
+                      <Link href={`/dashboard/${encodeURIComponent(ctx.owner)}/learnings`}>
                         <BookOpen className="size-4" />
                         <span>Learnings</span>
                       </Link>
@@ -261,9 +256,7 @@ export function AppSidebar({
                       isActive={pathname.endsWith("/knowledge")}
                       tooltip="Knowledge"
                     >
-                      <Link
-                        href={`/dashboard/${encodeURIComponent(ctx.owner)}/knowledge`}
-                      >
+                      <Link href={`/dashboard/${encodeURIComponent(ctx.owner)}/knowledge`}>
                         <Brain className="size-4" />
                         <span>Knowledge</span>
                       </Link>

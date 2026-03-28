@@ -23,13 +23,7 @@ export function ModeToggle() {
 
   if (!mounted) {
     return (
-      <Button
-        variant="outline"
-        size="icon"
-        className="relative"
-        disabled
-        aria-label="Theme"
-      >
+      <Button variant="outline" size="icon" className="relative" disabled aria-label="Theme">
         <Sun className="size-[1.2rem]" />
         <span className="sr-only">Toggle theme</span>
       </Button>
@@ -51,10 +45,7 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuRadioGroup
-          value={theme ?? "system"}
-          onValueChange={setTheme}
-        >
+        <DropdownMenuRadioGroup value={theme ?? "system"} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="light">Light</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">Dark</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system">System</DropdownMenuRadioItem>

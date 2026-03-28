@@ -1,3 +1,4 @@
+import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -7,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 
 export function SectionCards({
   repoCount,
@@ -25,9 +25,7 @@ export function SectionCards({
       <Card className="@container/card min-w-0" size="sm">
         <CardHeader>
           <CardDescription>Repositories</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums">
-            {repoCount}
-          </CardTitle>
+          <CardTitle className="text-2xl font-semibold tabular-nums">{repoCount}</CardTitle>
           <CardAction>
             <Badge variant="outline">
               <TrendingUpIcon />
@@ -45,9 +43,7 @@ export function SectionCards({
       <Card className="@container/card min-w-0" size="sm">
         <CardHeader>
           <CardDescription>Completed audits</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums">
-            {totalAudits}
-          </CardTitle>
+          <CardTitle className="text-2xl font-semibold tabular-nums">{totalAudits}</CardTitle>
           <CardAction>
             <Badge variant="outline">
               <TrendingUpIcon />
@@ -65,9 +61,7 @@ export function SectionCards({
       <Card className="@container/card min-w-0" size="sm">
         <CardHeader>
           <CardDescription>Avg. latest score</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums">
-            {avgScore ?? "—"}
-          </CardTitle>
+          <CardTitle className="text-2xl font-semibold tabular-nums">{avgScore ?? "—"}</CardTitle>
           <CardAction>
             <Badge variant="outline">
               {avgScore != null ? <TrendingUpIcon /> : <TrendingDownIcon />}
@@ -85,9 +79,7 @@ export function SectionCards({
       <Card className="@container/card min-w-0" size="sm">
         <CardHeader>
           <CardDescription>Critical findings</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums">
-            {criticalFindings}
-          </CardTitle>
+          <CardTitle className="text-2xl font-semibold tabular-nums">{criticalFindings}</CardTitle>
           <CardAction>
             <Badge variant="outline">
               <TrendingDownIcon />

@@ -46,7 +46,6 @@ describe("Summary Card Integration", () => {
   });
 
   it("summary card includes report link pattern (CARD-03)", () => {
-    // buildSummaryCard generates the link, but bot.ts must call it
     expect(botSource).toContain("buildSummaryCard");
   });
 });
@@ -71,7 +70,6 @@ describe("Live Progress Updates", () => {
 
 describe("Structured Data Storage", () => {
   it("stores structured AuditResult in Redis, not plain string (SCAN-05)", () => {
-    // Verify it passes the auditResult object, not a string
     expect(auditRunnerSource).toMatch(/result:\s*auditResult/);
   });
 });
@@ -151,12 +149,10 @@ describe("Action Handler (D-02)", () => {
   });
 
   it("onAction handler calls runFixFlow", () => {
-    // The handler should delegate to runFixFlow
     expect(botSource).toContain("runFixFlow");
   });
 
   it("onAction handler has error handling", () => {
-    // Should have try/catch in onAction
     expect(botSource).toContain("onAction error");
   });
 });

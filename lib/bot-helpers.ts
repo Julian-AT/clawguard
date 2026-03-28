@@ -41,13 +41,7 @@ function buildPhaseTable(rows: { phase: string; status: string }[]): string {
 export function formatPipelineStatusMessage(progress: PipelineProgress | null): string {
   if (progress?.stage === "error") {
     const err = progress.error.replace(/\r?\n/g, " ").trim();
-    return [
-      HEADER,
-      "",
-      "> [!WARNING]",
-      "> **Error**",
-      `> ${err}`,
-    ].join("\n");
+    return [HEADER, "", "> [!WARNING]", "> **Error**", `> ${err}`].join("\n");
   }
 
   if (!progress) {

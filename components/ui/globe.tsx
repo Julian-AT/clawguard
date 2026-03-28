@@ -2,8 +2,8 @@
 
 import createGlobe, { type COBEOptions } from "cobe";
 import { useMotionValue, useSpring } from "motion/react";
-import { useEffect, useMemo, useRef } from "react";
 import { useTheme } from "next-themes";
+import { useEffect, useMemo, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -150,15 +150,10 @@ export function Globe({
   return (
     <div
       ref={containerRef}
-      className={cn(
-        "absolute inset-0 mx-auto aspect-square w-full max-w-[600px]",
-        className,
-      )}
+      className={cn("absolute inset-0 mx-auto aspect-square w-full max-w-[600px]", className)}
     >
       <canvas
-        className={cn(
-          "size-full opacity-0 transition-opacity duration-500 contain-layout",
-        )}
+        className={cn("size-full opacity-0 transition-opacity duration-500 contain-layout")}
         ref={canvasRef}
         onPointerDown={(e) => {
           pointerInteracting.current = e.clientX;

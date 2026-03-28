@@ -23,14 +23,7 @@ export const Icons = {
       className={cn("size-4", className)}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_4900)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_4900)" />
         <g>
           <rect
             x="6.15784"
@@ -94,14 +87,7 @@ export const Icons = {
       className={cn("size-4", className)}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_2018)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_2018)" />
         <g>
           <rect
             x="6.1579"
@@ -165,14 +151,7 @@ export const Icons = {
       className={className}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_4905)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_4905)" />
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -220,14 +199,7 @@ export const Icons = {
       className={className}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_2028)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_2028)" />
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -275,14 +247,7 @@ export const Icons = {
       className={cn("size-4", className)}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_4914)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_4914)" />
         <path
           d="M30.6146 31.3062L31.2991 33.4127L33.5139 33.4127L31.7221 34.7145L32.4065 36.821L30.6146 35.5191L28.8228 36.821L29.5072 34.7145L27.7153 33.4127L29.9302 33.4127L30.6146 31.3062Z"
           fill="url(#paint1_linear_1_4914)"
@@ -495,14 +460,7 @@ export const Icons = {
       className={cn("size-4", className)}
     >
       <g>
-        <rect
-          x="3"
-          y="0.863281"
-          width="40"
-          height="40"
-          rx="20"
-          fill="url(#paint0_linear_1_2046)"
-        />
+        <rect x="3" y="0.863281" width="40" height="40" rx="20" fill="url(#paint0_linear_1_2046)" />
         <path
           d="M30.6146 31.3062L31.2991 33.4127L33.5139 33.4127L31.7221 34.7145L32.4065 36.821L30.6146 35.5191L28.8228 36.821L29.5072 34.7145L27.7153 33.4127L29.9302 33.4127L30.6146 31.3062Z"
           fill="url(#paint1_linear_1_2046)"
@@ -704,13 +662,7 @@ export const Icons = {
     </svg>
   ),
   vercel: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
@@ -722,24 +674,13 @@ export const Icons = {
       </g>
       <defs>
         <clipPath id="clip0_1_4108">
-          <rect
-            width="27"
-            height="23.4141"
-            fill="white"
-            transform="translate(12.5 8)"
-          />
+          <rect width="27" height="23.4141" fill="white" transform="translate(12.5 8)" />
         </clipPath>
       </defs>
     </svg>
   ),
   replit: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
@@ -762,24 +703,13 @@ export const Icons = {
       </g>
       <defs>
         <clipPath id="clip0_1_4111">
-          <rect
-            width="25"
-            height="30"
-            fill="white"
-            transform="translate(15.5 7)"
-          />
+          <rect width="25" height="30" fill="white" transform="translate(15.5 7)" />
         </clipPath>
       </defs>
     </svg>
   ),
   posthog: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
@@ -810,12 +740,7 @@ export const Icons = {
     </svg>
   ),
   googleDrive: () => (
-    <svg
-      width="100"
-      height="100"
-      viewBox="0 0 87.3 78"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="100" height="100" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
       <path
         d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z"
         fill="#0066da"
@@ -843,13 +768,7 @@ export const Icons = {
     </svg>
   ),
   workos: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
@@ -868,24 +787,13 @@ export const Icons = {
       </g>
       <defs>
         <clipPath id="clip0_1_4101">
-          <rect
-            width="28"
-            height="28"
-            fill="white"
-            transform="translate(12 8)"
-          />
+          <rect width="28" height="28" fill="white" transform="translate(12 8)" />
         </clipPath>
       </defs>
     </svg>
   ),
   runwayml: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
@@ -915,15 +823,8 @@ export const Icons = {
           />
           <feOffset dy="1" />
           <feGaussianBlur stdDeviation="1" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
-          />
-          <feBlend
-            mode="normal"
-            in2="BackgroundImageFix"
-            result="effect1_dropShadow_1_4106"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0" />
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_4106" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -932,10 +833,7 @@ export const Icons = {
           />
           <feOffset dy="3" />
           <feGaussianBlur stdDeviation="1.5" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0" />
           <feBlend
             mode="normal"
             in2="effect1_dropShadow_1_4106"
@@ -949,10 +847,7 @@ export const Icons = {
           />
           <feOffset dy="7" />
           <feGaussianBlur stdDeviation="2" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0" />
           <feBlend
             mode="normal"
             in2="effect2_dropShadow_1_4106"
@@ -966,10 +861,7 @@ export const Icons = {
           />
           <feOffset dy="12" />
           <feGaussianBlur stdDeviation="2.5" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0" />
           <feBlend
             mode="normal"
             in2="effect3_dropShadow_1_4106"
@@ -986,13 +878,7 @@ export const Icons = {
     </svg>
   ),
   gemini: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
@@ -1024,15 +910,8 @@ export const Icons = {
           />
           <feOffset dy="1" />
           <feGaussianBlur stdDeviation="1" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
-          />
-          <feBlend
-            mode="normal"
-            in2="BackgroundImageFix"
-            result="effect1_dropShadow_1_4143"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0" />
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_4143" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -1041,10 +920,7 @@ export const Icons = {
           />
           <feOffset dy="3" />
           <feGaussianBlur stdDeviation="1.5" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0" />
           <feBlend
             mode="normal"
             in2="effect1_dropShadow_1_4143"
@@ -1058,10 +934,7 @@ export const Icons = {
           />
           <feOffset dy="7" />
           <feGaussianBlur stdDeviation="2" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0" />
           <feBlend
             mode="normal"
             in2="effect2_dropShadow_1_4143"
@@ -1075,10 +948,7 @@ export const Icons = {
           />
           <feOffset dy="12" />
           <feGaussianBlur stdDeviation="2.5" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0" />
           <feBlend
             mode="normal"
             in2="effect3_dropShadow_1_4143"
@@ -1104,24 +974,13 @@ export const Icons = {
           <stop offset="1" stopColor="#F0DCD6" />
         </linearGradient>
         <clipPath id="clip0_1_4143">
-          <rect
-            width="24"
-            height="24"
-            fill="white"
-            transform="translate(14 10)"
-          />
+          <rect width="24" height="24" fill="white" transform="translate(14 10)" />
         </clipPath>
       </defs>
     </svg>
   ),
   boat: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
@@ -1139,13 +998,7 @@ export const Icons = {
     </svg>
   ),
   supabase: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
@@ -1186,15 +1039,8 @@ export const Icons = {
           />
           <feOffset dy="1" />
           <feGaussianBlur stdDeviation="1" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
-          />
-          <feBlend
-            mode="normal"
-            in2="BackgroundImageFix"
-            result="effect1_dropShadow_1_4134"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0" />
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_4134" />
           <feColorMatrix
             in="SourceAlpha"
             type="matrix"
@@ -1203,10 +1049,7 @@ export const Icons = {
           />
           <feOffset dy="3" />
           <feGaussianBlur stdDeviation="1.5" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0" />
           <feBlend
             mode="normal"
             in2="effect1_dropShadow_1_4134"
@@ -1220,10 +1063,7 @@ export const Icons = {
           />
           <feOffset dy="7" />
           <feGaussianBlur stdDeviation="2" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0" />
           <feBlend
             mode="normal"
             in2="effect2_dropShadow_1_4134"
@@ -1237,10 +1077,7 @@ export const Icons = {
           />
           <feOffset dy="12" />
           <feGaussianBlur stdDeviation="2.5" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0"
-          />
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0" />
           <feBlend
             mode="normal"
             in2="effect3_dropShadow_1_4134"
@@ -1276,38 +1113,20 @@ export const Icons = {
           <stop offset="1" stopOpacity="0" />
         </linearGradient>
         <clipPath id="clip0_1_4134">
-          <rect
-            width="29.9027"
-            height="31"
-            fill="white"
-            transform="translate(11.0469 6.5)"
-          />
+          <rect width="29.9027" height="31" fill="white" transform="translate(11.0469 6.5)" />
         </clipPath>
       </defs>
     </svg>
   ),
   figma: () => (
-    <svg
-      width="52"
-      height="60"
-      viewBox="0 0 52 60"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg width="52" height="60" viewBox="0 0 52 60" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g>
         <path
           d="M5 22C5 10.402 14.402 1 26 1C37.598 1 47 10.402 47 22C47 33.598 37.598 43 26 43C14.402 43 5 33.598 5 22Z"
           fill="white"
         />
         <g clipPath="url(#clip0_1_4123)">
-          <mask
-            id="mask0_1_4123"
-            maskUnits="userSpaceOnUse"
-            x="15"
-            y="7"
-            width="21"
-            height="30"
-          >
+          <mask id="mask0_1_4123" maskUnits="userSpaceOnUse" x="15" y="7" width="21" height="30">
             <path d="M35.875 7H15.875V37H35.875V7Z" fill="white" />
           </mask>
           <g>

@@ -32,7 +32,10 @@ export function buildDepGraphFromImports(
     if (!nodeMap.has(f.path)) {
       nodeMap.set(f.path, { file: f.path, imports: [], importedBy: [] });
     }
-    const n = nodeMap.get(f.path)!;
+    const n = nodeMap.get(f.path);
+    if (!n) {
+      throw new Error(`Missing dep graph node for ${f.path}`);
+    }
     const resolved = [...new Set(f.importSpecs.map((s) => normalizeImport(f.path, s)))];
     n.imports = resolved;
   }
@@ -43,7 +46,7 @@ export function buildDepGraphFromImports(
         (k) => k === target || k.endsWith(target) || target.endsWith(k),
       );
       if (key && nodeMap.has(key)) {
-        nodeMap.get(key)!.importedBy.push(n.file);
+        nodeMap.get(key)?.importedBy.push(n.file);
       }
     }
   }
@@ -55,12 +58,7 @@ export function buildDepGraphFromImports(
   }
 
   const circularChains: string[][] = [];
-  function dfs(
-    start: string,
-    current: string,
-    visited: Set<string>,
-    stack: string[],
-  ): void {
+  function dfs(start: string, current: string, visited: Set<string>, stack: string[]): void {
     if (visited.has(current)) {
       if (current === start && stack.length > 1) {
         circularChains.push([...stack]);
@@ -92,8 +90,7 @@ export function buildDepGraphFromImports(
 /** Regex extraction of import specifiers (TS/JS). */
 export function extractImportSpecifiers(source: string): string[] {
   const specs = new Set<string>();
-  const importRe =
-    /^import(?:\s+type)?\s+[\s\S]*?from\s+['"]([^'"]+)['"]/gm;
+  const importRe = /^import(?:\s+type)?\s+[\s\S]*?from\s+['"]([^'"]+)['"]/gm;
   const dynImportRe = /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
   const requireRe = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
   let m: RegExpExecArray | null;

@@ -5,7 +5,7 @@ import type { ClawGuardConfig, PolicyRule } from "@/lib/config/schemas";
 import { handleError } from "@/lib/error-handler";
 import { PipelineMemory } from "./memory";
 import { getAgent, getAllAgents } from "./registry";
-import type { AgentContext, AgentResult, OrchestratorResult, AgentDefinition } from "./types";
+import type { AgentContext, AgentDefinition, AgentResult, OrchestratorResult } from "./types";
 
 export interface OrchestratorInput {
   runId: string;

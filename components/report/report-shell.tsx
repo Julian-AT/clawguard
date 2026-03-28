@@ -12,20 +12,12 @@ interface ReportShellProps {
   children: React.ReactNode;
 }
 
-export function ReportShell({
-  owner,
-  repo,
-  prNumber,
-  children,
-}: ReportShellProps) {
+export function ReportShell({ owner, repo, prNumber, children }: ReportShellProps) {
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 print:hidden">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
-          <Link
-            href="/"
-            className="flex items-center  text-sm font-semibold tracking-tight"
-          >
+          <Link href="/" className="flex items-center  text-sm font-semibold tracking-tight">
             <ClawGuardLogo className="size-6" />
             ClawGuard
           </Link>

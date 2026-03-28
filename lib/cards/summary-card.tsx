@@ -25,7 +25,10 @@ function splitNoteContent(audit: AuditResult): { headline: string; overview: str
       overview: null,
     };
   }
-  const parts = raw.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+  const parts = raw
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
   if (parts.length === 1) {
     return { headline: parts[0], overview: null };
   }
@@ -72,11 +75,7 @@ export function buildSummaryCard(
       {topFindings.length > 0 ? (
         <Table
           headers={["Severity", "Finding", "Location"]}
-          rows={topFindings.map((f) => [
-            f.severity,
-            f.title ?? f.type,
-            `${f.file}:${f.line}`,
-          ])}
+          rows={topFindings.map((f) => [f.severity, f.title ?? f.type, `${f.file}:${f.line}`])}
         />
       ) : (
         <CardText>No medium or higher severity findings.</CardText>

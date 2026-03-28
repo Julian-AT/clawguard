@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Shield } from "lucide-react";
+import Link from "next/link";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

@@ -1,9 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { cn } from "@/lib/utils";
+import type { Token } from "marked";
 import { marked } from "marked";
-import { memo, useId, useMemo } from "react";
-import ReactMarkdown, { Components } from "react-markdown";
+import { type ComponentPropsWithoutRef, memo, useId, useMemo } from "react";
+import type { ExtraProps } from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { cn } from "@/lib/utils";
 import { CodeBlock, CodeBlockCode } from "./code-block";
 
 export type MarkdownProps = {
@@ -15,7 +16,7 @@ export type MarkdownProps = {
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);
-  return tokens.map((token: any) => token.raw);
+  return tokens.map((token: Token) => token.raw);
 }
 
 function extractLanguage(className?: string): string {
@@ -24,8 +25,10 @@ function extractLanguage(className?: string): string {
   return match ? match[1] : "plaintext";
 }
 
+type CodeComponentProps = ComponentPropsWithoutRef<"code"> & ExtraProps;
+
 const INITIAL_COMPONENTS: Partial<Components> = {
-  code: function CodeComponent({ className, children, ...props }: any) {
+  code: function CodeComponent({ className, children, ...props }: CodeComponentProps) {
     const isInline =
       !props.node?.position?.start.line ||
       props.node?.position?.start.line === props.node?.position?.end.line;
@@ -33,10 +36,7 @@ const INITIAL_COMPONENTS: Partial<Components> = {
     if (isInline) {
       return (
         <span
-          className={cn(
-            "bg-primary-foreground rounded-sm px-1 font-mono text-sm",
-            className
-          )}
+          className={cn("bg-primary-foreground rounded-sm px-1 font-mono text-sm", className)}
           {...props}
         >
           {children}
@@ -52,28 +52,27 @@ const INITIAL_COMPONENTS: Partial<Components> = {
       </CodeBlock>
     );
   },
-  pre: function PreComponent({ children }: any) {
+  pre: function PreComponent({ children }: ComponentPropsWithoutRef<"pre"> & ExtraProps) {
     return <>{children}</>;
   },
 };
 
+type MarkdownBlockProps = {
+  content: string;
+  components?: Partial<Components>;
+};
+
 const MemoizedMarkdownBlock = memo(
-  function MarkdownBlock({
-    content,
-    components = INITIAL_COMPONENTS,
-  }: {
-    content: string;
-    components?: Partial<Components>;
-  }) {
+  function MarkdownBlock({ content, components = INITIAL_COMPONENTS }: MarkdownBlockProps) {
     return (
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {content}
       </ReactMarkdown>
     );
   },
-  function propsAreEqual(prevProps: any, nextProps: any) {
+  function propsAreEqual(prevProps: MarkdownBlockProps, nextProps: MarkdownBlockProps) {
     return prevProps.content === nextProps.content;
-  }
+  },
 );
 
 MemoizedMarkdownBlock.displayName = "MemoizedMarkdownBlock";

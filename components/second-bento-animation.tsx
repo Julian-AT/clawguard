@@ -1,6 +1,3 @@
-import type { ReactNode } from "react";
-import { Icons } from "@/components/landing-icons";
-import { OrbitingCircles } from "@/components/ui/orbiting-circle";
 import {
   Bug,
   FileWarning,
@@ -12,6 +9,9 @@ import {
   Server,
   Shield,
 } from "lucide-react";
+import type { ReactNode } from "react";
+import { Icons } from "@/components/landing-icons";
+import { OrbitingCircles } from "@/components/ui/orbiting-circle";
 
 function OrbitIcon({ children }: { children: ReactNode }) {
   return (
@@ -32,13 +32,7 @@ export function SecondBentoAnimation() {
       </div>
       <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
         <div className="relative flex h-full w-full translate-y-0 items-center justify-center md:translate-y-32">
-          <OrbitingCircles
-            index={0}
-            iconSize={60}
-            radius={100}
-            reverse
-            speed={1}
-          >
+          <OrbitingCircles index={0} iconSize={60} radius={100} reverse speed={1}>
             <OrbitIcon>
               <Shield className="size-7" aria-hidden />
             </OrbitIcon>
@@ -62,13 +56,7 @@ export function SecondBentoAnimation() {
             </OrbitIcon>
           </OrbitingCircles>
 
-          <OrbitingCircles
-            index={2}
-            iconSize={60}
-            radius={230}
-            reverse
-            speed={0.5}
-          >
+          <OrbitingCircles index={2} iconSize={60} radius={230} reverse speed={0.5}>
             <OrbitIcon>
               <KeyRound className="size-7" aria-hidden />
             </OrbitIcon>

@@ -1,15 +1,12 @@
 import Image from "next/image";
-import { siteConfig } from "@/lib/landing-config";
 import Link from "next/link";
+import { siteConfig } from "@/lib/landing-config";
 
 export function CTASection() {
   const { ctaSection } = siteConfig;
 
   return (
-    <section
-      id="cta"
-      className="flex flex-col items-center justify-center w-full"
-    >
+    <section id="cta" className="flex flex-col items-center justify-center w-full">
       <div className="w-full">
         <div className="relative z-20 h-[400px] w-full overflow-hidden rounded-xl border border-white/15 bg-(--landing-brand-fill) shadow-xl md:h-[400px]">
           <Image
@@ -30,9 +27,7 @@ export function CTASection() {
               >
                 {ctaSection.button.text}
               </Link>
-              <span className="text-center text-sm text-white/85">
-                {ctaSection.subtext}
-              </span>
+              <span className="text-center text-sm text-white/85">{ctaSection.subtext}</span>
             </div>
           </div>
         </div>

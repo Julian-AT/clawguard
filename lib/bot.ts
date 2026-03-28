@@ -7,19 +7,16 @@ import { Chat } from "chat";
 import { formatPipelineStatusMessage } from "./bot-helpers";
 import { buildSummaryCard } from "./cards/summary-card";
 import { buildChatAdapters } from "./chat-adapters";
+import { clawguardWebhookDebug } from "./clawguard-debug";
 import { loadRepoConfig } from "./config";
 import { DEFAULT_CLAWGUARD_CONFIG } from "./config/defaults";
 import { fixAll, fixFinding } from "./fix";
 import type { FixContext } from "./fix/types";
 import { runAuditPipeline } from "./github-audit-runner";
+import { collectBotMentionHandles, commentBodyMentionsBot } from "./github-mention-pattern";
 import { classifyIntentWithLlm } from "./intent-classifier";
 import type { Intent } from "./intent-types";
 import { appendLearningRepo, extractLearningFromComment } from "./learnings";
-import { clawguardWebhookDebug } from "./clawguard-debug";
-import {
-  collectBotMentionHandles,
-  commentBodyMentionsBot,
-} from "./github-mention-pattern";
 import { getAuditResult } from "./redis";
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
@@ -214,9 +211,7 @@ async function runFixFlow(
     }
 
     const finding = auditResult.findings.find(
-      (f) =>
-        f.type.toLowerCase().includes(targetLower) ||
-        f.cweId?.toLowerCase() === targetLower,
+      (f) => f.type.toLowerCase().includes(targetLower) || f.cweId?.toLowerCase() === targetLower,
     );
 
     if (!finding) {
@@ -230,13 +225,19 @@ async function runFixFlow(
       `Fixing: ${finding.type}${finding.cweId ? ` (${finding.cweId})` : ""} in \`${finding.file}:${finding.line}\`...`,
     );
 
+    const githubToken = process.env.GITHUB_TOKEN;
+    if (!githubToken) {
+      await status.edit("Fix failed: GITHUB_TOKEN is not configured.");
+      return;
+    }
+
     const { Sandbox } = await import("@vercel/sandbox");
     const sandbox = await Sandbox.create({
       source: {
         type: "git",
         url: `https://github.com/${owner}/${repo}`,
         username: "x-access-token",
-        password: process.env.GITHUB_TOKEN!,
+        password: githubToken,
         depth: 50,
       },
       timeout: 10 * 60 * 1000,
@@ -293,9 +294,7 @@ async function handleNewMentionAudit(
     autoSubscribe = config.bot.autoSubscribe;
   } catch {}
 
-  const status = await thread.post(
-    "## ClawGuard Security Audit\n\nStarting security audit…",
-  );
+  const status = await thread.post("## ClawGuard Security Audit\n\nStarting security audit…");
   if (autoSubscribe) await thread.subscribe();
 
   try {
@@ -363,9 +362,7 @@ bot.onSubscribedMessage(async (thread, message) => {
     } else if (intent.type === "fix-all" || intent.type === "fix-finding") {
       await runFixFlow(thread, raw, intent);
     } else if (intent.type === "re-audit") {
-      const status = await thread.post(
-        "## ClawGuard Security Audit\n\nStarting security audit…",
-      );
+      const status = await thread.post("## ClawGuard Security Audit\n\nStarting security audit…");
       await runAuditAndPost(thread, raw, status);
     }
   } catch (error) {

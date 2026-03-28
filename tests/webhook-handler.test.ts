@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Use vi.hoisted for mock variables used in vi.mock factories
 const { mockAfter, mockWebhookHandler, mockRedisSet, mockRedisGet } = vi.hoisted(() => ({
   mockAfter: vi.fn((fn: () => void) => fn()),
   mockWebhookHandler: vi.fn().mockResolvedValue(new Response("OK", { status: 200 })),
@@ -84,7 +83,6 @@ describe("Webhook Route Handler", () => {
 
     await POST(request);
 
-    // Handler receives a clone (body consumed on the peeked request first)
     const passedRequest = mockWebhookHandler.mock.calls[0][0];
     expect(passedRequest).toBeInstanceOf(Request);
     expect(passedRequest.url).toBe(request.url);
@@ -92,7 +90,6 @@ describe("Webhook Route Handler", () => {
   });
 
   it("deduplicates via X-GitHub-Delivery + Redis SETNX (HOOK-05)", async () => {
-    // First delivery -- new (redis.set returns "OK")
     mockRedisSet.mockResolvedValueOnce("OK");
 
     const request1 = new Request("http://localhost/api/webhooks/github", {
@@ -108,7 +105,6 @@ describe("Webhook Route Handler", () => {
     expect(response1.status).toBe(200);
     expect(mockWebhookHandler).toHaveBeenCalledTimes(1);
 
-    // Second delivery -- duplicate (redis.set returns null)
     mockWebhookHandler.mockClear();
     mockRedisSet.mockResolvedValueOnce(null);
 
