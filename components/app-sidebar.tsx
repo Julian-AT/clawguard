@@ -7,13 +7,13 @@ import {
   ExternalLinkIcon,
   LayoutDashboardIcon,
   LineChart,
-  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import type { DashboardRepo, DashboardUser } from "@/components/dashboard/dashboard-shell";
+import { GithubMarkIcon } from "@/components/github-mark-icon";
 import { ClawGuardLogo } from "@/components/logo";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -85,25 +85,30 @@ export function AppSidebar({
   const showOrgLinks = Boolean(ctx.owner);
   const showTracking = Boolean(ctx.owner && ctx.repo && !ctx.isOrgPage);
 
-  const navMainItems = React.useMemo(() => {
-    const dashboardItem = {
+  const dashboardItem = React.useMemo(
+    () => ({
       title: "Dashboard",
       url: "/dashboard",
       icon: <LayoutDashboardIcon className="size-4" />,
       isActive: dashboardHome,
-    };
-    const repoItems = sortedRepos.map((r) => {
-      const href = `/dashboard/${encodeURIComponent(r.owner)}/${encodeURIComponent(r.repo)}`;
-      const active = pathname === href || pathname.startsWith(`${href}/`);
-      return {
-        title: `${r.owner}/${r.repo}`,
-        url: href,
-        icon: <Sparkles className="size-4" />,
-        isActive: active,
-      };
-    });
-    return [dashboardItem, ...repoItems];
-  }, [dashboardHome, pathname, sortedRepos]);
+    }),
+    [dashboardHome],
+  );
+
+  const repoNavItems = React.useMemo(
+    () =>
+      sortedRepos.map((r) => {
+        const href = `/dashboard/${encodeURIComponent(r.owner)}/${encodeURIComponent(r.repo)}`;
+        const active = pathname === href || pathname.startsWith(`${href}/`);
+        return {
+          title: `${r.owner}/${r.repo}`,
+          url: href,
+          icon: <GithubMarkIcon className="size-4" />,
+          isActive: active,
+        };
+      }),
+    [pathname, sortedRepos],
+  );
 
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
@@ -128,7 +133,14 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain showQuickActions={false} items={navMainItems} />
+        <NavMain showQuickActions={false} items={[dashboardItem]} />
+
+        {repoNavItems.length > 0 ? (
+          <>
+            <SidebarSeparator />
+            <NavMain showQuickActions={false} items={repoNavItems} />
+          </>
+        ) : null}
 
         {showOrgLinks && ctx.owner ? (
           <>
