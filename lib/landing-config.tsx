@@ -24,7 +24,14 @@ export const siteConfig = {
     "Mention @clawguard on a GitHub pull request for automated security review, interactive reports, and optional fixes on the branch.",
   cta: "View demo",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  keywords: ["GitHub", "security", "pull request", "SAST", "OWASP", "vulnerability"],
+  keywords: [
+    "GitHub",
+    "security",
+    "pull request",
+    "SAST",
+    "OWASP",
+    "vulnerability",
+  ],
   links: {
     email: "support@clawguard.dev",
     twitter: "https://twitter.com/clawguard",
@@ -61,7 +68,7 @@ export const siteConfig = {
   heroVideo: {
     embedUrl:
       process.env.NEXT_PUBLIC_HERO_VIDEO_EMBED ??
-      "https://www.youtube.com/embed/qh3NGpYRG3I?si=4rb-zSdDkVK9qxxb",
+      "https://youtu.be/HtzQAi_b2Vc",
     thumbnailSrc: pubScreenshot.dashboard,
     thumbnailAlt:
       "ClawGuard dashboard: tracked repositories, audit score trend, and recent PR audits",
@@ -223,7 +230,10 @@ export const siteConfig = {
               width="92"
               height="20"
             >
-              <path d="M133.02 7.77734H42.4375V26.5404H133.02V7.77734Z" fill="white" />
+              <path
+                d="M133.02 7.77734H42.4375V26.5404H133.02V7.77734Z"
+                fill="white"
+              />
             </mask>
             <g mask="url(#mask0_342_6736)">
               <path d="M53.9534 12.179C53.8381 12.2504 53.7006 12.2758 53.5672 12.2501C53.4343 12.2243 53.3155 12.1494 53.2353 12.0401C52.8379 11.4719 52.3053 11.0113 51.6861 10.6998C51.0663 10.3882 50.3791 10.2355 49.6856 10.2552C46.9763 10.2552 45.3095 12.3991 45.3095 15.4608C45.3095 18.5225 47.0033 20.707 49.7131 20.707C50.4172 20.7231 51.1137 20.5597 51.737 20.232C52.3603 19.9043 52.89 19.4232 53.2763 18.8341C53.3535 18.723 53.47 18.645 53.6023 18.6155C53.7345 18.586 53.8733 18.6072 53.9909 18.6749L55.2744 19.4199C55.34 19.4582 55.3973 19.5096 55.4418 19.5711C55.4863 19.6326 55.5179 19.7028 55.5337 19.7771C55.5495 19.8514 55.5501 19.9282 55.5343 20.0026C55.5191 20.077 55.488 20.1473 55.4436 20.2091C54.8144 21.1522 53.9564 21.9201 52.9491 22.4407C51.9418 22.9614 50.8193 23.2179 49.6856 23.1861C45.3738 23.1861 42.4375 20.0432 42.4375 15.4608C42.4375 10.8784 45.3738 7.77607 49.6417 7.77607C50.7561 7.74511 51.8611 7.98763 52.8601 8.4824C53.8592 8.97716 54.7219 9.70913 55.3727 10.6142C55.4172 10.6749 55.4488 10.7441 55.4658 10.8176C55.4822 10.8911 55.4839 10.9672 55.4699 11.0413C55.4558 11.1153 55.4266 11.1856 55.3844 11.2479C55.3423 11.3102 55.2873 11.3631 55.2235 11.4033L53.9534 12.179Z" />
@@ -266,7 +276,8 @@ export const siteConfig = {
   },
   featureSection: {
     title: "From mention to merge-ready fixes",
-    description: "Four steps from a GitHub comment to a cleaner, safer pull request.",
+    description:
+      "Four steps from a GitHub comment to a cleaner, safer pull request.",
     items: [
       {
         id: 1,
@@ -300,7 +311,8 @@ export const siteConfig = {
   },
   bentoSection: {
     title: "Security that fits your GitHub flow",
-    description: "From agentic analysis to auto-fixes — without ever leaving the pull request.",
+    description:
+      "From agentic analysis to auto-fixes — without ever leaving the pull request.",
     items: [
       {
         id: 1,
@@ -321,7 +333,9 @@ export const siteConfig = {
         content: (
           <ThirdBentoAnimation
             data={[20, 30, 25, 45, 40, 55, 75]}
-            toolTipValues={[1234, 1678, 2101, 2534, 2967, 3400, 3833, 4266, 4700, 5133]}
+            toolTipValues={[
+              1234, 1678, 2101, 2534, 2967, 3400, 3833, 4266, 4700, 5133,
+            ]}
           />
         ),
         title: "Score and trend tracking",
@@ -516,12 +530,21 @@ export const siteConfig = {
                     />
                     <feOffset dy="1" />
                     <feGaussianBlur stdDeviation="1" />
-                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    />
                     <feColorMatrix
                       type="matrix"
                       values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
                     />
-                    <feBlend mode="normal" in2="shape" result="effect1_innerShadow_2_34" />
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_2_34"
+                    />
                     <feColorMatrix
                       in="SourceAlpha"
                       type="matrix"
@@ -530,7 +553,12 @@ export const siteConfig = {
                     />
                     <feOffset dy="3" />
                     <feGaussianBlur stdDeviation="1.5" />
-                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    />
                     <feColorMatrix
                       type="matrix"
                       values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0"
@@ -548,7 +576,12 @@ export const siteConfig = {
                     />
                     <feOffset dy="8" />
                     <feGaussianBlur stdDeviation="2.5" />
-                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    />
                     <feColorMatrix
                       type="matrix"
                       values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"
@@ -566,7 +599,12 @@ export const siteConfig = {
                     />
                     <feOffset dy="14" />
                     <feGaussianBlur stdDeviation="3" />
-                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    />
                     <feColorMatrix
                       type="matrix"
                       values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0"
@@ -581,7 +619,12 @@ export const siteConfig = {
               </svg>
             </div>
             <div className="size-full">
-              <FlickeringGrid className="size-full" gridGap={4} squareSize={2} maxOpacity={0.5} />
+              <FlickeringGrid
+                className="size-full"
+                gridGap={4}
+                squareSize={2}
+                maxOpacity={0.5}
+              />
             </div>
           </div>
         ),
