@@ -1,8 +1,8 @@
 "use client";
 
-import createGlobe, { COBEOptions } from "cobe";
+import createGlobe, { type COBEOptions } from "cobe";
 import { useMotionValue, useSpring } from "motion/react";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ const MOVEMENT_DAMPING = 1400;
 const GLOBE_CONFIG: COBEOptions = {
   width: 800,
   height: 800,
+  onRender: () => {},
   devicePixelRatio: 2,
   phi: 0,
   theta: 0.3,
@@ -36,7 +37,6 @@ const GLOBE_CONFIG: COBEOptions = {
   ],
 };
 
-// Define color configurations for light and dark modes
 const COLORS = {
   light: {
     base: [1, 1, 1] as [number, number, number],
@@ -50,6 +50,8 @@ const COLORS = {
   },
 };
 
+type CobeRenderState = { phi?: number; width?: number; height?: number };
+
 export function Globe({
   className,
   config = GLOBE_CONFIG,
@@ -57,14 +59,14 @@ export function Globe({
   className?: string;
   config?: COBEOptions;
 }) {
-  const { theme } = useTheme();
-  const isDarkMode = theme === "dark";
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
 
   const phiRef = useRef(0);
   const widthRef = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerInteracting = useRef<number | null>(null);
-  const pointerInteractionMovement = useRef(0);
 
   const r = useMotionValue(0);
   const rs = useSpring(r, {
@@ -83,7 +85,7 @@ export function Globe({
       diffuse: isDarkMode ? 0.5 : 0.4,
       mapBrightness: isDarkMode ? 1.4 : 1.2,
     }),
-    [config, isDarkMode]
+    [config, isDarkMode],
   );
 
   const updatePointerInteraction = (value: number | null) => {
@@ -96,56 +98,70 @@ export function Globe({
   const updateMovement = (clientX: number) => {
     if (pointerInteracting.current !== null) {
       const delta = clientX - pointerInteracting.current;
-      pointerInteractionMovement.current = delta;
       r.set(r.get() + delta / MOVEMENT_DAMPING);
     }
   };
 
   useEffect(() => {
-    const onResize = () => {
-      if (canvasRef.current) {
-        widthRef.current = canvasRef.current.offsetWidth;
-      }
-    };
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
 
-    window.addEventListener("resize", onResize);
-    onResize();
+    let globe: ReturnType<typeof createGlobe> | null = null;
 
-    type CobeRenderState = { phi?: number; width?: number; height?: number };
-    const globe = createGlobe(
-      canvasRef.current!,
-      {
+    const tryCreate = () => {
+      const w = container.clientWidth;
+      if (w < 8 || globe) return;
+      widthRef.current = w;
+
+      const side = widthRef.current * 2;
+      globe = createGlobe(canvas, {
         ...finalConfig,
-        width: widthRef.current * 2,
-        height: widthRef.current * 2,
+        width: side,
+        height: side,
         onRender: (state: CobeRenderState) => {
           if (!pointerInteracting.current) phiRef.current += 0.005;
           state.phi = phiRef.current + rs.get();
-          state.width = widthRef.current * 2;
-          state.height = widthRef.current * 2;
+          const s = widthRef.current * 2;
+          state.width = s;
+          state.height = s;
         },
-      } as COBEOptions & {
-        onRender?: (state: CobeRenderState) => void;
-      },
-    );
-
-    setTimeout(() => (canvasRef.current!.style.opacity = "1"), 0);
-    return () => {
-      globe.destroy();
-      window.removeEventListener("resize", onResize);
+      });
+      canvas.style.opacity = "1";
     };
-  }, [rs, finalConfig]);
+
+    const onContainerResize = () => {
+      const w = container.clientWidth;
+      if (w >= 8) {
+        widthRef.current = w;
+      }
+      tryCreate();
+    };
+
+    tryCreate();
+    const ro = new ResizeObserver(onContainerResize);
+    ro.observe(container);
+    window.addEventListener("resize", onContainerResize);
+    requestAnimationFrame(tryCreate);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", onContainerResize);
+      globe?.destroy();
+    };
+  }, [finalConfig, rs]);
 
   return (
     <div
+      ref={containerRef}
       className={cn(
-        "absolute inset-0 mx-auto aspect-[1/1] w-full max-w-[600px]",
-        className
+        "absolute inset-0 mx-auto aspect-square w-full max-w-[600px]",
+        className,
       )}
     >
       <canvas
         className={cn(
-          "size-full opacity-0 transition-opacity duration-500 [contain:layout_paint_size]"
+          "size-full opacity-0 transition-opacity duration-500 contain-layout",
         )}
         ref={canvasRef}
         onPointerDown={(e) => {
@@ -155,9 +171,7 @@ export function Globe({
         onPointerUp={() => updatePointerInteraction(null)}
         onPointerOut={() => updatePointerInteraction(null)}
         onMouseMove={(e) => updateMovement(e.clientX)}
-        onTouchMove={(e) =>
-          e.touches[0] && updateMovement(e.touches[0].clientX)
-        }
+        onTouchMove={(e) => e.touches[0] && updateMovement(e.touches[0].clientX)}
       />
     </div>
   );

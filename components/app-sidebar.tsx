@@ -12,7 +12,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
-import type { DashboardRepo, DashboardUser } from "@/components/dashboard/dashboard-shell";
+import type {
+  DashboardRepo,
+  DashboardUser,
+} from "@/components/dashboard/dashboard-shell";
 import { GithubMarkIcon } from "@/components/github-mark-icon";
 import { ClawGuardLogo } from "@/components/logo";
 import { NavMain } from "@/components/nav-main";
@@ -74,11 +77,14 @@ export function AppSidebar({
   const pathname = usePathname();
   const dashboardHome = pathname === "/dashboard";
   const ctx = parseDashboardPath(pathname);
-  const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? "https://github.com/apps";
+  const githubAppUrl =
+    process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? "https://github.com/apps";
 
   const sortedRepos = React.useMemo(
     () =>
-      [...repos].sort((a, b) => `${a.owner}/${a.repo}`.localeCompare(`${b.owner}/${b.repo}`, "en")),
+      [...repos].sort((a, b) =>
+        `${a.owner}/${a.repo}`.localeCompare(`${b.owner}/${b.repo}`, "en"),
+      ),
     [repos],
   );
 
@@ -118,7 +124,7 @@ export function AppSidebar({
             <SidebarMenuButton size="lg" asChild tooltip="ClawGuard">
               <Link href="/">
                 <div className="flex size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                  <ClawGuardLogo className="h-4 w-7" />
+                  <ClawGuardLogo className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">ClawGuard</span>
@@ -155,7 +161,9 @@ export function AppSidebar({
                       isActive={pathname.endsWith("/learnings")}
                       tooltip="Learnings"
                     >
-                      <Link href={`/dashboard/${encodeURIComponent(ctx.owner)}/learnings`}>
+                      <Link
+                        href={`/dashboard/${encodeURIComponent(ctx.owner)}/learnings`}
+                      >
                         <BookOpen className="size-4" />
                         <span>Learnings</span>
                       </Link>
@@ -167,7 +175,9 @@ export function AppSidebar({
                       isActive={pathname.endsWith("/knowledge")}
                       tooltip="Knowledge"
                     >
-                      <Link href={`/dashboard/${encodeURIComponent(ctx.owner)}/knowledge`}>
+                      <Link
+                        href={`/dashboard/${encodeURIComponent(ctx.owner)}/knowledge`}
+                      >
                         <Brain className="size-4" />
                         <span>Knowledge</span>
                       </Link>

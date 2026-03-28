@@ -14,7 +14,7 @@ export function FooterSection() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between p-10">
         <div className="flex flex-col items-start justify-start gap-y-5 max-w-xs mx-0">
           <Link href="/" className="flex items-center gap-2">
-            <ClawGuardLogo className="h-8 w-[56px] text-primary" />
+            <ClawGuardLogo className="size-8" />
             <p className="text-xl font-semibold text-primary">ClawGuard</p>
           </Link>
           <p className="tracking-tight text-muted-foreground font-medium">

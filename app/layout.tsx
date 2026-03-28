@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   authors: [{ name: siteConfig.author.name, url: siteConfig.author.url }],
   creator: siteConfig.author.name,
   manifest: "/site.webmanifest",
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml", sizes: "any" }],
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

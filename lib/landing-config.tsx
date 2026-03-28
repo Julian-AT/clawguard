@@ -578,7 +578,7 @@ export const siteConfig = {
       {
         id: 2,
         content: (
-          <div className="relative flex size-full max-w-lg items-center justify-center overflow-hidden [mask-image:linear-gradient(to_top,transparent,black_50%)] -translate-y-20">
+          <div className="relative aspect-square w-full max-w-lg shrink-0 overflow-hidden [mask-image:linear-gradient(to_top,transparent,black_50%)] -translate-y-20">
             <Globe className="top-28" />
           </div>
         ),
