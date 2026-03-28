@@ -3,6 +3,7 @@ import { countBySeverity } from "@/lib/analysis/scoring";
 import { ReportHeader } from "@/components/report/report-header";
 import { ScoreGauge } from "@/components/report/score-gauge";
 import { SeverityBadges } from "@/components/report/severity-badges";
+import { OwaspChart } from "@/components/report/owasp-chart";
 
 interface ReportViewProps {
   result: AuditResult;
@@ -43,6 +44,7 @@ export function ReportView({
               {result.findings.length} finding{result.findings.length !== 1 ? "s" : ""} across{" "}
               {result.phases.length} analysis phases
             </p>
+            <OwaspChart findings={result.findings} />
           </div>
         </div>
 
