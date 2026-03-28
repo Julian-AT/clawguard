@@ -77,9 +77,8 @@ export async function loadAuditDataForKeys(
       continue;
     }
     try {
-      const raw = await redis.get<string>(key);
-      if (!raw) continue;
-      const data = JSON.parse(raw) as AuditData;
+      const data = await redis.get<AuditData>(key);
+      if (!data) continue;
       out.push({ key, data });
     } catch {
       // skip corrupt JSON or unexpected type

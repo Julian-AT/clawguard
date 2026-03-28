@@ -14,7 +14,7 @@ export async function recordTruePositive(owner: string, repo: string): Promise<v
   const m = await readMetrics(owner, repo);
   m.truePositives += 1;
   m.lastUpdated = new Date().toISOString();
-  await redis.set(key, JSON.stringify(m));
+  await redis.set(key, m);
 }
 
 export async function recordFalsePositive(owner: string, repo: string): Promise<void> {
@@ -22,7 +22,7 @@ export async function recordFalsePositive(owner: string, repo: string): Promise<
   const m = await readMetrics(owner, repo);
   m.falsePositives += 1;
   m.lastUpdated = new Date().toISOString();
-  await redis.set(key, JSON.stringify(m));
+  await redis.set(key, m);
 }
 
 /** Bug/issue indicated a miss vs prior predictions (e.g. no prediction snapshot for the PR). */
@@ -31,12 +31,12 @@ export async function recordMiss(owner: string, repo: string): Promise<void> {
   const m = await readMetrics(owner, repo);
   m.misses += 1;
   m.lastUpdated = new Date().toISOString();
-  await redis.set(key, JSON.stringify(m));
+  await redis.set(key, m);
 }
 
 export async function readMetrics(owner: string, repo: string): Promise<TrackingMetrics> {
   const key = `${METRICS_PREFIX}${owner}/${repo}`;
-  const raw = await redis.get<string>(key);
+  const raw = await redis.get<TrackingMetrics>(key);
   if (!raw) {
     return {
       truePositives: 0,
@@ -46,7 +46,7 @@ export async function readMetrics(owner: string, repo: string): Promise<Tracking
     };
   }
   try {
-    return JSON.parse(raw) as TrackingMetrics;
+    return raw;
   } catch {
     return {
       truePositives: 0,

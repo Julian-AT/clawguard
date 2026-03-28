@@ -33,10 +33,11 @@ export async function GET(
             const events = await redis.lrange(channelKey, cursor, cursor + 50);
             for (const raw of events) {
               try {
-                const evt = JSON.parse(raw as string) as {
-                  event: string;
-                  payload: unknown;
-                };
+                const item = raw as unknown;
+                const evt =
+                  typeof item === "string"
+                    ? (JSON.parse(item) as { event: string; payload: unknown })
+                    : (item as { event: string; payload: unknown });
                 send(evt.event, evt.payload);
               } catch {
                 // skip malformed
@@ -44,10 +45,12 @@ export async function GET(
               cursor++;
             }
 
-            const status = await redis.get(`${owner}/${repo}/pr/${pr}`);
+            const status = await redis.get<{ status?: string }>(
+              `${owner}/${repo}/pr/${pr}`,
+            );
             if (status) {
               try {
-                const data = JSON.parse(status as string) as { status?: string };
+                const data = status;
                 if (
                   data.status === "complete" ||
                   data.status === "error" ||

@@ -11,10 +11,10 @@ function orgKey(owner: string): string {
 }
 
 async function readList(key: string): Promise<Learning[]> {
-  const raw = await redis.get<string>(key);
+  const raw = await redis.get<unknown>(key);
   if (!raw) return [];
   try {
-    const parsed = JSON.parse(raw) as unknown;
+    const parsed = raw;
     if (!Array.isArray(parsed)) return [];
     return parsed
       .map((x) => LearningSchema.safeParse(x))
@@ -26,7 +26,7 @@ async function readList(key: string): Promise<Learning[]> {
 }
 
 async function writeList(key: string, items: Learning[]): Promise<void> {
-  await redis.set(key, JSON.stringify(items));
+  await redis.set(key, items);
 }
 
 export async function listLearningsRepo(owner: string, repo: string): Promise<Learning[]> {

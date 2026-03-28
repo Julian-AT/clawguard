@@ -7,10 +7,10 @@ function orgKey(owner: string): string {
 }
 
 async function readList(key: string): Promise<KnowledgeEntry[]> {
-  const raw = await redis.get<string>(key);
+  const raw = await redis.get<unknown>(key);
   if (!raw) return [];
   try {
-    const parsed = JSON.parse(raw) as unknown;
+    const parsed = raw;
     if (!Array.isArray(parsed)) return [];
     return parsed
       .map((x) => KnowledgeEntrySchema.safeParse(x))
@@ -22,7 +22,7 @@ async function readList(key: string): Promise<KnowledgeEntry[]> {
 }
 
 async function writeList(key: string, items: KnowledgeEntry[]): Promise<void> {
-  await redis.set(key, JSON.stringify(items));
+  await redis.set(key, items);
 }
 
 export async function listKnowledgeOrg(owner: string): Promise<KnowledgeEntry[]> {

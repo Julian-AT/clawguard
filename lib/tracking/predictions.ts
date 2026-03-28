@@ -30,7 +30,7 @@ export async function storeAuditPredictions(
       severity: f.severity,
     })),
   };
-  await redis.set(key, JSON.stringify(payload));
+  await redis.set(key, payload);
 }
 
 export async function getPredictions(
@@ -39,11 +39,5 @@ export async function getPredictions(
   prNumber: number,
 ): Promise<StoredPrediction | null> {
   const key = `predictions:${owner}/${repo}/pr/${prNumber}`;
-  const raw = await redis.get<string>(key);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as StoredPrediction;
-  } catch {
-    return null;
-  }
+  return redis.get<StoredPrediction>(key);
 }

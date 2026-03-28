@@ -22,10 +22,9 @@ export interface AuditData {
 }
 
 export async function storeAuditResult(params: { key: string; data: AuditData }): Promise<void> {
-  await redis.set(params.key, JSON.stringify(params.data));
+  await redis.set(params.key, params.data);
 }
 
 export async function getAuditResult(key: string): Promise<AuditData | null> {
-  const raw = await redis.get<string>(key);
-  return raw ? JSON.parse(raw) : null;
+  return redis.get<AuditData>(key);
 }

@@ -58,14 +58,13 @@ describe("Redis Audit Storage", () => {
 
     await storeAuditResult({ key: "test-owner/test-repo/pr/1", data });
 
-    expect(mockSet).toHaveBeenCalledWith("test-owner/test-repo/pr/1", expect.any(String));
+    expect(mockSet).toHaveBeenCalledWith("test-owner/test-repo/pr/1", data);
 
-    const storedJson = mockSet.mock.calls[0][1];
-    const parsed = JSON.parse(storedJson);
-    expect(parsed.result.score).toBe(100);
-    expect(parsed.result.grade).toBe("A");
-    expect(parsed.pr.owner).toBe("test-owner");
-    expect(parsed.status).toBe("complete");
+    const stored = mockSet.mock.calls[0][1] as AuditData;
+    expect(stored.result?.score).toBe(100);
+    expect(stored.result?.grade).toBe("A");
+    expect(stored.pr.owner).toBe("test-owner");
+    expect(stored.status).toBe("complete");
   });
 
   it("retrieves stored audit data by key (SCAN-07)", async () => {
@@ -75,7 +74,7 @@ describe("Redis Audit Storage", () => {
       pr: { owner: "owner", repo: "repo", number: 42, title: "Fix auth" },
       status: "complete",
     };
-    mockGet.mockResolvedValueOnce(JSON.stringify(storedData));
+    mockGet.mockResolvedValueOnce(storedData);
 
     const result = await getAuditResult("owner/repo/pr/42");
 
