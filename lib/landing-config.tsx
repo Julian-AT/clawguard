@@ -5,12 +5,13 @@ import { SecondBentoAnimation } from "@/components/second-bento-animation";
 import { ThirdBentoAnimation } from "@/components/third-bento-animation";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { Globe } from "@/components/ui/globe";
+import { OG_IMAGE_PATH } from "@/lib/site";
 
 export const BLUR_FADE_DELAY = 0.15;
 
 /** Product screenshots in `public/` (URL-encoded paths — filenames contain spaces). */
 export const pubScreenshot = {
-  dashboard: "/Screenshot%202026-03-28%20at%2010.10.00.png",
+  dashboard: OG_IMAGE_PATH,
   reportExecutive: "/Screenshot%202026-03-28%20at%2010.11.22.png",
   findings: "/Screenshot%202026-03-28%20at%2010.12.04.png",
   prSummary: "/Screenshot%202026-03-28%20at%2010.12.29.png",
