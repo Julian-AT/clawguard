@@ -20,15 +20,14 @@ import type { AuditResult } from "../lib/analysis/types";
 
 function makeAuditResult(): AuditResult {
   return {
-    phases: {
-      quality: { summary: "Quality review complete", findings: [] },
-      vulnerability: { summary: "No vulnerabilities found", findings: [] },
-      threatModel: { summary: "Threat model clean", findings: [] },
-    },
-    allFindings: [],
+    phases: [
+      { phase: "code-quality", summary: "Quality review complete", findings: [] },
+      { phase: "vulnerability-scan", summary: "No vulnerabilities found", findings: [] },
+      { phase: "threat-model", summary: "Threat model clean", findings: [] },
+    ],
+    findings: [],
     score: 100,
     grade: "A",
-    severityCounts: { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0, INFO: 0 },
   };
 }
 

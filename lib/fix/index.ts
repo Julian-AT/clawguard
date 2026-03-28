@@ -31,7 +31,7 @@ export async function fixFinding(
         owner: context.owner,
         repo: context.repo,
         branch: context.prBranch,
-        filePath: finding.location.file,
+        filePath: finding.file,
         content: fastResult.content,
         finding,
       });
@@ -57,7 +57,7 @@ export async function fixFinding(
         owner: context.owner,
         repo: context.repo,
         branch: context.prBranch,
-        filePath: finding.location.file,
+        filePath: finding.file,
         content: agentResult.content,
         finding,
       });
@@ -120,7 +120,7 @@ export async function fixAll(
   }
 
   // 2. Filter for CRITICAL and HIGH severity findings
-  const fixable = auditData.result.allFindings
+  const fixable = auditData.result.findings
     .filter((f) => ["CRITICAL", "HIGH"].includes(f.severity))
     .sort(
       (a, b) =>

@@ -42,7 +42,7 @@ export async function runQualityReview(
       "- Provide before/after fix code snippets",
       "- Map to compliance frameworks where applicable (PCI DSS, SOC 2, HIPAA, NIST, OWASP ASVS)",
       "",
-      "Set confidence to 'high' when certain, 'medium' when likely, 'low' when possible but needs manual review.",
+      "Set confidence to 'HIGH' when certain, 'MEDIUM' when likely, 'LOW' when possible but needs manual review.",
       "",
       "Use the bash tools to explore the full file context around changed lines for deeper understanding.",
       "Output format: Provide a brief summary and detailed findings array using the structured output schema.",

@@ -12,27 +12,30 @@ function makeFinding(overrides: Partial<Finding> = {}): Finding {
   return {
     severity: "HIGH",
     type: "sql-injection",
-    location: { file: "src/db/query.ts", line: 42 },
+    file: "src/db/query.ts",
+    line: 42,
     cweId: "CWE-89",
     owaspCategory: "A03:2021-Injection",
     description: "User input concatenated directly into SQL query without parameterization",
     attackScenario: "Attacker submits malicious SQL via username field to dump database",
-    confidence: "high",
+    confidence: "HIGH",
     dataFlow: {
-      source: "req.body.username",
-      transform: "string concatenation",
-      sink: "db.query()",
+      nodes: [
+        { label: "req.body.username", type: "source" },
+        { label: "string concatenation", type: "transform" },
+        { label: "db.query()", type: "sink" },
+      ],
     },
     fix: {
       before: 'db.query(`SELECT * FROM users WHERE name = \'${input}\'`)',
       after: "db.query('SELECT * FROM users WHERE name = $1', [input])",
     },
     complianceMapping: {
-      pciDss: "6.5.1",
-      soc2: "CC6.1",
-      hipaa: "164.312(a)(1)",
-      nist: "SI-10",
-      owaspAsvs: "5.3.4",
+      pciDss: ["6.5.1"],
+      soc2: ["CC6.1"],
+      hipaa: ["164.312(a)(1)"],
+      nist: ["SI-10"],
+      owaspAsvs: ["5.3.4"],
     },
     ...overrides,
   };
@@ -55,9 +58,9 @@ describe("Analysis Types - Zod Schemas", () => {
 
   describe("ConfidenceSchema", () => {
     it("accepts valid confidence values", () => {
-      expect(ConfidenceSchema.safeParse("high").success).toBe(true);
-      expect(ConfidenceSchema.safeParse("medium").success).toBe(true);
-      expect(ConfidenceSchema.safeParse("low").success).toBe(true);
+      expect(ConfidenceSchema.safeParse("HIGH").success).toBe(true);
+      expect(ConfidenceSchema.safeParse("MEDIUM").success).toBe(true);
+      expect(ConfidenceSchema.safeParse("LOW").success).toBe(true);
     });
 
     it("rejects invalid confidence", () => {
@@ -77,29 +80,35 @@ describe("Analysis Types - Zod Schemas", () => {
       expect(result.success).toBe(false);
     });
 
-    it("accepts finding where complianceMapping fields are all omitted (optional)", () => {
-      const finding = makeFinding({ complianceMapping: {} });
+    it("accepts finding where complianceMapping fields have empty arrays", () => {
+      const finding = makeFinding({ complianceMapping: {
+        pciDss: [],
+        soc2: [],
+        hipaa: [],
+        nist: [],
+        owaspAsvs: [],
+      } });
       const result = FindingSchema.safeParse(finding);
       expect(result.success).toBe(true);
     });
 
     it("includes confidence field (D-08)", () => {
-      const finding = makeFinding({ confidence: "medium" });
+      const finding = makeFinding({ confidence: "MEDIUM" });
       const result = FindingSchema.safeParse(finding);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.confidence).toBe("medium");
+        expect(result.data.confidence).toBe("MEDIUM");
       }
     });
 
-    it("includes dataFlow with source, transform, sink", () => {
+    it("includes dataFlow with nodes array", () => {
       const finding = makeFinding();
       const result = FindingSchema.safeParse(finding);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.dataFlow.source).toBe("req.body.username");
-        expect(result.data.dataFlow.transform).toBe("string concatenation");
-        expect(result.data.dataFlow.sink).toBe("db.query()");
+        expect(result.data.dataFlow?.nodes).toHaveLength(3);
+        expect(result.data.dataFlow?.nodes[0].label).toBe("req.body.username");
+        expect(result.data.dataFlow?.nodes[0].type).toBe("source");
       }
     });
 
@@ -108,8 +117,8 @@ describe("Analysis Types - Zod Schemas", () => {
       const result = FindingSchema.safeParse(finding);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.fix.before).toBeTruthy();
-        expect(result.data.fix.after).toBeTruthy();
+        expect(result.data.fix?.before).toBeTruthy();
+        expect(result.data.fix?.after).toBeTruthy();
       }
     });
   });
@@ -135,15 +144,14 @@ describe("Analysis Types - Zod Schemas", () => {
   describe("AuditResultSchema", () => {
     it("validates a complete audit result", () => {
       const auditResult = {
-        phases: {
-          quality: { summary: "Quality review done", findings: [] },
-          vulnerability: { summary: "Vuln scan done", findings: [makeFinding()] },
-          threatModel: { summary: "Threat model done", findings: [] },
-        },
-        allFindings: [makeFinding()],
+        phases: [
+          { phase: "code-quality", summary: "Quality review done", findings: [] },
+          { phase: "vulnerability-scan", summary: "Vuln scan done", findings: [makeFinding()] },
+          { phase: "threat-model", summary: "Threat model done", findings: [] },
+        ],
+        findings: [makeFinding()],
         score: 85,
         grade: "B",
-        severityCounts: { CRITICAL: 0, HIGH: 1, MEDIUM: 0, LOW: 0, INFO: 0 },
       };
       const result = AuditResultSchema.safeParse(auditResult);
       expect(result.success).toBe(true);

@@ -84,7 +84,7 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 04-01: TBD
+- [x] 04-01: Report infrastructure -- shadcn/ui, enhanced schemas, mock data, page shell
 - [ ] 04-02: TBD
 - [ ] 04-03: TBD
 
@@ -131,6 +131,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 1. Foundation & Bot Wiring | 0/2 | Not started | - |
 | 2. Security Analysis Pipeline | 3/3 | Complete | 2026-03-27 |
 | 3. Auto-Fix & Commit Loop | 1/3 | In Progress|  |
-| 4. Interactive Web Report | 0/3 | Not started | - |
+| 4. Interactive Web Report | 1/3 | In Progress | - |
 | 5. Chat, Config & Dashboard | 0/3 | Not started | - |
 | 6. Demo Hardening | 0/2 | Not started | - |

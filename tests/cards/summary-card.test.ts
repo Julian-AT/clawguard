@@ -12,43 +12,25 @@ function makeFinding(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     severity: "HIGH",
     type: "sql-injection",
-    location: { file: "src/db/query.ts", line: 42 },
+    file: "src/db/query.ts",
+    line: 42,
     cweId: "CWE-89",
     owaspCategory: "A03:2021-Injection",
     description: "User input concatenated directly into SQL query",
     attackScenario: "Attacker submits malicious SQL via input field",
-    confidence: "high",
+    confidence: "HIGH",
     dataFlow: {
-      source: "req.body.username",
-      transform: "string concatenation",
-      sink: "db.query()",
+      nodes: [
+        { label: "req.body.username", type: "source" },
+        { label: "string concatenation", type: "transform" },
+        { label: "db.query()", type: "sink" },
+      ],
     },
     fix: {
       before: 'db.query(`SELECT * FROM users WHERE name = \'${input}\'`)',
       after: "db.query('SELECT * FROM users WHERE name = $1', [input])",
     },
     complianceMapping: {},
-    ...overrides,
-  };
-}
-
-function makeAuditResult(overrides?: Record<string, unknown>) {
-  const defaultFindings = [
-    makeFinding({ severity: "CRITICAL", type: "hardcoded-secret", location: { file: "config/db.ts", line: 5 } }),
-    makeFinding({ severity: "HIGH", type: "sql-injection", location: { file: "src/db/query.ts", line: 42 } }),
-    makeFinding({ severity: "MEDIUM", type: "missing-csrf", location: { file: "src/api/handler.ts", line: 18 } }),
-  ];
-
-  return {
-    phases: {
-      quality: { summary: "Code quality review done", findings: [] },
-      vulnerability: { summary: "Vuln scan done", findings: defaultFindings },
-      threatModel: { summary: "Threat model done", findings: [] },
-    },
-    allFindings: defaultFindings,
-    score: 52,
-    grade: "F",
-    severityCounts: { CRITICAL: 1, HIGH: 1, MEDIUM: 1, LOW: 0, INFO: 0 },
     ...overrides,
   };
 }

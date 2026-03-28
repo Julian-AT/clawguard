@@ -3,7 +3,7 @@ import { createBashTool } from "bash-tool";
 import { runQualityReview } from "./phase1-quality";
 import { runVulnerabilityScan } from "./phase2-vuln";
 import { runThreatModel } from "./phase3-threat";
-import { calculateScore, countBySeverity } from "./scoring";
+import { calculateScore, getGrade, countBySeverity } from "./scoring";
 import type { AuditResult } from "./types";
 
 export type ProgressCallback = (
@@ -92,19 +92,18 @@ export async function runSecurityPipeline(
     ];
 
     // Calculate score and grade
-    const { score, grade } = calculateScore(allFindings);
-    const severityCounts = countBySeverity(allFindings);
+    const score = calculateScore(allFindings);
+    const grade = getGrade(score);
 
     return {
-      phases: {
-        quality: phase1,
-        vulnerability: phase2,
-        threatModel: phase3,
-      },
-      allFindings,
+      phases: [
+        { ...phase1, phase: "code-quality" },
+        { ...phase2, phase: "vulnerability-scan" },
+        { ...phase3, phase: "threat-model" },
+      ],
+      findings: allFindings,
       score,
       grade,
-      severityCounts,
     };
   } finally {
     await sandbox.stop();

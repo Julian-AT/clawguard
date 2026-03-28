@@ -1,38 +1,38 @@
-import type { Finding } from "./types";
+import type { Finding, Severity } from "./types";
 
-export const DEDUCTIONS = {
+export const DEDUCTIONS: Record<Severity, number> = {
   CRITICAL: 25,
   HIGH: 15,
   MEDIUM: 8,
   LOW: 3,
   INFO: 1,
-} as const satisfies Record<string, number>;
+};
 
-export const GRADE_THRESHOLDS = [
-  [90, "A"],
-  [80, "B"],
-  [70, "C"],
-  [60, "D"],
-] as const;
+export const GRADE_THRESHOLDS: { min: number; grade: string }[] = [
+  { min: 90, grade: "A" },
+  { min: 80, grade: "B" },
+  { min: 70, grade: "C" },
+  { min: 60, grade: "D" },
+  { min: 0, grade: "F" },
+];
 
-export function calculateScore(findings: Finding[]): {
-  score: number;
-  grade: string;
-} {
+export function calculateScore(findings: Finding[]): number {
   const totalDeduction = findings.reduce(
-    (sum, f) => sum + (DEDUCTIONS[f.severity as keyof typeof DEDUCTIONS] ?? 0),
+    (sum, f) => sum + (DEDUCTIONS[f.severity] || 0),
     0
   );
-  const score = Math.max(0, 100 - totalDeduction);
-  const grade =
-    GRADE_THRESHOLDS.find(([min]) => score >= min)?.[1] ?? "F";
-  return { score, grade };
+  return Math.max(0, 100 - totalDeduction);
 }
 
-export function countBySeverity(
-  findings: Finding[]
-): Record<string, number> {
-  const counts: Record<string, number> = {
+export function getGrade(score: number): string {
+  for (const threshold of GRADE_THRESHOLDS) {
+    if (score >= threshold.min) return threshold.grade;
+  }
+  return "F";
+}
+
+export function countBySeverity(findings: Finding[]): Record<Severity, number> {
+  const counts: Record<Severity, number> = {
     CRITICAL: 0,
     HIGH: 0,
     MEDIUM: 0,
@@ -40,7 +40,7 @@ export function countBySeverity(
     INFO: 0,
   };
   for (const f of findings) {
-    counts[f.severity] = (counts[f.severity] ?? 0) + 1;
+    counts[f.severity]++;
   }
   return counts;
 }

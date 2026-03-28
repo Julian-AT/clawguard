@@ -184,7 +184,7 @@ async function runFixFlow(
       onFixProgress: async (result: FixResult) => {
         if (result.status === "fixed") {
           await thread.post(
-            `Fixed: ${result.finding.type} (${result.finding.cweId}) in \`${result.finding.location.file}:${result.finding.location.line}\` -- commit ${result.commitSha?.slice(0, 7)}`
+            `Fixed: ${result.finding.type} (${result.finding.cweId}) in \`${result.finding.file}:${result.finding.line}\` -- commit ${result.commitSha?.slice(0, 7)}`
           );
         } else {
           await thread.post(
@@ -236,7 +236,7 @@ async function runFixFlow(
 
     // Match finding by type (case-insensitive, partial match)
     const targetLower = intent.target.toLowerCase();
-    const finding = auditData.result.allFindings.find(
+    const finding = auditData.result.findings.find(
       (f) =>
         f.type.toLowerCase().includes(targetLower) ||
         f.cweId.toLowerCase() === targetLower
@@ -244,13 +244,13 @@ async function runFixFlow(
 
     if (!finding) {
       await thread.post(
-        `Could not find a finding matching "${intent.target}". Available findings: ${auditData.result.allFindings.map((f) => f.type).join(", ")}`
+        `Could not find a finding matching "${intent.target}". Available findings: ${auditData.result.findings.map((f) => f.type).join(", ")}`
       );
       return;
     }
 
     const status = await thread.post(
-      `Fixing: ${finding.type} (${finding.cweId}) in \`${finding.location.file}:${finding.location.line}\`...`
+      `Fixing: ${finding.type} (${finding.cweId}) in \`${finding.file}:${finding.line}\`...`
     );
 
     // Create sandbox for single fix
@@ -279,7 +279,7 @@ async function runFixFlow(
 
       if (result.status === "fixed") {
         await status.edit(
-          `Fixed: ${result.finding.type} (${result.finding.cweId}) in \`${result.finding.location.file}:${result.finding.location.line}\` -- commit ${result.commitSha?.slice(0, 7)}`
+          `Fixed: ${result.finding.type} (${result.finding.cweId}) in \`${result.finding.file}:${result.finding.line}\` -- commit ${result.commitSha?.slice(0, 7)}`
         );
       } else {
         await status.edit(

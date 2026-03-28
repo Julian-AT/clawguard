@@ -40,7 +40,7 @@ export async function commitFixToGitHub(
       owner: params.owner,
       repo: params.repo,
       path: params.filePath,
-      message: `fix(security): ${params.finding.type} (${params.finding.cweId})\n\nAuto-fix applied by ClawGuard for ${params.finding.severity} finding.\nLocation: ${params.filePath}:${params.finding.location.line}`,
+      message: `fix(security): ${params.finding.type} (${params.finding.cweId})\n\nAuto-fix applied by ClawGuard for ${params.finding.severity} finding.\nLocation: ${params.filePath}:${params.finding.line}`,
       content: Buffer.from(params.content).toString("base64"),
       sha: currentFile.sha,
       branch: params.branch,
@@ -51,5 +51,5 @@ export async function commitFixToGitHub(
     }
   );
 
-  return commitResult.commit.sha;
+  return commitResult.commit.sha ?? "";
 }
