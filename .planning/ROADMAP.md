@@ -46,12 +46,12 @@ Plans:
   2. The summary card displays a security score (0-100 numeric with A-F grade), severity count badges, and a top findings table with severity, type, and file location
   3. Each finding in stored results includes severity, type, file:line location, CWE ID, OWASP Top 10 category, description, attack scenario, data flow chain, before/after code fix, and compliance mapping
   4. The summary card includes a "View Full Report" link pointing to `/report/[owner]/[repo]/[pr]`
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [x] 02-01-PLAN.md — Types, scoring, summary card builder, and Redis type update
+- [x] 02-02-PLAN.md — 3-phase analysis agents and pipeline orchestrator
+- [x] 02-03-PLAN.md — Bot integration with live progress updates and card posting
 
 ### Phase 3: Auto-Fix & Commit Loop
 **Goal**: The agent autonomously fixes vulnerabilities by generating patches in a sandbox, validating them, committing to the PR branch, and re-auditing to prove the fixes work
@@ -63,12 +63,12 @@ Plans:
   3. "Fix All" processes all CRITICAL and HIGH findings sequentially, committing each validated fix
   4. After all fixes are committed, a full re-audit runs automatically and a new summary card is posted with the updated security score
   5. Action buttons (Auto-Fix per finding, Auto-Fix All, View Report) appear in the summary card
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [x] 03-01-PLAN.md — Fix pipeline core: types, apply, validate, commit, agent modules + tests
+- [x] 03-02-PLAN.md — Summary card JSX conversion with action labels and LinkButton
+- [x] 03-03-PLAN.md — Fix orchestrator, bot integration with intent detection and re-audit flow
 
 ### Phase 4: Interactive Web Report
 **Goal**: Users can view a rich, interactive security report for any audited PR at a shareable URL with professional dark-theme enterprise aesthetic
@@ -129,8 +129,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Bot Wiring | 0/2 | Not started | - |
-| 2. Security Analysis Pipeline | 0/3 | Not started | - |
-| 3. Auto-Fix & Commit Loop | 0/3 | Not started | - |
+| 2. Security Analysis Pipeline | 3/3 | Complete | 2026-03-27 |
+| 3. Auto-Fix & Commit Loop | 1/3 | In Progress|  |
 | 4. Interactive Web Report | 0/3 | Not started | - |
 | 5. Chat, Config & Dashboard | 0/3 | Not started | - |
 | 6. Demo Hardening | 0/2 | Not started | - |

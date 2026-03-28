@@ -16,6 +16,21 @@ vi.mock("@upstash/redis", () => ({
 
 import { storeAuditResult, getAuditResult } from "../lib/redis";
 import type { AuditData } from "../lib/redis";
+import type { AuditResult } from "../lib/analysis/types";
+
+function makeAuditResult(): AuditResult {
+  return {
+    phases: {
+      quality: { summary: "Quality review complete", findings: [] },
+      vulnerability: { summary: "No vulnerabilities found", findings: [] },
+      threatModel: { summary: "Threat model clean", findings: [] },
+    },
+    allFindings: [],
+    score: 100,
+    grade: "A",
+    severityCounts: { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0, INFO: 0 },
+  };
+}
 
 describe("Redis Audit Storage", () => {
   beforeEach(() => {
@@ -24,7 +39,7 @@ describe("Redis Audit Storage", () => {
 
   it("stores audit data at the correct key (SCAN-07)", async () => {
     const data: AuditData = {
-      result: "No vulnerabilities found.",
+      result: makeAuditResult(),
       timestamp: "2026-03-27T00:00:00.000Z",
       pr: {
         owner: "test-owner",
@@ -44,14 +59,15 @@ describe("Redis Audit Storage", () => {
 
     const storedJson = mockSet.mock.calls[0][1];
     const parsed = JSON.parse(storedJson);
-    expect(parsed.result).toBe("No vulnerabilities found.");
+    expect(parsed.result.score).toBe(100);
+    expect(parsed.result.grade).toBe("A");
     expect(parsed.pr.owner).toBe("test-owner");
     expect(parsed.status).toBe("complete");
   });
 
   it("retrieves stored audit data by key (SCAN-07)", async () => {
     const storedData: AuditData = {
-      result: "Found 2 vulnerabilities.",
+      result: makeAuditResult(),
       timestamp: "2026-03-27T00:00:00.000Z",
       pr: { owner: "owner", repo: "repo", number: 42, title: "Fix auth" },
       status: "complete",
@@ -64,7 +80,8 @@ describe("Redis Audit Storage", () => {
     expect(result!.status).toBe("complete");
     expect(result!.pr.number).toBe(42);
     expect(result!.pr.owner).toBe("owner");
-    expect(result!.result).toBe("Found 2 vulnerabilities.");
+    expect(result!.result.score).toBe(100);
+    expect(result!.result.grade).toBe("A");
   });
 
   it("returns null for missing key (SCAN-07)", async () => {

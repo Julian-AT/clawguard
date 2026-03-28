@@ -12,17 +12,17 @@ When a developer @mentions ClawGuard on a PR, it must find real vulnerabilities,
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] 3-phase security pipeline: code quality review → vulnerability scan → threat model — *Validated in Phase 2: security-analysis-pipeline*
+- [x] ToolLoopAgent (via Vercel AI Gateway) analyzes code with bash tools — *Validated in Phase 2*
+- [x] Structured JSON output with findings, scores, CWE/OWASP mappings — *Validated in Phase 2*
+- [x] Security scoring: 0-100 numeric with A-F grade, deductions by severity — *Validated in Phase 2*
+- [x] JSX summary Card posted to PR thread with severity badges, findings table, report link — *Validated in Phase 2 (GFM markdown card)*
+- [x] Audit results stored in Upstash Redis keyed by `{owner}/{repo}/pr/{number}` — *Validated in Phase 2*
 
 ### Active
 
 - [ ] GitHub webhook receives @mention events and triggers the security audit pipeline
-- [ ] 3-phase security pipeline: code quality review → vulnerability scan → threat model
 - [ ] Vercel Sandbox clones repo and checks out PR branch for isolated analysis
-- [ ] ToolLoopAgent (via Vercel AI Gateway) analyzes code with bash/readFile/writeFile tools
-- [ ] Structured JSON output with findings, scores, CWE/OWASP mappings, Mermaid diagrams
-- [ ] Security scoring: 0-100 numeric with A-F grade, deductions by severity
-- [ ] JSX summary Card posted to PR thread with severity badges, findings table, report link
 - [ ] Interactive web report at `/report/[owner]/[repo]/[pr]` with dark theme shadcn/ui
 - [ ] Report: security score gauge, OWASP distribution chart, expandable finding cards
 - [ ] Report: Mermaid data flow diagrams per finding, attack path diagrams in threat model
@@ -37,8 +37,7 @@ When a developer @mentions ClawGuard on a PR, it must find real vulnerabilities,
 - [ ] `.clawguard/policies.yml` reader for custom security rules injected into agent prompt
 - [ ] Dashboard with GitHub OAuth login showing connected repos and audit history
 - [ ] Dashboard per-repo view with PR audit list and security score trend chart
-- [ ] Audit results stored in Upstash Redis keyed by `{owner}/{repo}/pr/{number}`
-- [ ] Vulnerable demo repo (`techcorp-api`) with 3 PRs containing planted vulnerabilities
+- [ ] Audit results stored in Upstash Redis keyed by `{owner}/{repo}/pr/{number}`- [ ] Vulnerable demo repo (`techcorp-api`) with 3 PRs containing planted vulnerabilities
 
 ### Out of Scope
 
@@ -101,4 +100,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after initialization*
+*Last updated: 2026-03-28 after Phase 3 completion*

@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import type { AuditResult } from "@/lib/analysis/types";
 
 export const redis = new Redis({
   url: process.env.KV_REST_API_URL!,
@@ -6,7 +7,7 @@ export const redis = new Redis({
 });
 
 export interface AuditData {
-  result: string;
+  result: AuditResult;
   timestamp: string;
   pr: { owner: string; repo: string; number: number; title: string };
   status: "processing" | "complete" | "error";
