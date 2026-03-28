@@ -8,11 +8,11 @@ interface ScoreGaugeProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 90) return "#10b981";
-  if (score >= 80) return "#22c55e";
-  if (score >= 70) return "#eab308";
-  if (score >= 60) return "#f97316";
-  return "#ef4444";
+  if (score >= 90) return "oklch(0.696 0.17 162.48)";
+  if (score >= 80) return "oklch(0.769 0.188 70.08)";
+  if (score >= 70) return "oklch(0.627 0.265 303.9)";
+  if (score >= 60) return "oklch(0.645 0.246 16.439)";
+  return "oklch(0.704 0.191 22.216)";
 }
 
 export function ScoreGauge({ score, grade }: ScoreGaugeProps) {

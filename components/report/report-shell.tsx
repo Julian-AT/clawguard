@@ -1,5 +1,6 @@
-import { ExternalLink, Shield } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { ClawGuardLogo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { PrintReportButton } from "@/components/report/print-report-button";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ export function ReportShell({ owner, repo, prNumber, children }: ReportShellProp
       <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 print:hidden">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-            <Shield className="size-5 text-primary" aria-hidden />
+            <ClawGuardLogo className="h-5 w-[35px] text-primary" />
             ClawGuard
           </Link>
           <div className="flex flex-wrap items-center gap-2">

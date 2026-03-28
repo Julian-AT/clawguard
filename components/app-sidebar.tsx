@@ -1,18 +1,11 @@
 "use client";
 
-import {
-  BookOpen,
-  Brain,
-  LayoutDashboard,
-  LineChart,
-  LogOut,
-  Shield,
-  Sparkles,
-} from "lucide-react";
+import { BookOpen, Brain, LayoutDashboard, LineChart, LogOut, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import type { DashboardRepo, DashboardUser } from "@/components/dashboard/dashboard-shell";
+import { ClawGuardLogo } from "@/components/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -106,7 +99,7 @@ export function AppSidebar({ repos, user }: { repos: DashboardRepo[]; user: Dash
             <SidebarMenuButton size="lg" asChild tooltip="ClawGuard">
               <Link href="/">
                 <div className="flex size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Shield className="size-4" />
+                  <ClawGuardLogo className="h-4 w-7" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">ClawGuard</span>

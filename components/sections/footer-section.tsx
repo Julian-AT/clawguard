@@ -1,11 +1,11 @@
 "use client";
 
+import { ChevronRightIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
+import { ClawGuardLogo } from "@/components/logo";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { siteConfig } from "@/lib/landing-config";
-import { ChevronRightIcon } from "@radix-ui/react-icons";
-import { Shield } from "lucide-react";
-import Link from "next/link";
 export function FooterSection() {
   const tablet = useMediaQuery("(max-width: 1024px)");
 
@@ -14,7 +14,7 @@ export function FooterSection() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between p-10">
         <div className="flex flex-col items-start justify-start gap-y-5 max-w-xs mx-0">
           <Link href="/" className="flex items-center gap-2">
-            <Shield className="size-8 text-primary" aria-hidden />
+            <ClawGuardLogo className="h-8 w-[56px] text-primary" />
             <p className="text-xl font-semibold text-primary">ClawGuard</p>
           </Link>
           <p className="tracking-tight text-muted-foreground font-medium">
@@ -27,11 +27,9 @@ export function FooterSection() {
         </div>
         <div className="pt-5 md:w-1/2">
           <div className="flex flex-col items-start justify-start md:flex-row md:items-center md:justify-between gap-y-5 lg:pl-10">
-            {siteConfig.footerLinks.map((column, columnIndex) => (
-              <ul key={columnIndex} className="flex flex-col gap-y-2">
-                <li className="mb-2 text-sm font-semibold text-primary">
-                  {column.title}
-                </li>
+            {siteConfig.footerLinks.map((column) => (
+              <ul key={column.title} className="flex flex-col gap-y-2">
+                <li className="mb-2 text-sm font-semibold text-primary">{column.title}</li>
                 {column.links.map((link) => (
                   <li
                     key={link.id}

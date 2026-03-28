@@ -1,9 +1,10 @@
 "use client";
 
-import { Menu, Shield, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { AnimatePresence, motion, useScroll } from "motion/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ClawGuardLogo } from "@/components/logo";
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavMenu } from "@/components/nav-menu";
 import { siteConfig } from "@/lib/landing-config";
@@ -109,7 +110,7 @@ export function Navbar() {
         >
           <div className="flex h-[56px] items-center justify-between p-4">
             <Link href="/" className="flex items-center gap-3">
-              <Shield className="size-7 md:size-10 text-primary" aria-hidden />
+              <ClawGuardLogo className="size-7 md:h-10 md:w-[70px] text-primary" />
               <p className="text-lg font-semibold text-primary">ClawGuard</p>
             </Link>
 
@@ -162,7 +163,7 @@ export function Navbar() {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <Link href="/" className="flex items-center gap-3">
-                    <Shield className="size-7 md:size-10 text-primary" aria-hidden />
+                    <ClawGuardLogo className="size-7 md:h-10 md:w-[70px] text-primary" />
                     <p className="text-lg font-semibold text-primary">ClawGuard</p>
                   </Link>
                   <button

@@ -1,0 +1,17 @@
+{
+  "name": "ClawGuard",
+  "short_name": "ClawGuard",
+  "description": "AI-powered security agent for GitHub pull requests",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}

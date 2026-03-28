@@ -16,11 +16,11 @@ const SEVERITY_PRIORITY: Record<Severity, number> = {
 };
 
 const SEVERITY_COLORS: Record<Severity, string> = {
-  CRITICAL: "#ef4444",
-  HIGH: "#f97316",
-  MEDIUM: "#eab308",
-  LOW: "#3b82f6",
-  INFO: "#6b7280",
+  CRITICAL: "oklch(0.704 0.191 22.216)",
+  HIGH: "oklch(0.645 0.246 16.439)",
+  MEDIUM: "oklch(0.769 0.188 70.08)",
+  LOW: "oklch(0.696 0.17 162.48)",
+  INFO: "oklch(0.488 0.243 264.376)",
 };
 
 interface ChartDatum {
