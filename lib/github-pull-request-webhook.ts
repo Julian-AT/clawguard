@@ -100,7 +100,7 @@ export async function handlePullRequestEvent(
         owner: ownerLogin,
         repo: repoName,
         issue_number: prNumber,
-        body: "## 🛡️ ClawGuard (automatic)\n\nStarting security audit…",
+        body: "## ClawGuard Security Audit\n\nStarting security audit...",
       });
       const commentId = created.id;
       const editor = {

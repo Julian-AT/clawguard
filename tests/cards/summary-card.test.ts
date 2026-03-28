@@ -1,25 +1,11 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { SEVERITY_ORDER, severityEmoji } from "@/lib/cards/summary-card";
+import { SEVERITY_ORDER } from "@/lib/cards/summary-card";
 
 const cardSource = readFileSync(resolve(__dirname, "../../lib/cards/summary-card.tsx"), "utf-8");
 
 describe("Summary Card Builder", () => {
-  describe("severityEmoji", () => {
-    it("maps severity levels to correct emoji", () => {
-      expect(severityEmoji("CRITICAL")).toBe("\uD83D\uDD34");
-      expect(severityEmoji("HIGH")).toBe("\uD83D\uDFE0");
-      expect(severityEmoji("MEDIUM")).toBe("\uD83D\uDFE1");
-      expect(severityEmoji("LOW")).toBe("\uD83D\uDD35");
-      expect(severityEmoji("INFO")).toBe("\u26AA");
-    });
-
-    it("returns default emoji for unknown severity", () => {
-      expect(severityEmoji("UNKNOWN")).toBe("\u26AA");
-    });
-  });
-
   describe("SEVERITY_ORDER", () => {
     it("orders CRITICAL first and INFO last", () => {
       expect(SEVERITY_ORDER.CRITICAL).toBeLessThan(SEVERITY_ORDER.HIGH);
@@ -30,22 +16,24 @@ describe("Summary Card Builder", () => {
   });
 
   describe("buildSummaryCard JSX structure", () => {
-    it("renders Card with ClawGuard branded title including score and grade (CARD-01)", () => {
-      expect(cardSource).toContain("ClawGuard:");
+    it("renders Card with ClawGuard Security Audit title and score in note body (CARD-01)", () => {
+      expect(cardSource).toContain('title="ClawGuard Security Audit"');
       expect(cardSource).toContain("audit.score");
       expect(cardSource).toContain("audit.grade");
     });
 
-    it("renders severity counts as Fields (CRITICAL, HIGH, MEDIUM, LOW) (CARD-01)", () => {
-      expect(cardSource).toContain('<Field label="CRITICAL"');
-      expect(cardSource).toContain('<Field label="HIGH"');
-      expect(cardSource).toContain('<Field label="MEDIUM"');
-      expect(cardSource).toContain('<Field label="LOW"');
+    it("renders severity counts as Severity | Count table (CARD-01)", () => {
+      expect(cardSource).toContain('<Table headers={["Severity", "Count"]}');
     });
 
     it("renders top findings as Table with severity, finding, location columns (CARD-02)", () => {
       expect(cardSource).toContain("<Table");
       expect(cardSource).toContain('headers={["Severity", "Finding", "Location"]}');
+    });
+
+    it("uses plain severity text in findings table rows (no emoji)", () => {
+      expect(cardSource).toContain("f.severity");
+      expect(cardSource).not.toMatch(/severityEmoji|\\uD83D/);
     });
 
     it("limits findings table to top 3 entries (CARD-02)", () => {
@@ -86,6 +74,12 @@ describe("Summary Card Builder", () => {
     it("calculates fixable count from CRITICAL+HIGH findings", () => {
       expect(cardSource).toContain("fixableCount");
       expect(cardSource).toMatch(/CRITICAL.*HIGH|HIGH.*CRITICAL/);
+    });
+
+    it("buildSummaryMarkdown uses NOTE block and report link", () => {
+      expect(cardSource).toContain("> [!NOTE]");
+      expect(cardSource).toContain("buildSummaryMarkdown");
+      expect(cardSource).toContain("[View full report]");
     });
   });
 });

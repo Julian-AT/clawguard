@@ -165,7 +165,7 @@ async function runFixFlow(
     });
 
     const summaryLines = [
-      "## Auto-Fix Results",
+      "## ClawGuard Auto-Fix Results",
       "",
       "| Finding | Status | Commit |",
       "|---------|--------|--------|",
@@ -275,7 +275,7 @@ bot.onNewMention(async (thread, message) => {
   } catch {}
 
   const status = await thread.post(
-    "## 🛡️ ClawGuard Security Audit\n\n⬜ Phase 1: Code Quality Review\n⬜ Phase 2: Vulnerability Scan\n⬜ Phase 3: Threat Model",
+    "## ClawGuard Security Audit\n\nStarting security audit…",
   );
   if (autoSubscribe) await thread.subscribe();
 
@@ -284,7 +284,7 @@ bot.onNewMention(async (thread, message) => {
   } catch (error) {
     console.error("[bot] Review error:", error);
     await status.edit(
-      "## 🛡️ ClawGuard Security Audit\n\n❌ Something went wrong during the security analysis. Please try again.",
+      "## ClawGuard Security Audit\n\n> [!WARNING]\n> **Error**\n> Something went wrong during the security analysis. Please try again.",
     );
   }
 });
@@ -311,13 +311,15 @@ bot.onSubscribedMessage(async (thread, message) => {
       await runFixFlow(thread, raw, intent);
     } else if (intent.type === "re-audit") {
       const status = await thread.post(
-        "## 🛡️ ClawGuard Security Audit\n\n⬜ Phase 1: Code Quality Review\n⬜ Phase 2: Vulnerability Scan\n⬜ Phase 3: Threat Model",
+        "## ClawGuard Security Audit\n\nStarting security audit…",
       );
       await runAuditAndPost(thread, raw, status);
     }
   } catch (error) {
     console.error("[bot] Error:", error);
-    await thread.post("❌ Something went wrong. Please try again.");
+    await thread.post(
+      "## ClawGuard Security Audit\n\n> [!WARNING]\n> **Error**\n> Something went wrong. Please try again.",
+    );
   }
 });
 
@@ -330,7 +332,9 @@ bot.onAction("fix-all", async (event) => {
     await runFixFlow(thread, raw, { type: "fix-all" });
   } catch (error) {
     console.error("[bot] onAction error:", error);
-    await thread.post("❌ Something went wrong during auto-fix. Please try again.");
+    await thread.post(
+      "## ClawGuard Security Audit\n\n> [!WARNING]\n> **Error**\n> Something went wrong during auto-fix. Please try again.",
+    );
   }
 });
 
@@ -351,7 +355,7 @@ bot.onAction("re-audit", async (event) => {
   } catch (error) {
     console.error("[bot] onAction re-audit error:", error);
     await thread.post(
-      `❌ Re-audit failed. Please try \`@${botUsername} review\` in a new comment.`,
+      `## ClawGuard Security Audit\n\n> [!WARNING]\n> **Error**\n> Re-audit failed. Please try \`@${botUsername} review\` in a new comment.`,
     );
   }
 });
