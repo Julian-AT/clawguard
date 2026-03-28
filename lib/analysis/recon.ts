@@ -1,6 +1,6 @@
 import type { Sandbox } from "@vercel/sandbox";
 import type { ClawGuardConfig } from "@/lib/config/schemas";
-import type { ReconResult } from "./types";
+import type { DependencyGraph, ReconResult } from "./types";
 import { logWarn } from "@/lib/logger";
 
 const MAX_EXCERPT_LINES = 120;
@@ -138,6 +138,18 @@ export async function runReconnaissance(
     });
   }
 
+  let dependencyGraph: DependencyGraph | undefined;
+  if (config.analysis.contextDepth !== "minimal") {
+    dependencyGraph = buildDependencyGraphHeuristic(
+      changedFiles.map((c) => c.path),
+      fileExcerpts,
+      config.analysis.contextDepth
+    );
+    if (config.analysis.contextDepth === "deep" && dependencyGraph) {
+      await enrichImportedByWithSandbox(sandbox, dependencyGraph);
+    }
+  }
+
   return {
     changedFiles,
     languages: [...languages],
@@ -155,7 +167,88 @@ export async function runReconnaissance(
     secretPatternHints:
       secretPatternHints.length > 0 ? secretPatternHints : undefined,
     optionalSarifSnippet,
+    dependencyGraph,
   };
+}
+
+function buildDependencyGraphHeuristic(
+  paths: string[],
+  fileExcerpts: Record<string, string>,
+  depth: "standard" | "deep"
+): DependencyGraph {
+  const changedModules = paths.map((path) => {
+    const text = fileExcerpts[path] ?? "";
+    const imports: string[] = [];
+    for (const line of text.split("\n")) {
+      const m = line.match(
+        /^import(?:\s+type)?\s+[\s\S]*?from\s+['"]([^'"]+)['"]/
+      );
+      if (m) imports.push(m[1]);
+    }
+    const exportRe =
+      /^(?:export\s+(?:async\s+)?function\s+(\w+)|export\s+const\s+(\w+)|export\s+class\s+(\w+))/gm;
+    const exportsUsedElsewhere: string[] = [];
+    let em: RegExpExecArray | null;
+    while ((em = exportRe.exec(text)) !== null) {
+      const name = em[1] ?? em[2] ?? em[3];
+      if (name) exportsUsedElsewhere.push(name);
+    }
+    return {
+      file: path,
+      imports: [...new Set(imports)].slice(0, 48),
+      importedBy: [] as string[],
+      exportsUsedElsewhere: exportsUsedElsewhere.slice(0, 24),
+    };
+  });
+
+  const allText = paths.map((p) => fileExcerpts[p] ?? "").join("\n");
+  const envVars = new Set<string>();
+  const envRe = /process\.env\.([A-Z0-9_]+)/g;
+  let ev: RegExpExecArray | null;
+  while ((ev = envRe.exec(allText))) envVars.add(ev[1]);
+
+  const securitySensitiveAPIs: string[] = [];
+  if (/\beval\s*\(/.test(allText)) securitySensitiveAPIs.push("eval()");
+  if (/\b(?:child_process\.)?exec\s*\(/.test(allText))
+    securitySensitiveAPIs.push("exec");
+  if (/dangerouslySetInnerHTML/.test(allText))
+    securitySensitiveAPIs.push("dangerouslySetInnerHTML");
+  if (/\binnerHTML\s*=/.test(allText)) securitySensitiveAPIs.push("innerHTML assignment");
+
+  void depth;
+  return {
+    changedModules,
+    securitySensitiveAPIs,
+    envVarsTouched: [...envVars].slice(0, 40),
+  };
+}
+
+async function enrichImportedByWithSandbox(
+  sandbox: Sandbox,
+  graph: DependencyGraph
+): Promise<void> {
+  for (const mod of graph.changedModules) {
+    const base = mod.file.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "";
+    if (!base || base.length < 2) continue;
+    try {
+      const rg = await sandbox.runCommand("rg", [
+        "-l",
+        `--glob=!**/node_modules/**`,
+        base,
+        ".",
+      ]);
+      if (rg.exitCode !== 0) continue;
+      const out = await rg.stdout();
+      const files = out
+        .split("\n")
+        .filter(Boolean)
+        .filter((f) => f && !f.includes(mod.file))
+        .slice(0, 12);
+      mod.importedBy = files;
+    } catch {
+      // rg may be missing in minimal images
+    }
+  }
 }
 
 function secretHintsFromDiff(diff: string): string[] {

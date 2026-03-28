@@ -50,6 +50,75 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
         </section>
       )}
 
+      {threatModel.strideCategorization &&
+        threatModel.strideCategorization.length > 0 && (
+          <section>
+            <h3 className="text-lg font-semibold mb-3">STRIDE</h3>
+            <ul className="space-y-2 text-sm">
+              {threatModel.strideCategorization.map((s, i) => (
+                <li
+                  key={`${s.label}-${i}`}
+                  className="rounded-md border border-border bg-card/40 px-3 py-2"
+                >
+                  <span className="font-mono text-xs text-primary mr-2">
+                    [{s.stride}]
+                  </span>
+                  <span className="font-medium">{s.label}</span>
+                  <span className="text-muted-foreground"> — {s.description}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+      {threatModel.trustBoundaries && threatModel.trustBoundaries.length > 0 && (
+        <section>
+          <h3 className="text-lg font-semibold mb-3">Trust boundaries</h3>
+          <div className="space-y-4">
+            {threatModel.trustBoundaries.map((tb, idx) => (
+              <div
+                key={tb.name}
+                className="rounded-lg border border-border bg-card p-4"
+              >
+                <h4 className="font-semibold text-sm">{tb.name}</h4>
+                <p className="text-sm text-muted-foreground mt-1">{tb.description}</p>
+                {tb.mermaidDiagram && (
+                  <MermaidDiagram chart={tb.mermaidDiagram} id={`tb-${idx}`} />
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {threatModel.riskMatrix && threatModel.riskMatrix.length > 0 && (
+        <section>
+          <h3 className="text-lg font-semibold mb-3">Risk matrix</h3>
+          <div className="rounded-lg border border-border overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left p-2">Topic</th>
+                  <th className="text-left p-2">Likelihood</th>
+                  <th className="text-left p-2">Impact</th>
+                  <th className="text-left p-2">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {threatModel.riskMatrix.map((r, i) => (
+                  <tr key={`${r.topic}-${i}`} className="border-b border-border/60">
+                    <td className="p-2">{r.topic}</td>
+                    <td className="p-2 capitalize">{r.likelihood}</td>
+                    <td className="p-2 capitalize">{r.impact}</td>
+                    <td className="p-2 text-muted-foreground">{r.notes}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
       {threatModel.attackSurfaces.length > 0 && (
         <section>
           <h3 className="text-lg font-semibold mb-3">Attack Surfaces</h3>

@@ -3,11 +3,20 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 
 const botSource = readFileSync(resolve(__dirname, "../lib/bot.ts"), "utf-8");
+const chatAdaptersSource = readFileSync(
+  resolve(__dirname, "../lib/chat-adapters.ts"),
+  "utf-8"
+);
+const auditRunnerSource = readFileSync(
+  resolve(__dirname, "../lib/github-audit-runner.ts"),
+  "utf-8"
+);
 
 describe("Bot Configuration", () => {
   it("exports Chat instance with GitHub adapter (HOOK-02)", () => {
     expect(botSource).toContain("new Chat(");
-    expect(botSource).toContain("createGitHubAdapter(");
+    expect(botSource).toContain("buildChatAdapters");
+    expect(chatAdaptersSource).toContain("createGitHubAdapter(");
     expect(botSource).toMatch(/createRedisState|createMemoryState/);
   });
 
@@ -34,7 +43,8 @@ describe("Summary Card Integration", () => {
   });
 
   it("posts summary card as final status edit replacing progress (CARD-01)", () => {
-    expect(botSource).toContain("status.edit(card");
+    expect(botSource).toContain("runAuditPipeline");
+    expect(auditRunnerSource).toContain("status.edit(card");
   });
 
   it("summary card includes report link pattern (CARD-03)", () => {
@@ -51,22 +61,22 @@ describe("Live Progress Updates", () => {
   });
 
   it("uses progress callback with status.edit for live updates (D-07)", () => {
-    expect(botSource).toMatch(
+    expect(auditRunnerSource).toMatch(
       /onProgress.*ProgressCallback|ProgressCallback.*onProgress/
     );
-    expect(botSource).toContain("status.edit");
+    expect(auditRunnerSource).toContain("status.edit");
   });
 
   it("passes onProgress callback to reviewPullRequest (D-07)", () => {
-    expect(botSource).toContain("reviewPullRequest(");
-    expect(botSource).toContain("onProgress");
+    expect(auditRunnerSource).toContain("reviewPullRequest(");
+    expect(auditRunnerSource).toContain("onProgress");
   });
 });
 
 describe("Structured Data Storage", () => {
   it("stores structured AuditResult in Redis, not plain string (SCAN-05)", () => {
     // Verify it passes the auditResult object, not a string
-    expect(botSource).toMatch(/result:\s*auditResult/);
+    expect(auditRunnerSource).toMatch(/result:\s*auditResult/);
   });
 });
 

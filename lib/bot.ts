@@ -1,27 +1,23 @@
 import { Chat } from "chat";
 import type { Thread } from "chat";
-import { createGitHubAdapter } from "@chat-adapter/github";
 import type { GitHubRawMessage } from "@chat-adapter/github";
+import { buildChatAdapters } from "./chat-adapters";
 import { createMemoryState } from "@chat-adapter/state-memory";
 import { createRedisState } from "@chat-adapter/state-redis";
 import { Octokit } from "@octokit/rest";
-import { reviewPullRequest } from "./review";
-import type { ProgressCallback } from "./review";
-import { storeAuditResult, getAuditResult } from "./redis";
+import { getAuditResult } from "./redis";
 import { formatPipelineStatusMessage } from "./bot-helpers";
 import { loadRepoConfig, type LoadRepoConfigResult } from "./config";
 import { DEFAULT_CLAWGUARD_CONFIG } from "./config/defaults";
 import { formatErrorForUser } from "./errors";
 import { buildSummaryCard } from "./cards/summary-card";
+import { runAuditPipeline } from "./github-audit-runner";
 import type { AuditResult } from "./analysis/types";
 import { fixAll, fixFinding } from "./fix";
 import type { FixContext } from "./fix/types";
 import type { Intent } from "./intent-types";
 import { classifyIntentWithLlm } from "./intent-classifier";
-import { checkAuditRateLimits } from "./rate-limit";
-import { logAudit } from "./logger";
-import { getEstimatedPipelineMs } from "./pipeline-eta";
-import { getStreamKey, pushStreamEvent } from "./stream-events";
+import { appendLearningRepo, extractLearningFromComment } from "./learnings";
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -39,11 +35,7 @@ function createStateAdapter() {
 
 export const bot = new Chat({
   userName: botUsername,
-  adapters: {
-    github: createGitHubAdapter({
-      userName: botUsername,
-    }),
-  },
+  adapters: buildChatAdapters(botUsername) as Chat["adapters"],
   state: createStateAdapter(),
 });
 
@@ -80,13 +72,54 @@ export function detectIntent(body: string, botName: string): Intent {
     return { type: "re-audit" };
   }
 
+  const feedbackHints = [
+    "false positive",
+    "not a vulnerability",
+    "not a vuln",
+    "remember",
+    "stop flagging",
+    "always flag",
+    "good catch",
+    "that's wrong",
+    "incorrect finding",
+  ];
+  if (feedbackHints.some((h) => lower.includes(h))) {
+    return { type: "feedback", raw: body };
+  }
+
   return { type: "unknown" };
 }
 
 type ThreadPostResult = Awaited<ReturnType<Thread["post"]>>;
 
-async function runAuditAndPost(
+async function handleFeedbackIntent(
   thread: Thread,
+  raw: GitHubRawMessage,
+  rawText: string
+): Promise<void> {
+  const owner = raw.repository.owner.login;
+  const repo = raw.repository.name;
+  const extracted = await extractLearningFromComment(rawText);
+  if (!extracted) {
+    await thread.post(
+      "I couldn't extract a concrete learning from that. Try rephrasing with what should change next time."
+    );
+    return;
+  }
+  await appendLearningRepo(owner, repo, {
+    pattern: extracted.pattern,
+    context: extracted.context,
+    action: extracted.action,
+    confidence: 0.75,
+  });
+  await thread.post(
+    `Understood — I'll factor this into future reviews for **${owner}/${repo}**:\n\n` +
+      `**${extracted.pattern}** (${extracted.action})`
+  );
+}
+
+async function runAuditAndPost(
+  _thread: Thread,
   raw: GitHubRawMessage,
   status: ThreadPostResult
 ): Promise<void> {
@@ -94,150 +127,12 @@ async function runAuditAndPost(
   const repo = raw.repository.name;
   const prNumber = raw.prNumber;
 
-  const rate = await checkAuditRateLimits({
-    installationId: undefined,
-    owner,
-    repo,
-    prNumber,
-  });
-  if (!rate.ok) {
-    await status.edit(`## ClawGuard\n\n${rate.reason}`);
-    logAudit("rate-limit", "blocked", { owner, repo, pr: prNumber });
-    return;
-  }
-
-  const { data: pr } = await octokit.pulls.get({
-    owner,
-    repo,
-    pull_number: prNumber,
-  });
-
-  const redisKey = `${owner}/${repo}/pr/${prNumber}`;
-  const now = new Date().toISOString();
-  const etaHint = await getEstimatedPipelineMs();
-
-  let cfgSummary = "";
-  let preloaded: LoadRepoConfigResult | undefined;
-  try {
-    preloaded = await loadRepoConfig(octokit, owner, repo, pr.head.ref);
-    cfgSummary = `Using config: **${preloaded.configSource}** · policies: **${preloaded.policiesSource}** (${preloaded.policies.length} rules)`;
-  } catch (e) {
-    cfgSummary = `Config load warning: ${formatErrorForUser(e)}`;
-  }
-
-  await storeAuditResult({
-    key: redisKey,
-    data: {
-      status: "processing",
-      timestamp: now,
-      pr: { owner, repo, number: prNumber, title: pr.title },
-      pipelineStage: "starting",
-      etaMsEstimate: etaHint ?? undefined,
+  await runAuditPipeline(octokit, owner, repo, prNumber, {
+    edit: async (body) => {
+      // Chat SDK accepts markdown strings or card JSX; align with Thread edit signature
+      await status.edit(body as Parameters<typeof status.edit>[0]);
     },
   });
-
-  const streamKey = getStreamKey(owner, repo, prNumber);
-  void pushStreamEvent(streamKey, "pipeline:stage", {
-    stage: "starting",
-    status: "running",
-  }).catch(() => {});
-
-  await status.edit(
-    `${formatPipelineStatusMessage({
-      stage: "recon",
-      status: "running",
-      detail: "Starting",
-    })}\n\n${cfgSummary}`
-  );
-
-  const onProgress: ProgressCallback = async (progress) => {
-    if (progress.stage === "error") {
-      void pushStreamEvent(streamKey, "pipeline:stage", {
-        stage: "error",
-        status: "running",
-      }).catch(() => {});
-    } else {
-      void pushStreamEvent(streamKey, "pipeline:stage", {
-        stage: progress.stage,
-        status: progress.status,
-      }).catch(() => {});
-    }
-
-    await storeAuditResult({
-      key: redisKey,
-      data: {
-        status: "processing",
-        timestamp: new Date().toISOString(),
-        pr: { owner, repo, number: prNumber, title: pr.title },
-        pipelineStage:
-          progress.stage === "error" ? "error" : progress.stage,
-        etaMsEstimate: etaHint ?? undefined,
-      },
-    });
-    await status.edit(
-      `${formatPipelineStatusMessage(progress)}\n\n${cfgSummary}`
-    );
-  };
-
-  let auditResult: AuditResult;
-  try {
-    auditResult = await reviewPullRequest(
-      {
-        owner,
-        repo,
-        prBranch: pr.head.ref,
-        baseBranch: pr.base.ref,
-        preloadedConfig: preloaded,
-      },
-      onProgress
-    );
-  } catch (error) {
-    const msg = formatErrorForUser(error);
-    await storeAuditResult({
-      key: redisKey,
-      data: {
-        status: "error",
-        timestamp: new Date().toISOString(),
-        pr: { owner, repo, number: prNumber, title: pr.title },
-        errorMessage: msg,
-      },
-    });
-    await status.edit(
-      `${formatPipelineStatusMessage({
-        stage: "error",
-        error: msg,
-      })}\n\n${cfgSummary}\n\nTry again or check ClawGuard deployment logs.`
-    );
-    throw error;
-  }
-
-  const partial = auditResult.metadata?.scanPartialFailure;
-  await storeAuditResult({
-    key: redisKey,
-    data: {
-      result: auditResult,
-      timestamp: new Date().toISOString(),
-      pr: { owner, repo, number: prNumber, title: pr.title },
-      status: partial ? "partial_error" : "complete",
-      partialErrorMessage: partial
-        ? auditResult.metadata?.scanErrorMessage
-        : undefined,
-    },
-  });
-
-  logAudit("audit", "stored", {
-    owner,
-    repo,
-    pr: prNumber,
-    partial: partial ? 1 : 0,
-  });
-
-  const card = buildSummaryCard(auditResult, {
-    owner,
-    repo,
-    number: prNumber,
-  });
-  await status.edit(card);
 }
 
 async function runFixFlow(
@@ -425,7 +320,9 @@ bot.onSubscribedMessage(async (thread, message) => {
   if (intent.type === "unknown") return;
 
   try {
-    if (intent.type === "fix-all" || intent.type === "fix-finding") {
+    if (intent.type === "feedback") {
+      await handleFeedbackIntent(thread, raw, intent.raw);
+    } else if (intent.type === "fix-all" || intent.type === "fix-finding") {
       await runFixFlow(thread, raw, intent);
     } else if (intent.type === "re-audit") {
       const status = await thread.post(

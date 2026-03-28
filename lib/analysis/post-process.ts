@@ -47,6 +47,9 @@ export function normalizeThreatModel(tm: ThreatModel | undefined): ThreatModel {
     return {
       attackSurfaces: [],
       attackPaths: [],
+      strideCategorization: [],
+      trustBoundaries: [],
+      riskMatrix: [],
     };
   }
   return {
@@ -55,6 +58,9 @@ export function normalizeThreatModel(tm: ThreatModel | undefined): ThreatModel {
     overallRisk: tm.overallRisk,
     mergeRecommendation: tm.mergeRecommendation,
     compoundRiskSummary: tm.compoundRiskSummary,
+    strideCategorization: tm.strideCategorization ?? [],
+    trustBoundaries: tm.trustBoundaries ?? [],
+    riskMatrix: tm.riskMatrix ?? [],
   };
 }
 

@@ -76,6 +76,26 @@ function mergeConfig(
       ...base.notifications,
       ...parsed.notifications,
     },
+    trigger: {
+      ...base.trigger,
+      ...parsed.trigger,
+    },
+    analysis: {
+      ...base.analysis,
+      ...parsed.analysis,
+    },
+    learnings: {
+      ...base.learnings,
+      ...parsed.learnings,
+    },
+    tracking: {
+      ...base.tracking,
+      ...parsed.tracking,
+    },
+    adapters: {
+      ...base.adapters,
+      ...parsed.adapters,
+    },
   };
 
   return ClawGuardConfigSchema.parse(merged);

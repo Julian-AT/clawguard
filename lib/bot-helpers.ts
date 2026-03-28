@@ -2,6 +2,7 @@ import type { PipelineProgress } from "@/lib/analysis/pipeline";
 
 const ORDER = [
   "recon",
+  "change-analysis",
   "security-scan",
   "threat-synthesis",
   "post-processing",
@@ -9,6 +10,7 @@ const ORDER = [
 
 const LABELS: Record<(typeof ORDER)[number], string> = {
   recon: "Reconnaissance",
+  "change-analysis": "PR summary",
   "security-scan": "Security scan",
   "threat-synthesis": "Threat synthesis",
   "post-processing": "Finalizing",

@@ -49,6 +49,9 @@ export const ComplianceMappingSchema = z.object({
   owaspAsvs: z.array(z.string()).default([]),
 });
 
+export const StrideCategorySchema = z.enum(["S", "T", "R", "I", "D", "E"]);
+export type StrideCategory = z.infer<typeof StrideCategorySchema>;
+
 export const FindingSchema = z.object({
   id: z.string().optional(),
   severity: SeveritySchema,
@@ -67,6 +70,8 @@ export const FindingSchema = z.object({
   complianceMapping: ComplianceMappingSchema.optional(),
   remediationEffort: RemediationEffortSchema.optional(),
   policyViolation: z.string().optional(),
+  /** STRIDE: Spoofing, Tampering, Repudiation, Info disclosure, Denial of service, Elevation */
+  strideCategory: StrideCategorySchema.optional(),
 });
 export type Finding = z.infer<typeof FindingSchema>;
 
@@ -102,8 +107,71 @@ export const ThreatModelSchema = z.object({
   overallRisk: z.string().optional(),
   mergeRecommendation: z.string().optional(),
   compoundRiskSummary: z.string().optional(),
+  strideCategorization: z
+    .array(
+      z.object({
+        label: z.string(),
+        stride: StrideCategorySchema,
+        description: z.string(),
+      })
+    )
+    .default([]),
+  trustBoundaries: z
+    .array(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        mermaidDiagram: z.string().optional(),
+      })
+    )
+    .default([]),
+  riskMatrix: z
+    .array(
+      z.object({
+        likelihood: z.enum(["low", "medium", "high"]),
+        impact: z.enum(["low", "medium", "high"]),
+        topic: z.string(),
+        notes: z.string(),
+      })
+    )
+    .default([]),
 });
 export type ThreatModel = z.infer<typeof ThreatModelSchema>;
+
+export const PRSummarySchema = z.object({
+  narrative: z.string(),
+  sequenceDiagrams: z.array(
+    z.object({
+      title: z.string(),
+      mermaidDiagram: z.string(),
+      description: z.string(),
+    })
+  ),
+  dependencyImpact: z.array(
+    z.object({
+      file: z.string(),
+      impactedBy: z.array(z.string()),
+      impactType: z.enum(["direct", "transitive"]),
+    })
+  ),
+  breakingChanges: z.array(z.string()),
+  complexity: z.enum(["trivial", "small", "medium", "large", "very-large"]),
+});
+export type PRSummary = z.infer<typeof PRSummarySchema>;
+
+export const DependencyGraphSchema = z.object({
+  changedModules: z.array(
+    z.object({
+      file: z.string(),
+      imports: z.array(z.string()),
+      importedBy: z.array(z.string()),
+      exportsUsedElsewhere: z.array(z.string()),
+    })
+  ),
+  securitySensitiveAPIs: z.array(z.string()),
+  envVarsTouched: z.array(z.string()),
+});
+export type DependencyGraph = z.infer<typeof DependencyGraphSchema>;
 
 export const ReconResultSchema = z.object({
   changedFiles: z.array(
@@ -126,6 +194,8 @@ export const ReconResultSchema = z.object({
   secretPatternHints: z.array(z.string()).optional(),
   /** Optional Semgrep SARIF excerpt if `.clawguard/semgrep.sarif` exists */
   optionalSarifSnippet: z.string().optional(),
+  /** Import/call context when analysis.contextDepth is standard or deep */
+  dependencyGraph: DependencyGraphSchema.optional(),
 });
 
 export type ReconResult = z.infer<typeof ReconResultSchema>;
@@ -156,5 +226,7 @@ export const AuditResultSchema = z.object({
   threatModel: ThreatModelSchema.optional(),
   recon: ReconResultSchema.optional(),
   metadata: AuditMetadataSchema.optional(),
+  /** PR change narrative, sequence diagrams, dependency impact (v2) */
+  prSummary: PRSummarySchema.optional(),
 });
 export type AuditResult = z.infer<typeof AuditResultSchema>;

@@ -40,8 +40,11 @@ export async function runThreatSynthesis(
       "1. Deduplicate findings that describe the same vulnerability (same file+area). Keep the strongest severity.",
       "2. Build attackSurfaces for new trust boundaries and entry points implied by the PR.",
       "3. Build attackPaths: each with name, mermaidDiagram (valid Mermaid), riskAssessment.",
-      "4. Set overallRisk, mergeRecommendation (approve / request changes / block), compoundRiskSummary.",
-      "5. Write executive summary (2-4 sentences) in `summary`.",
+      "4. Populate strideCategorization: STRIDE (S/T/R/I/D/E) labels tied to risks in this PR.",
+      "5. Populate trustBoundaries where data crosses trust zones; optional Mermaid per boundary.",
+      "6. Populate riskMatrix rows: likelihood × impact for top risks with topic + notes.",
+      "7. Set overallRisk, mergeRecommendation (approve / request changes / block), compoundRiskSummary.",
+      "8. Write executive summary (2-4 sentences) in `summary`.",
       "",
       "Mermaid diagrams must be dark-theme friendly (short labels, no HTML).",
     ].join("\n"),
@@ -79,6 +82,9 @@ export async function runThreatSynthesis(
       overallRisk: "Unknown (threat synthesis failed)",
       mergeRecommendation: "Review findings manually.",
       compoundRiskSummary: "Could not compute compound risk.",
+      strideCategorization: [],
+      trustBoundaries: [],
+      riskMatrix: [],
     };
     return {
       findings: initialFindings,

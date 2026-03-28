@@ -30,6 +30,46 @@ export const NotificationsConfigSchema = z.object({
   mentionAuthors: z.boolean(),
 });
 
+export const TriggerConfigSchema = z.object({
+  /** `auto`: PR open/sync triggers audit. `mention`: only @mention. `both`: PR events + mention. */
+  mode: z.enum(["auto", "mention", "both"]),
+  onPushToExisting: z.boolean(),
+  ignoreDraftPRs: z.boolean(),
+  ignoreLabels: z.array(z.string()),
+  cooldownSeconds: z.number().int().min(0).max(86400),
+});
+
+export const AnalysisConfigSchema = z.object({
+  generatePRSummary: z.boolean(),
+  generateSequenceDiagrams: z.boolean(),
+  contextDepth: z.enum(["minimal", "standard", "deep"]),
+});
+
+export const LearningsConfigSchema = z.object({
+  enabled: z.boolean(),
+  allowOrgInheritance: z.boolean(),
+  autoPromoteThreshold: z.number().int().min(1).max(100),
+});
+
+export const TrackingConfigSchema = z.object({
+  enabled: z.boolean(),
+  bugLabels: z.array(z.string()),
+  correlationConfidenceThreshold: z.number().min(0).max(1),
+});
+
+export const AdaptersConfigSchema = z
+  .object({
+    slack: z.object({ channel: z.string().optional() }).optional(),
+    discord: z.object({ channel: z.string().optional() }).optional(),
+    teams: z.object({ channel: z.string().optional() }).optional(),
+    linear: z
+      .object({
+        createIssuesFor: z.array(SeverityThresholdSchema).optional(),
+      })
+      .optional(),
+  })
+  .passthrough();
+
 export const ClawGuardConfigFileSchema = z
   .object({
     autoFix: z
@@ -86,6 +126,37 @@ export const ClawGuardConfigFileSchema = z
         mentionAuthors: z.boolean().optional(),
       })
       .optional(),
+    trigger: z
+      .object({
+        mode: TriggerConfigSchema.shape.mode.optional(),
+        onPushToExisting: z.boolean().optional(),
+        ignoreDraftPRs: z.boolean().optional(),
+        ignoreLabels: z.array(z.string()).optional(),
+        cooldownSeconds: z.number().int().min(0).max(86400).optional(),
+      })
+      .optional(),
+    analysis: z
+      .object({
+        generatePRSummary: z.boolean().optional(),
+        generateSequenceDiagrams: z.boolean().optional(),
+        contextDepth: AnalysisConfigSchema.shape.contextDepth.optional(),
+      })
+      .optional(),
+    learnings: z
+      .object({
+        enabled: z.boolean().optional(),
+        allowOrgInheritance: z.boolean().optional(),
+        autoPromoteThreshold: z.number().int().min(1).max(100).optional(),
+      })
+      .optional(),
+    tracking: z
+      .object({
+        enabled: z.boolean().optional(),
+        bugLabels: z.array(z.string()).optional(),
+        correlationConfidenceThreshold: z.number().min(0).max(1).optional(),
+      })
+      .optional(),
+    adapters: AdaptersConfigSchema.optional(),
   })
   .passthrough();
 
@@ -128,6 +199,11 @@ export const ClawGuardConfigSchema = z.object({
   bot: BotConfigSchema,
   scanning: ScanningConfigSchema,
   notifications: NotificationsConfigSchema,
+  trigger: TriggerConfigSchema,
+  analysis: AnalysisConfigSchema,
+  learnings: LearningsConfigSchema,
+  tracking: TrackingConfigSchema,
+  adapters: AdaptersConfigSchema,
 });
 
 export type ClawGuardConfig = z.infer<typeof ClawGuardConfigSchema>;

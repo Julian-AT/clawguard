@@ -8,6 +8,7 @@ import { OwaspChart } from "@/components/report/owasp-chart";
 import { FindingsList } from "@/components/report/findings-list";
 import { ThreatModelTab } from "@/components/report/threat-model-tab";
 import { ComplianceTab } from "@/components/report/compliance-tab";
+import { PrSummaryTab } from "@/components/report/pr-summary-tab";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 
@@ -84,12 +85,17 @@ export function ReportView({
             <TabsTrigger value="findings">
               Findings ({result.findings.length})
             </TabsTrigger>
+            <TabsTrigger value="pr-summary">PR Summary</TabsTrigger>
             <TabsTrigger value="threat-model">Threat Model</TabsTrigger>
             <TabsTrigger value="compliance">Compliance</TabsTrigger>
           </TabsList>
 
           <TabsContent value="findings" className="mt-4">
             <FindingsList findings={result.findings} />
+          </TabsContent>
+
+          <TabsContent value="pr-summary" className="mt-4">
+            <PrSummaryTab prSummary={result.prSummary} />
           </TabsContent>
 
           <TabsContent value="threat-model" className="mt-4">

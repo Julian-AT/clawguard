@@ -47,4 +47,27 @@ export const DEFAULT_CLAWGUARD_CONFIG: ClawGuardConfig = {
     suppressCleanReports: false,
     mentionAuthors: false,
   },
+  trigger: {
+    mode: "auto",
+    onPushToExisting: true,
+    ignoreDraftPRs: true,
+    ignoreLabels: [],
+    cooldownSeconds: 60,
+  },
+  analysis: {
+    generatePRSummary: true,
+    generateSequenceDiagrams: true,
+    contextDepth: "standard",
+  },
+  learnings: {
+    enabled: true,
+    allowOrgInheritance: true,
+    autoPromoteThreshold: 3,
+  },
+  tracking: {
+    enabled: true,
+    bugLabels: ["bug", "security-bug", "vulnerability"],
+    correlationConfidenceThreshold: 0.7,
+  },
+  adapters: {},
 };

@@ -6,14 +6,16 @@ export const maxDuration = 300;
 export async function POST(request: Request) {
   console.log("[webhook] POST received", request.headers.get("x-github-event"));
 
-  const [forSdk, forPeek] = [request.clone(), request];
+  const forSdk = request.clone();
   let body: Record<string, unknown>;
   try {
-    body = (await forPeek.json()) as Record<string, unknown>;
+    body = (await request.json()) as Record<string, unknown>;
   } catch (e) {
     console.error("[webhook] Invalid JSON body:", e);
     return new Response("Bad Request", { status: 400 });
   }
+
+  const githubEvent = request.headers.get("x-github-event") ?? "";
 
   const sender = body.sender as Record<string, unknown> | undefined;
   const comment = body.comment as Record<string, unknown> | undefined;
@@ -23,13 +25,47 @@ export async function POST(request: Request) {
     return new Response("OK", { status: 200 });
   }
 
-  const deliveryId = forSdk.headers.get("x-github-delivery");
+  const deliveryId = request.headers.get("x-github-delivery");
   if (deliveryId) {
     const key = `webhook:delivery:${deliveryId}`;
     const isNew = await redis.set(key, "1", { nx: true, ex: 3600 });
     if (!isNew) {
       console.log("[webhook] Duplicate delivery, skipping:", deliveryId);
       return new Response("OK", { status: 200 });
+    }
+  }
+
+  if (githubEvent === "pull_request") {
+    try {
+      const { handlePullRequestEvent } = await import(
+        "@/lib/github-pull-request-webhook"
+      );
+      return await handlePullRequestEvent(body, (task) => {
+        after(() => {
+          Promise.resolve(task).catch((err) =>
+            console.error("[webhook] Background pull_request task error:", err)
+          );
+        });
+      });
+    } catch (err) {
+      console.error("[webhook] pull_request handler failed:", err);
+      return new Response("Internal Server Error", { status: 500 });
+    }
+  }
+
+  if (githubEvent === "issues") {
+    try {
+      const { handleIssuesEvent } = await import("@/lib/github-issues-webhook");
+      return await handleIssuesEvent(body, (task) => {
+        after(() => {
+          Promise.resolve(task).catch((err) =>
+            console.error("[webhook] Background issues task error:", err)
+          );
+        });
+      });
+    } catch (err) {
+      console.error("[webhook] issues handler failed:", err);
+      return new Response("Internal Server Error", { status: 500 });
     }
   }
 

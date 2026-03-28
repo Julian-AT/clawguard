@@ -2,11 +2,20 @@ import { Sandbox } from "@vercel/sandbox";
 import { createBashTool } from "bash-tool";
 import { Octokit } from "@octokit/rest";
 import { loadRepoConfig, type LoadRepoConfigResult } from "@/lib/config";
+import { getLearningsBlockForScan } from "@/lib/learnings";
+import { getKnowledgeBlockForScan } from "@/lib/knowledge";
+import { storeAuditPredictions } from "@/lib/tracking/predictions";
 import { runReconnaissance } from "./recon";
+import { runChangeAnalysis } from "./change-analysis";
 import { runSecurityScan } from "./security-scan";
 import { runThreatSynthesis } from "./threat-synthesis";
 import { postProcessAudit } from "./post-process";
-import type { AuditResult, PhaseResult, ReconResult } from "./types";
+import type {
+  AuditResult,
+  PhaseResult,
+  PRSummary,
+  ReconResult,
+} from "./types";
 import {
   getEstimatedPipelineMs,
   recordPipelineDurationMs,
@@ -15,6 +24,11 @@ import { logAudit } from "@/lib/logger";
 
 export type PipelineProgress =
   | { stage: "recon"; status: "running" | "complete"; detail?: string }
+  | {
+      stage: "change-analysis";
+      status: "running" | "complete";
+      detail?: string;
+    }
   | {
       stage: "security-scan";
       status: "running" | "complete";
@@ -34,6 +48,8 @@ export interface PipelineInput {
   baseBranch: string;
   /** When set, skips a second loadRepoConfig call (same ref as prBranch). */
   preloadedConfig?: LoadRepoConfigResult;
+  /** Enables post-merge prediction storage when `tracking` is enabled. */
+  prNumber?: number;
 }
 
 export async function runSecurityPipeline(
@@ -84,7 +100,24 @@ export async function runSecurityPipeline(
     recon = await runReconnaissance(sandbox, diff, config);
     await onProgress?.({ stage: "recon", status: "complete" });
 
+    await onProgress?.({
+      stage: "change-analysis",
+      status: "running",
+      detail: config.analysis.generatePRSummary
+        ? "PR summary & diagrams"
+        : "Skipped",
+    });
+    const prSummary: PRSummary = await runChangeAnalysis(recon, config);
+    await onProgress?.({ stage: "change-analysis", status: "complete" });
+
     const { tools } = await createBashTool({ sandbox });
+
+    const learningsBlock = await getLearningsBlockForScan(
+      input.owner,
+      input.repo,
+      config
+    );
+    const knowledgeBlock = await getKnowledgeBlockForScan(input.owner, config);
 
     await onProgress?.({
       stage: "security-scan",
@@ -103,6 +136,10 @@ export async function runSecurityPipeline(
           step: stepCount,
           detail: detail ?? `Agent step ${stepCount}`,
         });
+      },
+      {
+        learningsBlock,
+        knowledgeBlock,
       }
     );
     await onProgress?.({ stage: "security-scan", status: "complete" });
@@ -160,6 +197,25 @@ export async function runSecurityPipeline(
       partial: scan.partialFailure ? 1 : 0,
     });
 
+    if (config.tracking.enabled && input.prNumber != null) {
+      try {
+        const { data: prRef } = await octokit.pulls.get({
+          owner: input.owner,
+          repo: input.repo,
+          pull_number: input.prNumber,
+        });
+        await storeAuditPredictions(
+          input.owner,
+          input.repo,
+          input.prNumber,
+          prRef.head.sha,
+          processed.findings
+        );
+      } catch (e) {
+        console.warn("[pipeline] storeAuditPredictions failed:", e);
+      }
+    }
+
     return {
       score: processed.score,
       grade: processed.grade,
@@ -168,6 +224,7 @@ export async function runSecurityPipeline(
       findings: processed.findings,
       threatModel: processed.threatModel,
       recon,
+      prSummary: config.analysis.generatePRSummary ? prSummary : undefined,
       metadata: {
         timestamp: new Date().toISOString(),
         filesChanged: recon.changedFiles.length,

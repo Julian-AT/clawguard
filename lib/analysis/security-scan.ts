@@ -54,6 +54,13 @@ function reconContextBlock(recon: ReconResult): string {
   if (recon.optionalSarifSnippet) {
     extra.push("## Semgrep SARIF excerpt\n```\n" + recon.optionalSarifSnippet + "\n```");
   }
+  if (recon.dependencyGraph) {
+    extra.push(
+      "## Dependency graph (imports, env, sensitive APIs)\n```json\n" +
+        JSON.stringify(recon.dependencyGraph, null, 2).slice(0, 32_000) +
+        "\n```"
+    );
+  }
 
   return [
     `Languages: ${recon.languages.join(", ") || "unknown"}`,
@@ -66,8 +73,12 @@ function reconContextBlock(recon: ReconResult): string {
   ].join("\n\n");
 }
 
-function buildPrompt(recon: ReconResult, policies: PolicyRule[]): string {
-  return [
+function buildPrompt(
+  recon: ReconResult,
+  policies: PolicyRule[],
+  extras?: { learnings?: string; knowledge?: string }
+): string {
+  const parts = [
     "## Custom policies",
     policiesBlock(policies),
     "",
@@ -78,7 +89,10 @@ function buildPrompt(recon: ReconResult, policies: PolicyRule[]): string {
     "<diff>",
     recon.diff,
     "</diff>",
-  ].join("\n");
+  ];
+  if (extras?.learnings) parts.push("", extras.learnings);
+  if (extras?.knowledge) parts.push("", extras.knowledge);
+  return parts.join("\n");
 }
 
 async function runScanOnce(
@@ -120,7 +134,8 @@ export async function runSecurityScan(
   recon: ReconResult,
   policies: PolicyRule[],
   config: ClawGuardConfig,
-  onStepFinish?: (info: SecurityScanStepInfo) => void
+  onStepFinish?: (info: SecurityScanStepInfo) => void,
+  extras?: { learningsBlock?: string; knowledgeBlock?: string }
 ): Promise<SecurityScanResult> {
   const depthHint =
     config.scanning.depth === "quick"
@@ -143,6 +158,7 @@ export async function runSecurityScan(
     "- fix with before/after snippets and explanation",
     "- complianceMapping when applicable",
     "- remediationEffort: trivial | small | medium | large",
+    "- strideCategory (optional): S|T|R|I|D|E when the issue maps clearly to STRIDE",
     "",
     "Avoid duplicate issues. Ignore test-only noise unless policies require it.",
   ].join("\n");
@@ -153,7 +169,10 @@ export async function runSecurityScan(
     "Be concise; include CWE and OWASP category per finding.",
   ].join("\n");
 
-  const prompt = buildPrompt(recon, policies);
+  const prompt = buildPrompt(recon, policies, {
+    learnings: extras?.learningsBlock,
+    knowledge: extras?.knowledgeBlock,
+  });
 
   try {
     const out = await runScanOnce(

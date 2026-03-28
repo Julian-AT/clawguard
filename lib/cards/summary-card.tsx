@@ -88,3 +88,54 @@ export function buildSummaryCard(
     </Card>
   );
 }
+
+/** GitHub Issues/PR comment API only accepts markdown — use this for auto-trigger comments. */
+export function buildSummaryMarkdown(
+  audit: AuditResult,
+  pr: { owner: string; repo: string; number: number }
+): string {
+  const counts = countBySeverity(audit.findings);
+  const fixableCount = audit.findings.filter((f: Finding) =>
+    ["CRITICAL", "HIGH"].includes(f.severity)
+  ).length;
+  const topFindings = audit.findings
+    .filter((f: Finding) =>
+      ["CRITICAL", "HIGH", "MEDIUM"].includes(f.severity)
+    )
+    .sort(
+      (a: Finding, b: Finding) =>
+        (SEVERITY_ORDER[a.severity] ?? 99) -
+        (SEVERITY_ORDER[b.severity] ?? 99)
+    )
+    .slice(0, 3);
+  const summaryText =
+    audit.summary?.trim() ||
+    `${audit.findings.length} finding(s) — score ${audit.score}/100 (${audit.grade}).`;
+  const lines: string[] = [
+    `## ClawGuard: ${audit.score}/100 (${audit.grade})`,
+    "",
+    summaryText,
+    "",
+    `| CRITICAL | HIGH | MEDIUM | LOW | INFO |`,
+    `|----------|------|--------|-----|------|`,
+    `| ${counts.CRITICAL ?? 0} | ${counts.HIGH ?? 0} | ${counts.MEDIUM ?? 0} | ${counts.LOW ?? 0} | ${counts.INFO ?? 0} |`,
+    "",
+  ];
+  if (topFindings.length > 0) {
+    lines.push("| Severity | Finding | Location |", "|----------|---------|----------|");
+    for (const f of topFindings) {
+      lines.push(
+        `| ${f.severity} | ${(f.title ?? f.type).replace(/\|/g, "\\|")} | \`${f.file}:${f.line}\` |`
+      );
+    }
+    lines.push("");
+  }
+  lines.push(`[View full report →](${reportUrl(pr.owner, pr.repo, pr.number)})`);
+  if (fixableCount > 0) {
+    lines.push(
+      "",
+      `Reply \`@clawguard fix all\` to auto-fix ${fixableCount} CRITICAL+HIGH finding(s), or \`@clawguard fix <type>\` for a specific issue.`
+    );
+  }
+  return lines.join("\n");
+}

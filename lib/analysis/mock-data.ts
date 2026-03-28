@@ -250,6 +250,43 @@ export const mockAuditResult: AuditResult = {
         riskAssessment: "MEDIUM: Requires access to application logs, but plaintext credentials enable full account compromise.",
       },
     ],
+    strideCategorization: [
+      {
+        label: "SQL injection on auth",
+        stride: "I",
+        description: "Information disclosure via database query manipulation",
+      },
+    ],
+    trustBoundaries: [],
+    riskMatrix: [
+      {
+        likelihood: "high",
+        impact: "high",
+        topic: "SQLi on login",
+        notes: "Direct DB access from public input",
+      },
+    ],
+  },
+  prSummary: {
+    narrative:
+      "This PR introduces user authentication routes and password handling. It adds new API endpoints and database access patterns that should be reviewed for injection and secret handling.",
+    sequenceDiagrams: [
+      {
+        title: "Login request",
+        mermaidDiagram:
+          "sequenceDiagram\n  participant U as User\n  participant API as API\n  participant DB as DB\n  U->>API: POST /login\n  API->>DB: query(user input)\n  DB-->>API: rows\n  API-->>U: JWT",
+        description: "Simplified login flow for the changed code.",
+      },
+    ],
+    dependencyImpact: [
+      {
+        file: "src/routes/auth.ts",
+        impactedBy: ["src/middleware.ts"],
+        impactType: "direct",
+      },
+    ],
+    breakingChanges: [],
+    complexity: "medium",
   },
   summary: "Security audit found 6 issues across 4 severity levels. 2 CRITICAL findings require immediate remediation: SQL injection in user queries and hardcoded JWT secret. The authentication system also lacks rate limiting (HIGH) and file handling has a path traversal vulnerability (MEDIUM).",
 };

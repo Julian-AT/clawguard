@@ -6,6 +6,7 @@ const {
   mockSandboxCreate,
   mockCreateBashTool,
   mockRunReconnaissance,
+  mockRunChangeAnalysis,
   mockRunSecurityScan,
   mockRunThreatSynthesis,
   defaultRecon,
@@ -72,10 +73,20 @@ const {
       ],
       overallRisk: "HIGH",
       mergeRecommendation: "Request changes",
+      strideCategorization: [],
+      trustBoundaries: [],
+      riskMatrix: [],
     },
   };
 
   const mockRunReconnaissance = vi.fn().mockResolvedValue(defaultRecon);
+  const mockRunChangeAnalysis = vi.fn().mockResolvedValue({
+    narrative: "Summary narrative",
+    sequenceDiagrams: [],
+    dependencyImpact: [],
+    breakingChanges: [],
+    complexity: "small" as const,
+  });
   const mockRunSecurityScan = vi.fn().mockResolvedValue(defaultScan);
   const mockRunThreatSynthesis = vi.fn().mockResolvedValue(defaultThreat);
 
@@ -85,6 +96,7 @@ const {
     mockSandboxCreate,
     mockCreateBashTool,
     mockRunReconnaissance,
+    mockRunChangeAnalysis,
     mockRunSecurityScan,
     mockRunThreatSynthesis,
     defaultRecon,
@@ -144,6 +156,29 @@ vi.mock("@/lib/config", () => ({
         suppressCleanReports: false,
         mentionAuthors: false,
       },
+      trigger: {
+        mode: "auto",
+        onPushToExisting: true,
+        ignoreDraftPRs: true,
+        ignoreLabels: [],
+        cooldownSeconds: 60,
+      },
+      analysis: {
+        generatePRSummary: true,
+        generateSequenceDiagrams: true,
+        contextDepth: "standard",
+      },
+      learnings: {
+        enabled: true,
+        allowOrgInheritance: true,
+        autoPromoteThreshold: 3,
+      },
+      tracking: {
+        enabled: false,
+        bugLabels: ["bug"],
+        correlationConfidenceThreshold: 0.7,
+      },
+      adapters: {},
     },
     policies: [],
     configSource: "defaults",
@@ -161,6 +196,22 @@ vi.mock("../../lib/analysis/security-scan", () => ({
 
 vi.mock("../../lib/analysis/threat-synthesis", () => ({
   runThreatSynthesis: mockRunThreatSynthesis,
+}));
+
+vi.mock("../../lib/analysis/change-analysis", () => ({
+  runChangeAnalysis: mockRunChangeAnalysis,
+}));
+
+vi.mock("@/lib/learnings", () => ({
+  getLearningsBlockForScan: vi.fn().mockResolvedValue(""),
+}));
+
+vi.mock("@/lib/knowledge", () => ({
+  getKnowledgeBlockForScan: vi.fn().mockResolvedValue(""),
+}));
+
+vi.mock("@/lib/tracking/predictions", () => ({
+  storeAuditPredictions: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/pipeline-eta", () => ({
@@ -193,15 +244,32 @@ describe("Security Pipeline", () => {
       stop: mockStop,
     });
     mockRunReconnaissance.mockResolvedValue(defaultRecon);
+    mockRunChangeAnalysis.mockResolvedValue({
+      narrative: "Summary narrative",
+      sequenceDiagrams: [],
+      dependencyImpact: [],
+      breakingChanges: [],
+      complexity: "small",
+    });
     mockRunSecurityScan.mockResolvedValue(defaultScan);
     mockRunThreatSynthesis.mockResolvedValue(defaultThreat);
   });
 
-  it("calls recon → security scan → threat synthesis in order", async () => {
+  it("calls recon → change-analysis → security scan → threat synthesis in order", async () => {
     const order: string[] = [];
     mockRunReconnaissance.mockImplementation(async () => {
       order.push("recon");
       return defaultRecon;
+    });
+    mockRunChangeAnalysis.mockImplementation(async () => {
+      order.push("change-analysis");
+      return {
+        narrative: "x",
+        sequenceDiagrams: [],
+        dependencyImpact: [],
+        breakingChanges: [],
+        complexity: "small",
+      };
     });
     mockRunSecurityScan.mockImplementation(async () => {
       order.push("scan");
@@ -214,7 +282,7 @@ describe("Security Pipeline", () => {
 
     await runSecurityPipeline(defaultInput);
 
-    expect(order).toEqual(["recon", "scan", "threat"]);
+    expect(order).toEqual(["recon", "change-analysis", "scan", "threat"]);
   });
 
   it("returns score, grade, summary, threatModel, recon, metadata", async () => {
@@ -234,6 +302,7 @@ describe("Security Pipeline", () => {
 
     const stages = onProgress.mock.calls.map((c) => c[0].stage);
     expect(stages).toContain("recon");
+    expect(stages).toContain("change-analysis");
     expect(stages).toContain("security-scan");
     expect(stages).toContain("threat-synthesis");
     expect(stages).toContain("post-processing");

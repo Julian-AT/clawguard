@@ -23,12 +23,14 @@ Reply with EXACTLY one line, one of:
 FIX_ALL
 FIX_TARGET:<keyword>
 RE_AUDIT
+FEEDBACK
 UNKNOWN
 
 Rules:
 - FIX_ALL: wants to fix all critical/high issues or says "fix all"
 - FIX_TARGET: wants to fix one issue type (e.g. sql injection, CWE-89) — put short keyword after colon
 - RE_AUDIT: wants rescan, re-audit, review, scan again
+- FEEDBACK: false positive, team rule, "remember", disagree with finding, or preference for future reviews
 - UNKNOWN: else
 
 Comment:
@@ -43,6 +45,7 @@ ${body.slice(0, 2000)}`,
       if (target) return { type: "fix-finding", target };
     }
     if (line.startsWith("RE_AUDIT")) return { type: "re-audit" };
+    if (line.startsWith("FEEDBACK")) return { type: "feedback", raw: body };
     return null;
   } catch {
     return null;
