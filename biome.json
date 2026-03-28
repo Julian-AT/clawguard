@@ -69,6 +69,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["lib/landing-config.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
     }
   ]
 }
