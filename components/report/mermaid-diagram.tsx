@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { getMermaid } from "@/lib/mermaid-init";
 
 interface MermaidDiagramProps {
   chart: string;
@@ -8,28 +9,14 @@ interface MermaidDiagramProps {
 }
 
 export function MermaidDiagram({ chart, id }: MermaidDiagramProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    import("mermaid")
-      .then(({ default: mermaid }) => {
-        mermaid.initialize({
-          startOnLoad: false,
-          theme: "dark",
-          themeVariables: {
-            darkMode: true,
-            background: "#09090b",
-            primaryColor: "#3b82f6",
-            primaryTextColor: "#fafafa",
-            lineColor: "#a1a1aa",
-          },
-        });
-        return mermaid.render(`mermaid-${id}`, chart);
-      })
+    getMermaid()
+      .then((mermaid) => mermaid.render(`mermaid-${id}`, chart))
       .then(({ svg: renderedSvg }) => {
         if (!cancelled) setSvg(renderedSvg);
       })
@@ -44,8 +31,11 @@ export function MermaidDiagram({ chart, id }: MermaidDiagramProps) {
 
   if (error) {
     return (
-      <div className="my-4 rounded-lg bg-zinc-900 p-4 text-xs text-red-400 font-mono">
-        Failed to render diagram: {error}
+      <div className="my-4 space-y-2 rounded-lg bg-zinc-900 p-4 text-xs">
+        <p className="text-red-400 font-mono">Failed to render diagram: {error}</p>
+        <pre className="overflow-x-auto text-zinc-400 whitespace-pre-wrap border border-zinc-800 rounded p-2">
+          {chart}
+        </pre>
       </div>
     );
   }
@@ -58,8 +48,7 @@ export function MermaidDiagram({ chart, id }: MermaidDiagramProps) {
 
   return (
     <div
-      ref={containerRef}
-      className="my-4 overflow-x-auto rounded-lg bg-zinc-900 p-4"
+      className="my-4 overflow-x-auto rounded-lg bg-zinc-900 p-4 max-w-full [&_svg]:max-w-none"
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

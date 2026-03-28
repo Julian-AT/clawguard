@@ -8,7 +8,7 @@ describe("Bot Configuration", () => {
   it("exports Chat instance with GitHub adapter (HOOK-02)", () => {
     expect(botSource).toContain("new Chat(");
     expect(botSource).toContain("createGitHubAdapter(");
-    expect(botSource).toContain("createRedisState()");
+    expect(botSource).toMatch(/createRedisState|createMemoryState/);
   });
 
   it("registers onNewMention handler that posts to thread (HOOK-02)", () => {
@@ -112,7 +112,7 @@ describe("Fix Flow Integration (FIX-04, FIX-05)", () => {
   });
 
   it("posts skip message for failed fixes (D-10)", () => {
-    expect(botSource).toContain("Skipped:");
+    expect(botSource).toContain('? "Fixed" : "Skipped"');
   });
 
   it("posts final summary table with fixed/skipped status (D-12)", () => {

@@ -1,0 +1,162 @@
+import type { AgentContext, AgentResult, OrchestratorResult, SecurityAgentDefinition } from "./types";
+import type { Sandbox } from "@vercel/sandbox";
+import type { ClawGuardConfig, PolicyRule } from "@/lib/config/schemas";
+import type { ReconResult } from "@/lib/analysis/types";
+import { PipelineMemory } from "./memory";
+import { getAgent, getAllAgents } from "./registry";
+import { handleError } from "@/lib/error-handler";
+import { randomUUID } from "crypto";
+
+interface OrchestratorInput {
+  runId: string;
+  sandbox: Sandbox;
+  recon: ReconResult;
+  config: ClawGuardConfig;
+  policies: PolicyRule[];
+  agentNames?: string[];
+  abortSignal?: AbortSignal;
+}
+
+// Topological sort: returns layers of agents that can run in parallel
+function buildExecutionLayers(agents: SecurityAgentDefinition[]): SecurityAgentDefinition[][] {
+  const nameSet = new Set(agents.map((a) => a.name));
+  const inDegree = new Map<string, number>();
+  const graph = new Map<string, string[]>();
+  const agentMap = new Map<string, SecurityAgentDefinition>();
+
+  for (const agent of agents) {
+    agentMap.set(agent.name, agent);
+    const deps = agent.dependsOn.filter((d) => nameSet.has(d));
+    inDegree.set(agent.name, deps.length);
+    for (const dep of deps) {
+      if (!graph.has(dep)) graph.set(dep, []);
+      graph.get(dep)!.push(agent.name);
+    }
+  }
+
+  const layers: SecurityAgentDefinition[][] = [];
+  let ready = agents.filter((a) => (inDegree.get(a.name) ?? 0) === 0);
+
+  while (ready.length > 0) {
+    layers.push(ready);
+    const next: SecurityAgentDefinition[] = [];
+    for (const agent of ready) {
+      for (const dependent of graph.get(agent.name) ?? []) {
+        const newDeg = (inDegree.get(dependent) ?? 1) - 1;
+        inDegree.set(dependent, newDeg);
+        if (newDeg === 0) {
+          const depAgent = agentMap.get(dependent);
+          if (depAgent) next.push(depAgent);
+        }
+      }
+    }
+    ready = next;
+  }
+
+  return layers;
+}
+
+export class AgentOrchestrator {
+  async run(input: OrchestratorInput): Promise<OrchestratorResult> {
+    const start = Date.now();
+    const memory = new PipelineMemory();
+    const agentResults: AgentResult[] = [];
+    const errors: Array<{ agent: string; error: string }> = [];
+
+    // Resolve which agents to run
+    let agents: SecurityAgentDefinition[];
+    if (input.agentNames?.length) {
+      agents = input.agentNames
+        .map((n) => getAgent(n))
+        .filter((a): a is SecurityAgentDefinition => a !== undefined);
+    } else {
+      agents = getAllAgents();
+    }
+
+    if (agents.length === 0) {
+      return {
+        findings: [],
+        summary: "No agents configured to run.",
+        agentResults: [],
+        durationMs: Date.now() - start,
+        errors: [],
+      };
+    }
+
+    const layers = buildExecutionLayers(agents);
+
+    for (const layer of layers) {
+      if (input.abortSignal?.aborted) break;
+
+      const layerPromises = layer.map(async (agentDef) => {
+        const agentId = randomUUID();
+
+        const context: AgentContext = {
+          runId: input.runId,
+          agentId,
+          sandbox: input.sandbox,
+          recon: input.recon,
+          config: input.config,
+          policies: input.policies,
+          priorFindings: memory.getAllFindings(),
+          memory,
+          abortSignal: input.abortSignal,
+        };
+
+        const agentStart = Date.now();
+        try {
+          const result = await agentDef.execute(context);
+
+          memory.addFindings(agentDef.name, result.findings);
+
+          return result;
+        } catch (err) {
+          const durationMs = Date.now() - agentStart;
+          const message = err instanceof Error ? err.message : String(err);
+
+          handleError(err, {
+            runId: input.runId,
+            agentName: agentDef.name,
+            operation: "agent:execute",
+          });
+
+          errors.push({ agent: agentDef.name, error: message });
+
+          return {
+            agentName: agentDef.name,
+            findings: [],
+            summary: `Agent ${agentDef.name} failed: ${message}`,
+            durationMs,
+            error: message,
+          } satisfies AgentResult;
+        }
+      });
+
+      const results = await Promise.allSettled(layerPromises);
+
+      for (const result of results) {
+        if (result.status === "fulfilled") {
+          agentResults.push(result.value);
+        }
+        // rejected should not happen (caught above), but handle just in case
+        if (result.status === "rejected") {
+          const msg = result.reason instanceof Error ? result.reason.message : String(result.reason);
+          errors.push({ agent: "unknown", error: msg });
+        }
+      }
+    }
+
+    const allFindings = memory.getAllFindings();
+
+    return {
+      findings: allFindings,
+      summary: agentResults
+        .filter((r) => !r.error)
+        .map((r) => r.summary)
+        .join("\n\n"),
+      agentResults,
+      durationMs: Date.now() - start,
+      errors,
+    };
+  }
+}

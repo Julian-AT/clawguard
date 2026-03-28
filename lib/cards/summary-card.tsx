@@ -1,29 +1,26 @@
 /** @jsxImportSource chat */
 import {
-  Card, CardText, Actions, Button, LinkButton,
-  Fields, Field, Divider, Table,
+  Card,
+  CardText,
+  Actions,
+  Button,
+  LinkButton,
+  Fields,
+  Field,
+  Divider,
+  Table,
 } from "chat";
 import type { AuditResult, Finding } from "@/lib/analysis/types";
 import { countBySeverity } from "@/lib/analysis/scoring";
+import { severityEmoji, SEVERITY_ORDER } from "@/lib/constants";
+import { getPublicBaseUrl } from "@/lib/env";
 
-export function severityEmoji(severity: string): string {
-  const map: Record<string, string> = {
-    CRITICAL: "\uD83D\uDD34",
-    HIGH: "\uD83D\uDFE0",
-    MEDIUM: "\uD83D\uDFE1",
-    LOW: "\uD83D\uDD35",
-    INFO: "\u26AA",
-  };
-  return map[severity] ?? "\u26AA";
+export { severityEmoji, SEVERITY_ORDER };
+
+function reportUrl(owner: string, repo: string, number: number): string {
+  const base = getPublicBaseUrl();
+  return `${base}/report/${owner}/${repo}/${number}`;
 }
-
-export const SEVERITY_ORDER: Record<string, number> = {
-  CRITICAL: 0,
-  HIGH: 1,
-  MEDIUM: 2,
-  LOW: 3,
-  INFO: 4,
-};
 
 export function buildSummaryCard(
   audit: AuditResult,
@@ -31,8 +28,8 @@ export function buildSummaryCard(
 ) {
   const counts = countBySeverity(audit.findings);
 
-  const fixableCount = audit.findings.filter(
-    (f: Finding) => ["CRITICAL", "HIGH"].includes(f.severity)
+  const fixableCount = audit.findings.filter((f: Finding) =>
+    ["CRITICAL", "HIGH"].includes(f.severity)
   ).length;
 
   const topFindings = audit.findings
@@ -44,10 +41,15 @@ export function buildSummaryCard(
         (SEVERITY_ORDER[a.severity] ?? 99) -
         (SEVERITY_ORDER[b.severity] ?? 99)
     )
-    .slice(0, 5);
+    .slice(0, 3);
+
+  const summaryText =
+    audit.summary?.trim() ||
+    `${audit.findings.length} finding(s) — score ${audit.score}/100 (${audit.grade}).`;
 
   return (
-    <Card title={`ClawGuard Security Audit: ${audit.score}/100 (${audit.grade})`}>
+    <Card title={`ClawGuard: ${audit.score}/100 (${audit.grade})`}>
+      <CardText>{summaryText}</CardText>
       <Fields>
         <Field label="CRITICAL" value={String(counts.CRITICAL ?? 0)} />
         <Field label="HIGH" value={String(counts.HIGH ?? 0)} />
@@ -59,7 +61,7 @@ export function buildSummaryCard(
           headers={["Severity", "Finding", "Location"]}
           rows={topFindings.map((f) => [
             `${severityEmoji(f.severity)} ${f.severity}`,
-            f.type,
+            f.title ?? f.type,
             `${f.file}:${f.line}`,
           ])}
         />
@@ -69,13 +71,18 @@ export function buildSummaryCard(
       <Divider />
       {fixableCount > 0 && (
         <CardText>
-          {`Reply \`@clawguard fix all\` to auto-fix ${fixableCount} CRITICAL+HIGH findings, or \`@clawguard fix <type>\` for a specific finding.`}
+          {`Reply \`@clawguard fix all\` to auto-fix ${fixableCount} CRITICAL+HIGH finding(s), or \`@clawguard fix <type>\` for a specific issue.`}
         </CardText>
       )}
       <Actions>
-        <Button id="fix-all" style="primary">Fix All ({fixableCount})</Button>
-        <LinkButton url={`/report/${pr.owner}/${pr.repo}/${pr.number}`}>
-          View Report
+        <Button id="fix-all" style="primary">
+          Fix All ({fixableCount})
+        </Button>
+        <Button id="re-audit" style="default">
+          Re-audit
+        </Button>
+        <LinkButton url={reportUrl(pr.owner, pr.repo, pr.number)}>
+          View full report
         </LinkButton>
       </Actions>
     </Card>

@@ -60,4 +60,12 @@ describe("Fix Commit Module", () => {
   it("uses currentFile.sha from getContent response", () => {
     expect(source).toContain("currentFile.sha");
   });
+
+  it("exports commitBatchFixesToGitHub using git data API", () => {
+    expect(source).toContain("export async function commitBatchFixesToGitHub");
+    expect(source).toContain("git.getRef");
+    expect(source).toContain("git.createTree");
+    expect(source).toContain("git.createCommit");
+    expect(source).toContain("git.updateRef");
+  });
 });

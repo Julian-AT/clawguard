@@ -20,6 +20,8 @@ import type { AuditResult } from "../lib/analysis/types";
 
 function makeAuditResult(): AuditResult {
   return {
+    summary: "All good",
+    threatModel: { attackSurfaces: [], attackPaths: [] },
     phases: [
       { phase: "code-quality", summary: "Quality review complete", findings: [] },
       { phase: "vulnerability-scan", summary: "No vulnerabilities found", findings: [] },
@@ -79,8 +81,8 @@ describe("Redis Audit Storage", () => {
     expect(result!.status).toBe("complete");
     expect(result!.pr.number).toBe(42);
     expect(result!.pr.owner).toBe("owner");
-    expect(result!.result.score).toBe(100);
-    expect(result!.result.grade).toBe("A");
+    expect(result!.result?.score).toBe(100);
+    expect(result!.result?.grade).toBe("A");
   });
 
   it("returns null for missing key (SCAN-07)", async () => {

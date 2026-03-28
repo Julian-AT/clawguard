@@ -7,9 +7,10 @@ interface ErrorViewProps {
   owner: string;
   repo: string;
   pr: string;
+  message?: string;
 }
 
-export function ErrorView({ owner, repo, pr }: ErrorViewProps) {
+export function ErrorView({ owner, repo, pr, message }: ErrorViewProps) {
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-8">
       <Card className="max-w-md w-full">
@@ -27,8 +28,13 @@ export function ErrorView({ owner, repo, pr }: ErrorViewProps) {
             </span>{" "}
             PR #{pr} encountered an error.
           </p>
+          {message && (
+            <pre className="text-left text-xs bg-muted/50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap">
+              {message}
+            </pre>
+          )}
           <p className="text-sm text-muted-foreground">
-            Please re-run by @mentioning ClawGuard on the pull request.
+            Re-run by @mentioning ClawGuard on the pull request.
           </p>
         </CardContent>
       </Card>

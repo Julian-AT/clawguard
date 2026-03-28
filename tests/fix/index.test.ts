@@ -20,8 +20,12 @@ describe("fixFinding orchestration", () => {
     expect(indexSource).toContain("generateFixWithAgent");
   });
 
-  it("commits via commitFixToGitHub on success (FIX-03)", () => {
+  it("commits via commitFixToGitHub on single-fix success (FIX-03)", () => {
     expect(indexSource).toContain("commitFixToGitHub");
+  });
+
+  it("batches fix-all into commitBatchFixesToGitHub", () => {
+    expect(indexSource).toContain("commitBatchFixesToGitHub");
   });
 
   it("returns skipped status on both tiers failing (D-10)", () => {
@@ -63,15 +67,11 @@ describe("fixAll orchestration", () => {
 
   it("processes findings sequentially in loop", () => {
     expect(indexSource).toContain("for");
-    expect(indexSource).toContain("fixFinding(sandbox, finding, context)");
+    expect(indexSource).toContain("prepareFindingFix");
   });
 
-  it("pulls after each successful fix to sync sandbox", () => {
-    expect(indexSource).toContain('"pull"');
-  });
-
-  it("calls onFixProgress callback", () => {
-    expect(indexSource).toContain("onFixProgress");
+  it("supports onBatchTableUpdate for in-place progress table", () => {
+    expect(indexSource).toContain("onBatchTableUpdate");
   });
 
   it("stops sandbox in finally block", () => {

@@ -1,24 +1,14 @@
 import type { Finding, Severity } from "./types";
+import {
+  GRADE_THRESHOLDS,
+  SEVERITY_DEDUCTIONS,
+} from "@/lib/constants";
 
-export const DEDUCTIONS: Record<Severity, number> = {
-  CRITICAL: 25,
-  HIGH: 15,
-  MEDIUM: 8,
-  LOW: 3,
-  INFO: 1,
-};
-
-export const GRADE_THRESHOLDS: { min: number; grade: string }[] = [
-  { min: 90, grade: "A" },
-  { min: 80, grade: "B" },
-  { min: 70, grade: "C" },
-  { min: 60, grade: "D" },
-  { min: 0, grade: "F" },
-];
+export { GRADE_THRESHOLDS };
 
 export function calculateScore(findings: Finding[]): number {
   const totalDeduction = findings.reduce(
-    (sum, f) => sum + (DEDUCTIONS[f.severity] || 0),
+    (sum, f) => sum + (SEVERITY_DEDUCTIONS[f.severity] || 0),
     0
   );
   return Math.max(0, 100 - totalDeduction);

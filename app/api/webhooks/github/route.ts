@@ -1,5 +1,4 @@
 import { after } from "next/server";
-import { bot } from "@/lib/bot";
 import { redis } from "@/lib/redis";
 
 export const maxDuration = 300;
@@ -7,13 +6,20 @@ export const maxDuration = 300;
 export async function POST(request: Request) {
   console.log("[webhook] POST received", request.headers.get("x-github-event"));
 
-  // Clone request so we can peek at body without consuming the original
   const [forSdk, forPeek] = [request.clone(), request];
-  const body = await forPeek.json();
+  let body: Record<string, unknown>;
+  try {
+    body = (await forPeek.json()) as Record<string, unknown>;
+  } catch (e) {
+    console.error("[webhook] Invalid JSON body:", e);
+    return new Response("Bad Request", { status: 400 });
+  }
 
-  // Ignore comments made by bots (prevents infinite loop)
-  if (body.sender?.type === "Bot" || body.comment?.user?.type === "Bot") {
-    console.log("[webhook] Ignoring bot comment from:", body.sender?.login);
+  const sender = body.sender as Record<string, unknown> | undefined;
+  const comment = body.comment as Record<string, unknown> | undefined;
+  const commentUser = comment?.user as Record<string, unknown> | undefined;
+  if (sender?.type === "Bot" || commentUser?.type === "Bot") {
+    console.log("[webhook] Ignoring bot comment from:", sender?.login);
     return new Response("OK", { status: 200 });
   }
 
@@ -27,20 +33,25 @@ export async function POST(request: Request) {
     }
   }
 
-  const handler = bot.webhooks.github;
-  if (!handler) {
-    console.log("[webhook] No GitHub handler found");
-    return new Response("GitHub adapter not configured", { status: 404 });
-  }
+  try {
+    const { bot } = await import("@/lib/bot");
+    const handler = bot.webhooks.github;
+    if (!handler) {
+      console.error("[webhook] No GitHub handler on Chat instance");
+      return new Response("GitHub adapter not configured", { status: 404 });
+    }
 
-  console.log("[webhook] Delegating to Chat SDK handler");
-  return handler(forSdk, {
-    waitUntil: (task) => {
-      after(() => {
-        Promise.resolve(task).catch((err) =>
-          console.error("[webhook] Background task error:", err)
-        );
-      });
-    },
-  });
+    return await handler(forSdk, {
+      waitUntil: (task) => {
+        after(() => {
+          Promise.resolve(task).catch((err) =>
+            console.error("[webhook] Background task error:", err)
+          );
+        });
+      },
+    });
+  } catch (err) {
+    console.error("[webhook] Chat SDK or bot init failed:", err);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }

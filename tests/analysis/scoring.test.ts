@@ -3,9 +3,9 @@ import {
   calculateScore,
   getGrade,
   countBySeverity,
-  DEDUCTIONS,
   GRADE_THRESHOLDS,
 } from "@/lib/analysis/scoring";
+import { SEVERITY_DEDUCTIONS } from "@/lib/constants";
 import type { Finding } from "@/lib/analysis/types";
 
 function makeFinding(overrides: Partial<Finding> = {}): Finding {
@@ -35,13 +35,13 @@ function makeFinding(overrides: Partial<Finding> = {}): Finding {
 }
 
 describe("Scoring Module (SCAN-06)", () => {
-  describe("DEDUCTIONS constant", () => {
-    it("has correct deduction values per D-10", () => {
-      expect(DEDUCTIONS.CRITICAL).toBe(25);
-      expect(DEDUCTIONS.HIGH).toBe(15);
-      expect(DEDUCTIONS.MEDIUM).toBe(8);
-      expect(DEDUCTIONS.LOW).toBe(3);
-      expect(DEDUCTIONS.INFO).toBe(1);
+  describe("SEVERITY_DEDUCTIONS", () => {
+    it("has correct deduction values", () => {
+      expect(SEVERITY_DEDUCTIONS.CRITICAL).toBe(25);
+      expect(SEVERITY_DEDUCTIONS.HIGH).toBe(15);
+      expect(SEVERITY_DEDUCTIONS.MEDIUM).toBe(8);
+      expect(SEVERITY_DEDUCTIONS.LOW).toBe(3);
+      expect(SEVERITY_DEDUCTIONS.INFO).toBe(1);
     });
   });
 

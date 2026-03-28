@@ -23,7 +23,18 @@ export default async function ReportPage({ params }: ReportPageProps) {
   }
 
   if (auditData.status === "error") {
-    return <ErrorView owner={owner} repo={repo} pr={pr} />;
+    return (
+      <ErrorView
+        owner={owner}
+        repo={repo}
+        pr={pr}
+        message={auditData.errorMessage}
+      />
+    );
+  }
+
+  if (!auditData.result) {
+    notFound();
   }
 
   const result = AuditResultSchema.parse(auditData.result);
@@ -33,9 +44,14 @@ export default async function ReportPage({ params }: ReportPageProps) {
       result={result}
       owner={owner}
       repo={repo}
-      prNumber={parseInt(pr)}
+      prNumber={parseInt(pr, 10)}
       prTitle={auditData.pr.title}
       timestamp={auditData.timestamp}
+      partialWarning={
+        auditData.status === "partial_error"
+          ? auditData.partialErrorMessage
+          : undefined
+      }
     />
   );
 }
