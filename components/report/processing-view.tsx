@@ -12,28 +12,40 @@ interface ProcessingViewProps {
   pr: string;
 }
 
+const STAGE_LABEL: Record<string, string> = {
+  starting: "Starting",
+  recon: "Reconnaissance",
+  "security-scan": "Security scan",
+  "threat-synthesis": "Threat synthesis",
+  "post-processing": "Finalizing",
+  error: "Error",
+};
+
 export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
   const router = useRouter();
   const [dots, setDots] = useState("");
+  const [stage, setStage] = useState<string | undefined>();
 
   useEffect(() => {
-    // Animate dots
     const dotsInterval = setInterval(() => {
       setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
     }, 500);
 
-    // Poll for completion every 4 seconds
     const pollInterval = setInterval(async () => {
       try {
         const res = await fetch(`/api/report/${owner}/${repo}/${pr}`);
         if (res.ok) {
-          const data = await res.json();
+          const data = (await res.json()) as {
+            status?: string;
+            pipelineStage?: string;
+          };
+          if (data.pipelineStage) setStage(data.pipelineStage);
           if (data.status === "complete" || data.status === "error") {
             router.refresh();
           }
         }
       } catch {
-        // Silently retry on next interval
+        // retry
       }
     }, 4000);
 
@@ -42,6 +54,8 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
       clearInterval(pollInterval);
     };
   }, [owner, repo, pr, router]);
+
+  const label = stage ? STAGE_LABEL[stage] ?? stage : "Queued";
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-8">
@@ -60,6 +74,9 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
             </span>{" "}
             PR #{pr}
           </p>
+          <p className="text-xs font-medium text-primary uppercase tracking-wide">
+            Current stage: {label}
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
@@ -77,7 +94,7 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
             </div>
           </div>
           <p className="text-xs text-muted-foreground text-center">
-            This page refreshes automatically when the audit completes.
+            This page refreshes when the audit completes (typically 2–8 minutes).
           </p>
         </CardContent>
       </Card>

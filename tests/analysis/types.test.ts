@@ -144,6 +144,11 @@ describe("Analysis Types - Zod Schemas", () => {
   describe("AuditResultSchema", () => {
     it("validates a complete audit result", () => {
       const auditResult = {
+        summary: "Overall audit summary",
+        threatModel: {
+          attackSurfaces: [],
+          attackPaths: [],
+        },
         phases: [
           { phase: "code-quality", summary: "Quality review done", findings: [] },
           { phase: "vulnerability-scan", summary: "Vuln scan done", findings: [makeFinding()] },

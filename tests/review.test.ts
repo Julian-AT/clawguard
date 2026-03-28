@@ -4,6 +4,8 @@ import type { AuditResult } from "../lib/analysis/types";
 // Use vi.hoisted for mock variables used in vi.mock factories
 const { mockRunSecurityPipeline } = vi.hoisted(() => {
   const mockAuditResult: AuditResult = {
+    summary: "Clean bill of health",
+    threatModel: { attackSurfaces: [], attackPaths: [] },
     phases: [
       { phase: "code-quality", summary: "No quality issues", findings: [] },
       { phase: "vulnerability-scan", summary: "No vulnerabilities", findings: [] },
@@ -47,9 +49,9 @@ describe("Review Pipeline", () => {
     expect(result.score).toBe(100);
     expect(result.grade).toBe("A");
     expect(result.findings).toEqual([]);
-    expect(result.phases[0].summary).toBe("No quality issues");
-    expect(result.phases[1].summary).toBe("No vulnerabilities");
-    expect(result.phases[2].summary).toBe("No threats");
+    expect(result.phases?.[0]?.summary).toBe("No quality issues");
+    expect(result.phases?.[1]?.summary).toBe("No vulnerabilities");
+    expect(result.phases?.[2]?.summary).toBe("No threats");
   });
 
   it("reviewPullRequest passes onProgress to pipeline", async () => {

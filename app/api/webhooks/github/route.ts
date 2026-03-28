@@ -1,5 +1,4 @@
 import { after } from "next/server";
-import { bot } from "@/lib/bot";
 import { redis } from "@/lib/redis";
 
 export const maxDuration = 300;
@@ -27,6 +26,7 @@ export async function POST(request: Request) {
     }
   }
 
+  const { bot } = await import("@/lib/bot");
   const handler = bot.webhooks.github;
   if (!handler) {
     console.log("[webhook] No GitHub handler found");

@@ -1,15 +1,26 @@
 import { Sandbox } from "@vercel/sandbox";
 import { createBashTool } from "bash-tool";
-import { runQualityReview } from "./phase1-quality";
-import { runVulnerabilityScan } from "./phase2-vuln";
-import { runThreatModel } from "./phase3-threat";
-import { calculateScore, getGrade, countBySeverity } from "./scoring";
-import type { AuditResult } from "./types";
+import { Octokit } from "@octokit/rest";
+import { loadRepoConfig } from "@/lib/config";
+import { runReconnaissance } from "./recon";
+import { runSecurityScan } from "./security-scan";
+import { runThreatSynthesis } from "./threat-synthesis";
+import { postProcessAudit } from "./post-process";
+import type { AuditResult, PhaseResult, ReconResult } from "./types";
 
-export type ProgressCallback = (
-  phase: "quality" | "vulnerability" | "threatModel",
-  status: "running" | "complete" | "error"
-) => Promise<void>;
+export type PipelineProgress =
+  | { stage: "recon"; status: "running" | "complete"; detail?: string }
+  | {
+      stage: "security-scan";
+      status: "running" | "complete";
+      step?: number;
+      detail?: string;
+    }
+  | { stage: "threat-synthesis"; status: "running" | "complete"; detail?: string }
+  | { stage: "post-processing"; status: "running" | "complete"; detail?: string }
+  | { stage: "error"; error: string };
+
+export type ProgressCallback = (progress: PipelineProgress) => Promise<void>;
 
 export interface PipelineInput {
   owner: string;
@@ -19,20 +30,18 @@ export interface PipelineInput {
 }
 
 /**
- * Run the 3-phase security analysis pipeline.
- *
- * Creates a single Vercel Sandbox, clones the repo, and runs three sequential
- * ToolLoopAgent phases: code quality review, vulnerability scan, and threat model.
- * Each phase receives context from prior phases for cumulative analysis.
- *
- * @param input - PR details (owner, repo, branches)
- * @param onProgress - Optional callback for phase transition updates
- * @returns Aggregated AuditResult with findings, score, and grade
+ * Four-stage pipeline: recon → security scan → threat synthesis → post-process.
  */
 export async function runSecurityPipeline(
   input: PipelineInput,
   onProgress?: ProgressCallback
 ): Promise<AuditResult> {
+  const started = Date.now();
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+  const { config, policies, configSource, policiesSource } =
+    await loadRepoConfig(octokit, input.owner, input.repo, input.prBranch);
+
   const sandbox = await Sandbox.create({
     source: {
       type: "git",
@@ -41,11 +50,12 @@ export async function runSecurityPipeline(
       password: process.env.GITHUB_TOKEN!,
       depth: 50,
     },
-    timeout: 10 * 60 * 1000, // 10 minutes for 3-phase analysis
+    timeout: 10 * 60 * 1000,
   });
 
+  let recon: ReconResult;
+
   try {
-    // Fetch and checkout PR branch
     await sandbox.runCommand("git", [
       "fetch",
       "origin",
@@ -54,57 +64,103 @@ export async function runSecurityPipeline(
     ]);
     await sandbox.runCommand("git", ["checkout", input.prBranch]);
 
-    // Get the diff once, share across all phases
     const diffResult = await sandbox.runCommand("git", [
       "diff",
       `origin/${input.baseBranch}...HEAD`,
     ]);
     const diff = await diffResult.stdout();
 
-    // Create bash tools for agents to explore the codebase
+    await onProgress?.({
+      stage: "recon",
+      status: "running",
+      detail: "Mapping diff and file context",
+    });
+    recon = await runReconnaissance(sandbox, diff);
+    await onProgress?.({ stage: "recon", status: "complete" });
+
     const { tools } = await createBashTool({ sandbox });
 
-    // Phase 1: Code Quality Review
-    await onProgress?.("quality", "running");
-    const phase1 = await runQualityReview(tools, diff);
-    await onProgress?.("quality", "complete");
-
-    // Phase 2: Vulnerability Scan (receives Phase 1 context)
-    await onProgress?.("vulnerability", "running");
-    const phase2 = await runVulnerabilityScan(tools, diff, phase1.summary);
-    await onProgress?.("vulnerability", "complete");
-
-    // Phase 3: Threat Model (receives Phase 1 + Phase 2 context)
-    await onProgress?.("threatModel", "running");
-    const phase3 = await runThreatModel(
+    await onProgress?.({
+      stage: "security-scan",
+      status: "running",
+      detail: "Deep vulnerability scan",
+    });
+    const scan = await runSecurityScan(
       tools,
-      diff,
-      phase1.summary,
-      phase2.summary
+      recon,
+      policies,
+      config,
+      ({ stepCount }) => {
+        void onProgress?.({
+          stage: "security-scan",
+          status: "running",
+          step: stepCount,
+          detail: `Agent step ${stepCount}`,
+        });
+      }
     );
-    await onProgress?.("threatModel", "complete");
+    await onProgress?.({ stage: "security-scan", status: "complete" });
 
-    // Aggregate findings from all phases
-    const allFindings = [
-      ...phase1.findings,
-      ...phase2.findings,
-      ...phase3.findings,
+    await onProgress?.({
+      stage: "threat-synthesis",
+      status: "running",
+      detail: "Threat model & deduplication",
+    });
+    const threat = await runThreatSynthesis(
+      tools,
+      recon,
+      scan.findings,
+      scan.summary,
+      config
+    );
+    await onProgress?.({ stage: "threat-synthesis", status: "complete" });
+
+    await onProgress?.({ stage: "post-processing", status: "running" });
+    const processed = postProcessAudit({
+      findings: threat.findings,
+      threatModel: threat.threatModel,
+      summary: threat.summary,
+      recon,
+      config,
+    });
+    await onProgress?.({ stage: "post-processing", status: "complete" });
+
+    const phases: PhaseResult[] = [
+      {
+        phase: "security-scan",
+        findings: scan.findings,
+        summary: scan.summary,
+      },
+      {
+        phase: "threat-model",
+        findings: threat.findings,
+        summary: threat.summary,
+      },
     ];
 
-    // Calculate score and grade
-    const score = calculateScore(allFindings);
-    const grade = getGrade(score);
+    const metaNote = `config:${configSource},policies:${policiesSource}`;
 
     return {
-      phases: [
-        { ...phase1, phase: "code-quality" },
-        { ...phase2, phase: "vulnerability-scan" },
-        { ...phase3, phase: "threat-model" },
-      ],
-      findings: allFindings,
-      score,
-      grade,
+      score: processed.score,
+      grade: processed.grade,
+      summary: processed.summary,
+      phases,
+      findings: processed.findings,
+      threatModel: processed.threatModel,
+      recon,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        filesChanged: recon.changedFiles.length,
+        linesChanged: recon.linesChanged ?? 0,
+        modelUsed: config.model.model,
+        pipelineDurationMs: Date.now() - started,
+        configFingerprint: metaNote,
+      },
     };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    await onProgress?.({ stage: "error", error: msg });
+    throw e;
   } finally {
     await sandbox.stop();
   }

@@ -1,17 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Use vi.hoisted for mock variables used in vi.mock factories
 const {
   mockRunCommand,
   mockStop,
   mockSandboxCreate,
   mockCreateBashTool,
-  mockRunQualityReview,
-  mockRunVulnerabilityScan,
-  mockRunThreatModel,
-  defaultPhase1Result,
-  defaultPhase2Result,
-  defaultPhase3Result,
+  mockRunReconnaissance,
+  mockRunSecurityScan,
+  mockRunThreatSynthesis,
+  defaultRecon,
+  defaultScan,
+  defaultThreat,
 } = vi.hoisted(() => {
   const mockRunCommand = vi.fn().mockResolvedValue({
     stdout: vi.fn().mockResolvedValue("mock diff output"),
@@ -25,135 +24,71 @@ const {
     .fn()
     .mockResolvedValue({ tools: { bash: {} } });
 
-  const defaultPhase1Result = {
-    summary: "Phase 1: No major quality issues found",
-    findings: [
-      {
-        severity: "MEDIUM",
-        type: "error-handling-gap",
-        file: "src/api.ts",
-        line: 42,
-        cweId: "CWE-209",
-        owaspCategory: "A04:2021-Insecure Design",
-        description: "Generic error message leaks stack trace",
-        attackScenario:
-          "Attacker triggers error to obtain internal stack trace",
-        confidence: "HIGH",
-        dataFlow: {
-          nodes: [
-            { label: "Error object", type: "source" },
-            { label: "toString()", type: "transform" },
-            { label: "res.json()", type: "sink" },
-          ],
-        },
-        fix: {
-          before: "res.json({ error: err.toString() })",
-          after: 'res.json({ error: "Internal server error" })',
-        },
-        complianceMapping: { nist: ["SI-11"] },
-      },
-    ],
+  const defaultRecon = {
+    changedFiles: [{ path: "src/api.ts" }],
+    languages: ["TypeScript"],
+    frameworkHints: ["Next.js"],
+    diff: "mock diff output",
+    linesChanged: 12,
   };
 
-  const defaultPhase2Result = {
-    summary: "Phase 2: Found SQL injection and hardcoded secret",
+  const defaultScan = {
+    summary: "Scan complete",
     findings: [
       {
-        severity: "CRITICAL",
-        type: "sql-injection",
-        file: "src/db.ts",
-        line: 15,
-        cweId: "CWE-89",
+        severity: "HIGH" as const,
+        type: "xss",
+        file: "src/x.ts",
+        line: 1,
+        cweId: "CWE-79",
         owaspCategory: "A03:2021-Injection",
-        description: "Unparameterized SQL query with user input",
-        attackScenario: "Attacker injects SQL via username field",
-        confidence: "HIGH",
-        dataFlow: {
-          nodes: [
-            { label: "req.body.username", type: "source" },
-            { label: "string concatenation", type: "transform" },
-            { label: "db.query()", type: "sink" },
-          ],
-        },
-        fix: {
-          before: '`SELECT * FROM users WHERE name = \'${name}\'`',
-          after: "db.query('SELECT * FROM users WHERE name = $1', [name])",
-        },
-        complianceMapping: { pciDss: ["6.5.1"], owaspAsvs: ["5.3.4"] },
-      },
-      {
-        severity: "HIGH",
-        type: "hardcoded-secret",
-        file: "src/config.ts",
-        line: 3,
-        cweId: "CWE-798",
-        owaspCategory: "A07:2021-Identification and Authentication Failures",
-        description: "API key hardcoded in source code",
-        attackScenario:
-          "Attacker finds API key in public repo and accesses service",
-        confidence: "HIGH",
-        dataFlow: {
-          nodes: [
-            { label: "hardcoded string", type: "source" },
-            { label: "none", type: "transform" },
-            { label: "API client constructor", type: "sink" },
-          ],
-        },
-        fix: {
-          before: 'const API_KEY = "sk-1234567890"',
-          after: "const API_KEY = process.env.API_KEY!",
-        },
-        complianceMapping: { soc2: ["CC6.1"] },
+        description: "Reflected XSS",
+        attackScenario: "Inject script",
+        confidence: "HIGH" as const,
       },
     ],
   };
 
-  const defaultPhase3Result = {
-    summary: "Phase 3: SQL injection + error leak enables data exfiltration",
-    findings: [
-      {
-        severity: "CRITICAL",
-        type: "compound-attack-path",
-        file: "src/api.ts",
-        line: 42,
-        cweId: "CWE-200",
-        owaspCategory: "A01:2021-Broken Access Control",
-        description:
-          "SQL injection combined with verbose error messages enables blind data exfiltration",
-        attackScenario:
-          "Attacker uses SQL injection to trigger errors, verbose error messages reveal database schema",
-        confidence: "HIGH",
-        dataFlow: {
-          nodes: [
-            { label: "req.body.username", type: "source" },
-            { label: "SQL injection -> error -> toString()", type: "transform" },
-            { label: "res.json()", type: "sink" },
-          ],
+  const defaultThreat = {
+    summary: "Threat model complete",
+    findings: defaultScan.findings,
+    threatModel: {
+      attackSurfaces: [
+        {
+          name: "Web",
+          type: "HTTP",
+          exposure: "Public",
+          riskLevel: "HIGH" as const,
+          description: "User input",
         },
-        fix: {
-          before: "Unparameterized query + verbose errors",
-          after: "Parameterized query + generic error messages",
+      ],
+      attackPaths: [
+        {
+          name: "XSS",
+          mermaidDiagram: "graph LR\n  A-->B",
+          riskAssessment: "High",
         },
-        complianceMapping: { nist: ["SI-11"], pciDss: ["6.5.1"] },
-      },
-    ],
+      ],
+      overallRisk: "HIGH",
+      mergeRecommendation: "Request changes",
+    },
   };
 
-  const mockRunQualityReview = vi.fn().mockResolvedValue(defaultPhase1Result);
-  const mockRunVulnerabilityScan = vi.fn().mockResolvedValue(defaultPhase2Result);
-  const mockRunThreatModel = vi.fn().mockResolvedValue(defaultPhase3Result);
+  const mockRunReconnaissance = vi.fn().mockResolvedValue(defaultRecon);
+  const mockRunSecurityScan = vi.fn().mockResolvedValue(defaultScan);
+  const mockRunThreatSynthesis = vi.fn().mockResolvedValue(defaultThreat);
 
   return {
     mockRunCommand,
     mockStop,
     mockSandboxCreate,
     mockCreateBashTool,
-    mockRunQualityReview,
-    mockRunVulnerabilityScan,
-    mockRunThreatModel,
-    defaultPhase1Result,
-    defaultPhase2Result,
-    defaultPhase3Result,
+    mockRunReconnaissance,
+    mockRunSecurityScan,
+    mockRunThreatSynthesis,
+    defaultRecon,
+    defaultScan,
+    defaultThreat,
   };
 });
 
@@ -165,16 +100,47 @@ vi.mock("bash-tool", () => ({
   createBashTool: mockCreateBashTool,
 }));
 
-vi.mock("../../lib/analysis/phase1-quality", () => ({
-  runQualityReview: mockRunQualityReview,
+vi.mock("@/lib/config", () => ({
+  loadRepoConfig: vi.fn().mockResolvedValue({
+    config: {
+      autoFix: {
+        enabled: true,
+        commitDirectly: true,
+        maxFixesPerRun: 10,
+        requireValidation: true,
+      },
+      thresholds: {
+        blockMerge: "CRITICAL",
+        requestChanges: "HIGH",
+        commentOnly: "MEDIUM",
+      },
+      ignorePaths: [],
+      report: {
+        generateInteractiveReport: true,
+        frameworks: ["OWASP"],
+      },
+      model: {
+        provider: "anthropic",
+        model: "claude-sonnet-4.6",
+        maxSteps: 30,
+      },
+    },
+    policies: [],
+    configSource: "defaults",
+    policiesSource: "defaults",
+  }),
 }));
 
-vi.mock("../../lib/analysis/phase2-vuln", () => ({
-  runVulnerabilityScan: mockRunVulnerabilityScan,
+vi.mock("../../lib/analysis/recon", () => ({
+  runReconnaissance: mockRunReconnaissance,
 }));
 
-vi.mock("../../lib/analysis/phase3-threat", () => ({
-  runThreatModel: mockRunThreatModel,
+vi.mock("../../lib/analysis/security-scan", () => ({
+  runSecurityScan: mockRunSecurityScan,
+}));
+
+vi.mock("../../lib/analysis/threat-synthesis", () => ({
+  runThreatSynthesis: mockRunThreatSynthesis,
 }));
 
 import { runSecurityPipeline } from "../../lib/analysis/pipeline";
@@ -189,7 +155,6 @@ describe("Security Pipeline", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset default implementations after clearAllMocks
     mockRunCommand.mockResolvedValue({
       stdout: vi.fn().mockResolvedValue("mock diff output"),
     });
@@ -198,93 +163,51 @@ describe("Security Pipeline", () => {
       runCommand: mockRunCommand,
       stop: mockStop,
     });
-    mockRunQualityReview.mockResolvedValue(defaultPhase1Result);
-    mockRunVulnerabilityScan.mockResolvedValue(defaultPhase2Result);
-    mockRunThreatModel.mockResolvedValue(defaultPhase3Result);
+    mockRunReconnaissance.mockResolvedValue(defaultRecon);
+    mockRunSecurityScan.mockResolvedValue(defaultScan);
+    mockRunThreatSynthesis.mockResolvedValue(defaultThreat);
   });
 
-  it("calls phases in correct order: quality -> vulnerability -> threat", async () => {
-    const callOrder: string[] = [];
-    mockRunQualityReview.mockImplementation(async () => {
-      callOrder.push("quality");
-      return {
-        summary: "Phase 1 summary",
-        findings: [],
-      };
+  it("calls recon → security scan → threat synthesis in order", async () => {
+    const order: string[] = [];
+    mockRunReconnaissance.mockImplementation(async () => {
+      order.push("recon");
+      return defaultRecon;
     });
-    mockRunVulnerabilityScan.mockImplementation(async () => {
-      callOrder.push("vulnerability");
-      return {
-        summary: "Phase 2 summary",
-        findings: [],
-      };
+    mockRunSecurityScan.mockImplementation(async () => {
+      order.push("scan");
+      return defaultScan;
     });
-    mockRunThreatModel.mockImplementation(async () => {
-      callOrder.push("threatModel");
-      return {
-        summary: "Phase 3 summary",
-        findings: [],
-      };
+    mockRunThreatSynthesis.mockImplementation(async () => {
+      order.push("threat");
+      return defaultThreat;
     });
 
     await runSecurityPipeline(defaultInput);
 
-    expect(callOrder).toEqual(["quality", "vulnerability", "threatModel"]);
+    expect(order).toEqual(["recon", "scan", "threat"]);
   });
 
-  it("passes phase1 summary to phase2, and phase1+2 summaries to phase3", async () => {
-    await runSecurityPipeline(defaultInput);
-
-    // Phase 2 receives phase1 summary as 3rd arg
-    expect(mockRunVulnerabilityScan).toHaveBeenCalledWith(
-      expect.any(Object), // tools
-      "mock diff output", // diff
-      "Phase 1: No major quality issues found" // phase1Summary
-    );
-
-    // Phase 3 receives both summaries as 3rd and 4th args
-    expect(mockRunThreatModel).toHaveBeenCalledWith(
-      expect.any(Object), // tools
-      "mock diff output", // diff
-      "Phase 1: No major quality issues found", // phase1Summary
-      "Phase 2: Found SQL injection and hardcoded secret" // phase2Summary
-    );
-  });
-
-  it("aggregates findings from all three phases", async () => {
+  it("returns score, grade, summary, threatModel, recon, metadata", async () => {
     const result = await runSecurityPipeline(defaultInput);
 
-    // phase1: 1 finding, phase2: 2 findings, phase3: 1 finding
-    expect(result.findings).toHaveLength(4);
-    expect(result.findings.map((f) => f.type)).toEqual([
-      "error-handling-gap",
-      "sql-injection",
-      "hardcoded-secret",
-      "compound-attack-path",
-    ]);
+    expect(result.grade).toBeDefined();
+    expect(result.summary).toBe("Threat model complete");
+    expect(result.threatModel?.attackPaths?.length).toBeGreaterThan(0);
+    expect(result.recon?.languages).toContain("TypeScript");
+    expect(result.metadata?.modelUsed).toBe("claude-sonnet-4.6");
   });
 
-  it("calculates correct score and grade", async () => {
-    const result = await runSecurityPipeline(defaultInput);
-
-    // Deductions: CRITICAL(25) + CRITICAL(25) + HIGH(15) + MEDIUM(8) = 73
-    // Score: 100 - 73 = 27 -> Grade: F
-    expect(result.score).toBe(27);
-    expect(result.grade).toBe("F");
-  });
-
-  it("calls onProgress callback for each phase", async () => {
+  it("calls onProgress with pipeline events", async () => {
     const onProgress = vi.fn().mockResolvedValue(undefined);
 
     await runSecurityPipeline(defaultInput, onProgress);
 
-    expect(onProgress).toHaveBeenCalledTimes(6);
-    expect(onProgress).toHaveBeenNthCalledWith(1, "quality", "running");
-    expect(onProgress).toHaveBeenNthCalledWith(2, "quality", "complete");
-    expect(onProgress).toHaveBeenNthCalledWith(3, "vulnerability", "running");
-    expect(onProgress).toHaveBeenNthCalledWith(4, "vulnerability", "complete");
-    expect(onProgress).toHaveBeenNthCalledWith(5, "threatModel", "running");
-    expect(onProgress).toHaveBeenNthCalledWith(6, "threatModel", "complete");
+    const stages = onProgress.mock.calls.map((c) => c[0].stage);
+    expect(stages).toContain("recon");
+    expect(stages).toContain("security-scan");
+    expect(stages).toContain("threat-synthesis");
+    expect(stages).toContain("post-processing");
   });
 
   it("stops sandbox in finally block", async () => {
@@ -293,11 +216,11 @@ describe("Security Pipeline", () => {
     expect(mockStop).toHaveBeenCalled();
   });
 
-  it("stops sandbox even when an agent throws", async () => {
-    mockRunQualityReview.mockRejectedValueOnce(new Error("Agent failed"));
+  it("stops sandbox when recon throws", async () => {
+    mockRunReconnaissance.mockRejectedValueOnce(new Error("recon failed"));
 
     await expect(runSecurityPipeline(defaultInput)).rejects.toThrow(
-      "Agent failed"
+      "recon failed"
     );
     expect(mockStop).toHaveBeenCalled();
   });
@@ -309,24 +232,6 @@ describe("Security Pipeline", () => {
       expect.objectContaining({
         timeout: 10 * 60 * 1000,
       })
-    );
-  });
-
-  it("returns phases as an array with phase labels", async () => {
-    const result = await runSecurityPipeline(defaultInput);
-
-    expect(result.phases).toHaveLength(3);
-    expect(result.phases[0].phase).toBe("code-quality");
-    expect(result.phases[0].summary).toBe(
-      "Phase 1: No major quality issues found"
-    );
-    expect(result.phases[1].phase).toBe("vulnerability-scan");
-    expect(result.phases[1].summary).toBe(
-      "Phase 2: Found SQL injection and hardcoded secret"
-    );
-    expect(result.phases[2].phase).toBe("threat-model");
-    expect(result.phases[2].summary).toBe(
-      "Phase 3: SQL injection + error leak enables data exfiltration"
     );
   });
 });

@@ -19,6 +19,37 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
 
   return (
     <div className="space-y-8">
+      {(threatModel.overallRisk ||
+        threatModel.mergeRecommendation ||
+        threatModel.compoundRiskSummary) && (
+        <section className="grid gap-4 sm:grid-cols-2">
+          {threatModel.overallRisk && (
+            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+              <h3 className="text-xs font-semibold uppercase text-amber-400 mb-1">
+                Overall risk
+              </h3>
+              <p className="text-sm">{threatModel.overallRisk}</p>
+            </div>
+          )}
+          {threatModel.mergeRecommendation && (
+            <div className="rounded-lg border border-primary/40 bg-primary/10 p-4">
+              <h3 className="text-xs font-semibold uppercase text-primary mb-1">
+                Merge recommendation
+              </h3>
+              <p className="text-sm font-medium">{threatModel.mergeRecommendation}</p>
+            </div>
+          )}
+          {threatModel.compoundRiskSummary && (
+            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 sm:col-span-2">
+              <h3 className="text-xs font-semibold uppercase text-red-400 mb-1">
+                Compound risk
+              </h3>
+              <p className="text-sm">{threatModel.compoundRiskSummary}</p>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Attack Surfaces */}
       {threatModel.attackSurfaces.length > 0 && (
         <section>

@@ -7,10 +7,14 @@ export const redis = new Redis({
 });
 
 export interface AuditData {
-  result: AuditResult;
+  /** Present when status is complete or error (after failed run with partial state). */
+  result?: AuditResult;
   timestamp: string;
   pr: { owner: string; repo: string; number: number; title: string };
   status: "processing" | "complete" | "error";
+  errorMessage?: string;
+  /** Last pipeline stage label for processing UI */
+  pipelineStage?: string;
 }
 
 export async function storeAuditResult(params: {

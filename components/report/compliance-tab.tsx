@@ -1,25 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import type { Finding, Severity } from "@/lib/analysis/types";
+import { SEVERITY_BADGE_CLASS, SEVERITY_ORDER } from "@/lib/constants";
 
 interface ComplianceTabProps {
   findings: Finding[];
 }
-
-const severityOrder: Record<Severity, number> = {
-  CRITICAL: 0,
-  HIGH: 1,
-  MEDIUM: 2,
-  LOW: 3,
-  INFO: 4,
-};
-
-const severityColor: Record<string, string> = {
-  CRITICAL: "bg-red-600 text-white",
-  HIGH: "bg-orange-500 text-white",
-  MEDIUM: "bg-yellow-500 text-black",
-  LOW: "bg-blue-500 text-white",
-  INFO: "bg-gray-500 text-white",
-};
 
 function renderMapping(values: string[] | undefined): React.ReactNode {
   if (!values || values.length === 0) {
@@ -31,7 +16,9 @@ function renderMapping(values: string[] | undefined): React.ReactNode {
 export function ComplianceTab({ findings }: ComplianceTabProps) {
   const withCompliance = findings
     .filter((f) => f.complianceMapping)
-    .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+    .sort(
+      (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
+    );
 
   if (withCompliance.length === 0) {
     return (
@@ -64,7 +51,7 @@ export function ComplianceTab({ findings }: ComplianceTabProps) {
               <td className="py-2 px-3">
                 <div className="flex items-center gap-2">
                   <Badge
-                    className={`${severityColor[f.severity]} text-[10px] shrink-0`}
+                    className={`${SEVERITY_BADGE_CLASS[f.severity]} text-[10px] shrink-0`}
                   >
                     {f.severity}
                   </Badge>
