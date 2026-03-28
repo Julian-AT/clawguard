@@ -23,12 +23,12 @@ When a developer @mentions ClawGuard on a PR, it must find real vulnerabilities,
 
 - [ ] GitHub webhook receives @mention events and triggers the security audit pipeline
 - [ ] Vercel Sandbox clones repo and checks out PR branch for isolated analysis
-- [ ] Interactive web report at `/report/[owner]/[repo]/[pr]` with dark theme shadcn/ui
-- [ ] Report: security score gauge, OWASP distribution chart, expandable finding cards
-- [ ] Report: Mermaid data flow diagrams per finding, attack path diagrams in threat model
-- [ ] Report: before/after code diffs with syntax highlighting
-- [ ] Report: compliance mapping table (PCI DSS, SOC 2, HIPAA, NIST, OWASP ASVS)
-- [ ] v0 SDK integration for generating/refining report UI from template baseline
+- [x] Interactive web report at `/report/[owner]/[repo]/[pr]` with dark theme shadcn/ui — *Validated in Phase 4: interactive-web-report*
+- [x] Report: security score gauge, OWASP distribution chart, expandable finding cards — *Validated in Phase 4*
+- [x] Report: Mermaid data flow diagrams per finding, attack path diagrams in threat model — *Validated in Phase 4*
+- [x] Report: before/after code diffs with syntax highlighting — *Validated in Phase 4*
+- [x] Report: compliance mapping table (PCI DSS, SOC 2, HIPAA, NIST, OWASP ASVS) — *Validated in Phase 4*
+- [x] v0 SDK integration for generating/refining report UI from template baseline — *Validated in Phase 4 (dev-time script)*
 - [ ] Auto-fix: agent generates fix in sandbox → validates → commits to PR branch via Octokit
 - [ ] Re-audit after fixes with updated score posted to thread
 - [ ] Follow-up chat: developer can ask questions in PR thread, bot responds with context
@@ -100,4 +100,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-28 after Phase 3 completion*
+*Last updated: 2026-03-28 after Phase 4 completion*
