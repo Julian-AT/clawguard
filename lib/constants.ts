@@ -36,17 +36,6 @@ export const SEVERITY_ORDER_LIST: readonly Severity[] = [
   "INFO",
 ] as const;
 
-export const severityEmoji = (severity: string): string => {
-  const map: Record<string, string> = {
-    CRITICAL: "\uD83D\uDD34",
-    HIGH: "\uD83D\uDFE0",
-    MEDIUM: "\uD83D\uDFE1",
-    LOW: "\uD83D\uDD35",
-    INFO: "\u26AA",
-  };
-  return map[severity] ?? "\u26AA";
-};
-
 /** Tailwind-oriented badge classes for severity (report UI). */
 export const SEVERITY_BADGE_CLASS: Record<Severity, string> = {
   CRITICAL: "bg-red-600 text-white",

@@ -3,6 +3,7 @@ import type { AuditTableRow } from "@/components/data-table";
 import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
 import { getSession } from "@/lib/auth";
+import { Shield } from "lucide-react";
 import { listPrAuditKeys, listReposWithAudits, loadAuditDataForKeys } from "@/lib/redis-queries";
 
 function countCriticalFindings(result: { findings?: { severity: string }[] } | undefined): number {
@@ -88,18 +89,30 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <SectionCards
-        repoCount={repoSummaries.length}
-        totalAudits={totalAudits}
-        avgScore={avgLatest}
-        criticalFindings={totalCritical}
-      />
+      {totalAudits === 0 ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
+          <Shield className="size-10 text-muted-foreground/40" aria-hidden />
+          <h2 className="text-lg font-medium text-muted-foreground">Nothing to show yet</h2>
+          <p className="max-w-sm text-sm text-muted-foreground/70">
+            @mention ClawGuard on a pull request to run your first security audit.
+          </p>
+        </div>
+      ) : (
+        <>
+          <SectionCards
+            repoCount={repoSummaries.length}
+            totalAudits={totalAudits}
+            avgScore={avgLatest}
+            criticalFindings={totalCritical}
+          />
 
-      <div className="px-4 lg:px-6">
-        <ChartAreaInteractive auditSeries={auditSeries.length > 0 ? auditSeries : undefined} />
-      </div>
+          <div className="px-4 lg:px-6">
+            <ChartAreaInteractive auditSeries={auditSeries.length > 0 ? auditSeries : undefined} />
+          </div>
 
-      <DataTable data={rows} />
+          <DataTable data={rows} />
+        </>
+      )}
     </div>
   );
 }

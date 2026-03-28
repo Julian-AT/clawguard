@@ -8,11 +8,14 @@ export function isClawGuardAutomatedCommentBody(body: string | undefined): boole
   }
   const t = body.trimStart();
   return (
-    t.startsWith("## 🛡️ ClawGuard Security Audit") ||
-    t.startsWith("## Auto-Fix Results") ||
+    t.startsWith("## ClawGuard Security Audit") ||
+    t.startsWith("> [!NOTE]") ||
+    t.startsWith("> [!WARNING]") ||
+    t.startsWith("## ClawGuard Auto-Fix Results") ||
+    t.startsWith("## ClawGuard Auto-Fix Progress") ||
     t.startsWith("**ClawGuard:") ||
     t.startsWith("Starting auto-fix for all") ||
-    t.startsWith("❌ Something went wrong") ||
+    t.startsWith("Starting security audit") ||
     t.startsWith("Fixing:") ||
     t.startsWith("Fixed:") ||
     t.startsWith("Could not auto-fix") ||

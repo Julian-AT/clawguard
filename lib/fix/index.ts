@@ -11,7 +11,7 @@ import { reviewPullRequest } from "@/lib/review";
 
 function buildFixProgressMarkdown(results: FixResult[]): string {
   const lines = [
-    "## Auto-fix progress",
+    "## ClawGuard Auto-Fix Progress",
     "",
     "| Finding | Status | Commit |",
     "|---------|--------|--------|",

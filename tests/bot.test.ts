@@ -8,6 +8,7 @@ const auditRunnerSource = readFileSync(
   resolve(__dirname, "../lib/github-audit-runner.ts"),
   "utf-8",
 );
+const botHelpersSource = readFileSync(resolve(__dirname, "../lib/bot-helpers.ts"), "utf-8");
 
 describe("Bot Configuration", () => {
   it("exports Chat instance with GitHub adapter (HOOK-02)", () => {
@@ -51,10 +52,10 @@ describe("Summary Card Integration", () => {
 });
 
 describe("Live Progress Updates", () => {
-  it("posts progress with phase checkmarks during analysis (D-07)", () => {
-    expect(botSource).toContain("Phase 1: Code Quality Review");
-    expect(botSource).toContain("Phase 2: Vulnerability Scan");
-    expect(botSource).toContain("Phase 3: Threat Model");
+  it("posts initial audit message then pipeline replaces with phase table (D-07)", () => {
+    expect(botSource).toContain("Starting security audit");
+    expect(botHelpersSource).toContain("| Phase | Status |");
+    expect(botHelpersSource).toContain("Reconnaissance");
   });
 
   it("uses progress callback with status.edit for live updates (D-07)", () => {
@@ -121,7 +122,7 @@ describe("Fix Flow Integration (FIX-04, FIX-05)", () => {
   });
 
   it("posts final summary table with fixed/skipped status (D-12)", () => {
-    expect(botSource).toContain("Auto-Fix Results");
+    expect(botSource).toContain("ClawGuard Auto-Fix Results");
     expect(botSource).toContain("| Finding | Status | Commit |");
   });
 
