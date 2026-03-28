@@ -1,5 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
+// biome-ignore assist/source/organizeImports: <explanation>
 import { siteConfig } from "@/lib/landing-config";
+import Image from "next/image";
 
 export function QuoteSection() {
   const { quoteSection } = siteConfig;
@@ -16,10 +17,14 @@ export function QuoteSection() {
 
         <div className="flex gap-4">
           <div className="size-10 rounded-full bg-(--landing-brand-fill) border border-border">
-            <img
-              src={quoteSection.author.image}
+            <Image
+              src="/BP5_9351-0-scaled.webp"
               alt={quoteSection.author.name}
-              className="size-full rounded-full object-contain"
+              fill
+              className="object-cover rounded-full"
+              style={{ objectFit: "cover" }}
+              sizes="40px"
+              priority
             />
           </div>
           <div className="text-left">

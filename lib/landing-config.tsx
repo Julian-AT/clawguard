@@ -8,6 +8,16 @@ import { Globe } from "@/components/ui/globe";
 
 export const BLUR_FADE_DELAY = 0.15;
 
+/** Product screenshots in `public/` (URL-encoded paths — filenames contain spaces). */
+export const pubScreenshot = {
+  dashboard: "/Screenshot%202026-03-28%20at%2010.10.00.png",
+  reportExecutive: "/Screenshot%202026-03-28%20at%2010.11.22.png",
+  findings: "/Screenshot%202026-03-28%20at%2010.12.04.png",
+  prSummary: "/Screenshot%202026-03-28%20at%2010.12.29.png",
+  threatModel: "/Screenshot%202026-03-28%20at%2010.12.59.png",
+  compliance: "/Screenshot%202026-03-28%20at%2010.13.29.png",
+} as const;
+
 export const siteConfig = {
   name: "ClawGuard",
   description:
@@ -46,6 +56,15 @@ export const siteConfig = {
         href: "/report/demo",
       },
     },
+  },
+  /** Hero video dialog: set `NEXT_PUBLIC_HERO_VIDEO_EMBED` to your YouTube embed URL when ready. */
+  heroVideo: {
+    embedUrl:
+      process.env.NEXT_PUBLIC_HERO_VIDEO_EMBED ??
+      "https://www.youtube.com/embed/qh3NGpYRG3I?si=4rb-zSdDkVK9qxxb",
+    thumbnailSrc: pubScreenshot.dashboard,
+    thumbnailAlt:
+      "ClawGuard dashboard: tracked repositories, audit score trend, and recent PR audits",
   },
   companyShowcase: {
     companyLogos: [
@@ -254,32 +273,28 @@ export const siteConfig = {
         title: "@mention ClawGuard on the PR",
         content:
           "Type @clawguard in any PR thread to kick off a full security pass — no tickets, no context switching.",
-        image:
-          "https://images.unsplash.com/photo-1720371300677-ba4838fa0678?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        image: pubScreenshot.reportExecutive,
       },
       {
         id: 2,
         title: "Deep scan in an isolated sandbox",
         content:
           "Your code is cloned into an isolated Vercel Sandbox for recon, static analysis, and threat modeling with CWE/OWASP mapping.",
-        image:
-          "https://images.unsplash.com/photo-1686170287433-c95faf6d3608?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwzfHx8ZW58MHx8fHx8fA%3D%3D",
+        image: pubScreenshot.threatModel,
       },
       {
         id: 3,
         title: "Interactive security report",
         content:
           "Explore findings through charts, severity breakdowns, Mermaid data-flow diagrams, and before/after code diffs.",
-        image:
-          "https://images.unsplash.com/photo-1720378042271-60aff1e1c538?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxMHx8fGVufDB8fHx8fA%3D%3D",
+        image: pubScreenshot.prSummary,
       },
       {
         id: 4,
         title: "Auto-fix and re-audit loop",
         content:
           "ClawGuard commits fixes to your PR branch and re-audits in a loop until every finding is resolved or acknowledged.",
-        image:
-          "https://images.unsplash.com/photo-1666882990322-e7f3b8df4f75?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDF8fHxlbnwwfHx8fHw%3D",
+        image: pubScreenshot.findings,
       },
     ],
   },

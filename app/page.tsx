@@ -19,7 +19,6 @@ export default function Home() {
       <Navbar />
       <main className="flex min-h-screen w-full flex-col items-center justify-center divide-y divide-border">
         <HeroSection />
-        <CompanyShowcase />
         <BentoSection />
         <FeatureSection />
         <QuoteSection />
