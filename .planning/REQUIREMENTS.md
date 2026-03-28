@@ -55,13 +55,13 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 
 - [x] **REPT-01**: Report page at `/report/[owner]/[repo]/[pr]` renders from stored audit JSON
 - [x] **REPT-02**: Header with ClawGuard branding, repo name, PR title/number, audit timestamp
-- [ ] **REPT-03**: Security score gauge — large circular display with A-F grade, color-coded (green A/B, amber C, red D/F)
-- [ ] **REPT-04**: Severity breakdown badges next to score gauge
-- [ ] **REPT-05**: OWASP Top 10 distribution chart (Recharts horizontal bar chart)
-- [ ] **REPT-06**: Expandable finding cards with severity badge, vuln type, file:line, CWE/OWASP tags
-- [ ] **REPT-07**: Finding detail: full description, attack scenario (red-bordered callout), compliance badges
-- [ ] **REPT-08**: Mermaid data flow diagram per finding (source → transform → sink)
-- [ ] **REPT-09**: Before/after code diff with syntax highlighting per finding
+- [x] **REPT-03**: Security score gauge — large circular display with A-F grade, color-coded (green A/B, amber C, red D/F)
+- [x] **REPT-04**: Severity breakdown badges next to score gauge
+- [x] **REPT-05**: OWASP Top 10 distribution chart (Recharts horizontal bar chart)
+- [x] **REPT-06**: Expandable finding cards with severity badge, vuln type, file:line, CWE/OWASP tags
+- [x] **REPT-07**: Finding detail: full description, attack scenario (red-bordered callout), compliance badges
+- [x] **REPT-08**: Mermaid data flow diagram per finding (source → transform → sink)
+- [x] **REPT-09**: Before/after code diff with syntax highlighting per finding
 - [ ] **REPT-10**: Threat Model tab with attack surface entries, Mermaid attack path diagram, risk assessment
 - [ ] **REPT-11**: Compliance tab with mapping table (Finding, CWE, PCI DSS, SOC 2, HIPAA, NIST, OWASP ASVS)
 - [x] **REPT-12**: Dark theme, shadcn/ui components, professional enterprise aesthetic
@@ -168,13 +168,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CHAT-04 | Phase 5 | Pending |
 | REPT-01 | Phase 4 | Complete |
 | REPT-02 | Phase 4 | Complete |
-| REPT-03 | Phase 4 | Pending |
-| REPT-04 | Phase 4 | Pending |
-| REPT-05 | Phase 4 | Pending |
-| REPT-06 | Phase 4 | Pending |
-| REPT-07 | Phase 4 | Pending |
-| REPT-08 | Phase 4 | Pending |
-| REPT-09 | Phase 4 | Pending |
+| REPT-03 | Phase 4 | Complete |
+| REPT-04 | Phase 4 | Complete |
+| REPT-05 | Phase 4 | Complete |
+| REPT-06 | Phase 4 | Complete |
+| REPT-07 | Phase 4 | Complete |
+| REPT-08 | Phase 4 | Complete |
+| REPT-09 | Phase 4 | Complete |
 | REPT-10 | Phase 4 | Pending |
 | REPT-11 | Phase 4 | Pending |
 | REPT-12 | Phase 4 | Complete |
