@@ -62,11 +62,11 @@ Requirements for hackathon demo. Each maps to roadmap phases.
 - [x] **REPT-07**: Finding detail: full description, attack scenario (red-bordered callout), compliance badges
 - [x] **REPT-08**: Mermaid data flow diagram per finding (source → transform → sink)
 - [x] **REPT-09**: Before/after code diff with syntax highlighting per finding
-- [ ] **REPT-10**: Threat Model tab with attack surface entries, Mermaid attack path diagram, risk assessment
-- [ ] **REPT-11**: Compliance tab with mapping table (Finding, CWE, PCI DSS, SOC 2, HIPAA, NIST, OWASP ASVS)
+- [x] **REPT-10**: Threat Model tab with attack surface entries, Mermaid attack path diagram, risk assessment
+- [x] **REPT-11**: Compliance tab with mapping table (Finding, CWE, PCI DSS, SOC 2, HIPAA, NIST, OWASP ASVS)
 - [x] **REPT-12**: Dark theme, shadcn/ui components, professional enterprise aesthetic
 - [x] **REPT-13**: Report is shareable via URL (public, no auth required)
-- [ ] **REPT-14**: v0 SDK integration — template baseline via `v0.chats.init()`, design generation via `v0.chats.create()`
+- [x] **REPT-14**: v0 SDK integration — template baseline via `v0.chats.init()`, design generation via `v0.chats.create()`
 
 ### Dashboard
 
@@ -175,11 +175,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REPT-07 | Phase 4 | Complete |
 | REPT-08 | Phase 4 | Complete |
 | REPT-09 | Phase 4 | Complete |
-| REPT-10 | Phase 4 | Pending |
-| REPT-11 | Phase 4 | Pending |
+| REPT-10 | Phase 4 | Complete |
+| REPT-11 | Phase 4 | Complete |
 | REPT-12 | Phase 4 | Complete |
 | REPT-13 | Phase 4 | Complete |
-| REPT-14 | Phase 4 | Pending |
+| REPT-14 | Phase 4 | Complete |
 | DASH-01 | Phase 5 | Pending |
 | DASH-02 | Phase 5 | Pending |
 | DASH-03 | Phase 5 | Pending |
