@@ -5,6 +5,7 @@ import { ScoreGauge } from "@/components/report/score-gauge";
 import { SeverityBadges } from "@/components/report/severity-badges";
 import { OwaspChart } from "@/components/report/owasp-chart";
 import { FindingsList } from "@/components/report/findings-list";
+import { ThreatModelTab } from "@/components/report/threat-model-tab";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 
@@ -68,9 +69,7 @@ export function ReportView({
           </TabsContent>
 
           <TabsContent value="threat-model" className="mt-4">
-            <p className="text-sm text-muted-foreground py-4">
-              Threat model analysis will be displayed here.
-            </p>
+            <ThreatModelTab threatModel={result.threatModel} />
           </TabsContent>
 
           <TabsContent value="compliance" className="mt-4">
