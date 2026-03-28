@@ -1,8 +1,5 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSession } from "@/lib/auth";
 import { listLearningsOrg, listLearningsRepo } from "@/lib/learnings";
 
 interface PageProps {
@@ -11,31 +8,25 @@ interface PageProps {
 }
 
 export default async function OrgLearningsPage({ params, searchParams }: PageProps) {
-  const session = await getSession();
-  if (!session) {
-    redirect("/api/auth/signin?callbackUrl=/dashboard");
-  }
-
   const { owner } = await params;
   const { repo } = await searchParams;
   const orgLearnings = await listLearningsOrg(owner);
   const repoLearnings = repo && repo.length > 0 ? await listLearningsRepo(owner, repo) : [];
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+    <div className="mx-auto max-w-4xl space-y-8">
       <div>
-        <Link href="/dashboard" className="text-sm text-muted-foreground hover:underline">
-          ← Dashboard
-        </Link>
-        <h1 className="text-2xl font-semibold mt-2">Learnings — {owner}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Team rules extracted from feedback and scans.{" "}
+        <h1 className="text-2xl font-semibold tracking-tight">Learnings</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Team rules extracted from feedback and scans.
           {repo ? (
             <>
-              Filtered to <code className="text-xs">{repo}</code>.
+              {" "}
+              Filtered to{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{repo}</code>.
             </>
           ) : (
-            "Organization-wide entries only — add <code>?repo=name</code> for a repo."
+            " Organization-wide entries — add ?repo=name for a repository filter."
           )}
         </p>
       </div>
@@ -48,13 +39,13 @@ export default async function OrgLearningsPage({ params, searchParams }: PagePro
           </CardHeader>
           <CardContent className="space-y-3">
             {orgLearnings.map((l) => (
-              <div key={l.id} className="rounded-lg border border-border p-3 text-sm">
-                <div className="flex flex-wrap gap-2 items-center mb-1">
+              <div key={l.id} className="rounded-lg border border-border/80 bg-card/50 p-4 text-sm">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{l.action}</Badge>
                   <span className="text-xs text-muted-foreground">confidence {l.confidence}</span>
                 </div>
                 <p className="font-medium">{l.pattern}</p>
-                <p className="text-muted-foreground mt-1">{l.context}</p>
+                <p className="mt-1 text-muted-foreground">{l.context}</p>
               </div>
             ))}
           </CardContent>
@@ -65,17 +56,17 @@ export default async function OrgLearningsPage({ params, searchParams }: PagePro
         <Card>
           <CardHeader>
             <CardTitle>
-              Repository <code>{repo}</code>
+              Repository <code className="font-mono text-base">{repo}</code>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {repoLearnings.map((l) => (
-              <div key={l.id} className="rounded-lg border border-border p-3 text-sm">
-                <div className="flex flex-wrap gap-2 items-center mb-1">
+              <div key={l.id} className="rounded-lg border border-border/80 bg-card/50 p-4 text-sm">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
                   <Badge variant="outline">{l.action}</Badge>
                 </div>
                 <p className="font-medium">{l.pattern}</p>
-                <p className="text-muted-foreground mt-1">{l.context}</p>
+                <p className="mt-1 text-muted-foreground">{l.context}</p>
               </div>
             ))}
           </CardContent>

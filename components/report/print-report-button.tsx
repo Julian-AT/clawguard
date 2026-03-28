@@ -1,18 +1,19 @@
 "use client";
 
 import { Printer } from "lucide-react";
-import { buttonVariants } from "@/lib/button-variants";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function PrintReportButton() {
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="sm"
+      className="print:hidden gap-1.5"
       onClick={() => window.print()}
-      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "print:hidden gap-1.5")}
     >
       <Printer className="size-3.5" />
       Print
-    </button>
+    </Button>
   );
 }

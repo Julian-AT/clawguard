@@ -1,8 +1,5 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSession } from "@/lib/auth";
 import { listKnowledgeOrg } from "@/lib/knowledge";
 
 interface PageProps {
@@ -10,22 +7,14 @@ interface PageProps {
 }
 
 export default async function OrgKnowledgePage({ params }: PageProps) {
-  const session = await getSession();
-  if (!session) {
-    redirect("/api/auth/signin?callbackUrl=/dashboard");
-  }
-
   const { owner } = await params;
   const entries = await listKnowledgeOrg(owner);
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+    <div className="mx-auto max-w-4xl space-y-8">
       <div>
-        <Link href="/dashboard" className="text-sm text-muted-foreground hover:underline">
-          ← Dashboard
-        </Link>
-        <h1 className="text-2xl font-semibold mt-2">Knowledge — {owner}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Knowledge</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Org-wide patterns, anti-patterns, and architectural notes injected into scans.
         </p>
       </div>
@@ -43,8 +32,11 @@ export default async function OrgKnowledgePage({ params }: PageProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             {entries.map((e) => (
-              <div key={e.id} className="rounded-lg border border-border p-3 text-sm space-y-1">
-                <div className="flex flex-wrap gap-2 items-center">
+              <div
+                key={e.id}
+                className="space-y-1 rounded-lg border border-border/80 bg-card/50 p-4 text-sm"
+              >
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary">{e.category}</Badge>
                   <span className="font-medium">{e.title}</span>
                 </div>

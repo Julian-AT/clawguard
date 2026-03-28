@@ -7,6 +7,7 @@ import { ReportShell } from "@/components/report/report-shell";
 import { ScoreGauge } from "@/components/report/score-gauge";
 import { SeverityBadges } from "@/components/report/severity-badges";
 import { ThreatModelTab } from "@/components/report/threat-model-tab";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { countBySeverity } from "@/lib/analysis/scoring";
@@ -49,12 +50,10 @@ export function ReportView({
         />
 
         {partialWarning && (
-          <div
-            role="alert"
-            className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-100"
-          >
-            <strong className="font-semibold">Partial result:</strong> {partialWarning}
-          </div>
+          <Alert className="border-amber-500/40 bg-amber-500/10 text-foreground">
+            <AlertTitle>Partial result</AlertTitle>
+            <AlertDescription className="text-foreground/90">{partialWarning}</AlertDescription>
+          </Alert>
         )}
 
         <section className="rounded-xl border border-border bg-card/50 p-5 print:break-inside-avoid">

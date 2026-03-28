@@ -1,8 +1,8 @@
-import { Shield } from "lucide-react";
+import { ExternalLink, Shield } from "lucide-react";
 import Link from "next/link";
+import { ModeToggle } from "@/components/mode-toggle";
 import { PrintReportButton } from "@/components/report/print-report-button";
-import { buttonVariants } from "@/lib/button-variants";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface ReportShellProps {
   owner: string;
@@ -13,33 +13,34 @@ interface ReportShellProps {
 
 export function ReportShell({ owner, repo, prNumber, children }: ReportShellProps) {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 print:hidden">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="flex min-h-svh flex-col bg-background">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 print:hidden">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-            <Shield className="size-5 text-primary" />
+            <Shield className="size-5 text-primary" aria-hidden />
             ClawGuard
           </Link>
-          <nav className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-muted-foreground font-mono text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-xs text-muted-foreground">
               {owner}/{repo}#{prNumber}
             </span>
-            <Link
-              href="/dashboard"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-            >
-              Dashboard
-            </Link>
-            <a
-              href={`https://github.com/${owner}/${repo}/pull/${prNumber}`}
-              target="_blank"
-              rel="noreferrer"
-              className={cn(buttonVariants({ variant: "secondary", size: "sm" }))}
-            >
-              Open in GitHub
-            </a>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+            <Button variant="secondary" size="sm" asChild>
+              <a
+                href={`https://github.com/${owner}/${repo}/pull/${prNumber}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5"
+              >
+                Open in GitHub
+                <ExternalLink className="size-3.5 opacity-70" />
+              </a>
+            </Button>
             <PrintReportButton />
-          </nav>
+            <ModeToggle />
+          </div>
         </div>
       </header>
       {children}

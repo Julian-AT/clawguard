@@ -1,9 +1,16 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSession } from "@/lib/auth";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { listPrAuditKeys, loadAuditDataForKeys } from "@/lib/redis-queries";
 
 interface PageProps {
@@ -11,11 +18,6 @@ interface PageProps {
 }
 
 export default async function RepoDashboardPage({ params }: PageProps) {
-  const session = await getSession();
-  if (!session) {
-    redirect("/api/auth/signin?callbackUrl=/dashboard");
-  }
-
   const { owner, repo } = await params;
   const keys = await listPrAuditKeys(owner, repo);
   if (keys.length === 0) {
@@ -49,79 +51,90 @@ export default async function RepoDashboardPage({ params }: PageProps) {
   const avg = rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.score, 0) / rows.length) : 0;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border px-6 py-4">
-        <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Dashboard
-        </Link>
-        <h1 className="text-xl font-semibold mt-2 font-mono">
+    <div className="space-y-8">
+      <div>
+        <h1 className="font-mono text-2xl font-semibold tracking-tight">
           {owner}/{repo}
         </h1>
-      </header>
+        <p className="mt-1 text-sm text-muted-foreground">Pull request audits and score trend</p>
+      </div>
 
-      <main className="max-w-5xl mx-auto px-6 py-8 space-y-8">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Audits</CardDescription>
-              <CardTitle className="text-3xl">{rows.length}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Average score</CardDescription>
-              <CardTitle className="text-3xl">{avg}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Latest</CardDescription>
-              <CardTitle className="text-3xl">{rows[0]?.score ?? "—"}</CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Audits</CardDescription>
+            <CardTitle className="text-3xl tabular-nums">{rows.length}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Average score</CardDescription>
+            <CardTitle className="text-3xl tabular-nums">{avg}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Latest</CardDescription>
+            <CardTitle className="text-3xl tabular-nums">{rows[0]?.score ?? "—"}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
 
-        {chartData.length > 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Score trend</CardTitle>
-              <CardDescription>Completed audits over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TrendChart data={chartData} />
-            </CardContent>
-          </Card>
-        )}
-
+      {chartData.length > 1 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Pull requests</CardTitle>
+            <CardTitle className="text-base">Score trend</CardTitle>
+            <CardDescription>Completed audits over time</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {rows.map((r) => (
-              <Link
-                key={r.pr}
-                href={`/report/${owner}/${repo}/${r.pr}`}
-                className="flex items-center justify-between rounded-lg border border-border px-4 py-3 hover:bg-muted/40 transition-colors"
-              >
-                <div>
-                  <div className="font-medium">
-                    PR #{r.pr}{" "}
-                    <span className="text-muted-foreground font-normal text-sm">{r.title}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(r.timestamp).toLocaleString()} · {r.findings} findings
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold tabular-nums">{r.score}</span>
-                  <Badge>{r.grade}</Badge>
-                </div>
-              </Link>
-            ))}
+          <CardContent>
+            <TrendChart data={chartData} />
           </CardContent>
         </Card>
-      </main>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Pull requests</CardTitle>
+          <CardDescription>Open a row to view the full interactive report</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">PR</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead className="text-right">Score</TableHead>
+                <TableHead className="text-right">Grade</TableHead>
+                <TableHead className="hidden md:table-cell">When</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((r) => (
+                <TableRow key={r.pr} className="cursor-pointer hover:bg-muted/50">
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/report/${owner}/${repo}/${r.pr}`}
+                      className="block text-primary underline-offset-4 hover:underline"
+                    >
+                      #{r.pr}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="max-w-[min(40vw,24rem)] truncate text-muted-foreground">
+                    {r.title}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{r.score}</TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant="secondary">{r.grade}</Badge>
+                  </TableCell>
+                  <TableCell className="hidden text-muted-foreground md:table-cell">
+                    {new Date(r.timestamp).toLocaleString()} · {r.findings} findings
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
