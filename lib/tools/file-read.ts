@@ -29,21 +29,15 @@ export const fileReadTool: SandboxToolDefinition<z.infer<typeof FileReadInputSch
     try {
       const buf = await sandbox.readFileToBuffer({ path });
       if (!buf) {
-        return {
-          success: false,
-          output: "",
-          error: `File not found: ${path}`,
-          durationMs: Date.now() - start,
-        };
+        throw new ToolError(`File not found: ${path}`, {
+          context: { path },
+        });
       }
 
       if (buf.length > MAX_FILE_SIZE) {
-        return {
-          success: false,
-          output: "",
-          error: `File too large (${buf.length} bytes, max ${MAX_FILE_SIZE})`,
-          durationMs: Date.now() - start,
-        };
+        throw new ToolError(`File too large (${buf.length} bytes, max ${MAX_FILE_SIZE})`, {
+          context: { path, size: buf.length },
+        });
       }
 
       let text = buf.toString("utf-8");
@@ -62,12 +56,11 @@ export const fileReadTool: SandboxToolDefinition<z.infer<typeof FileReadInputSch
         metadata: { path, size: buf.length },
       };
     } catch (err) {
-      return {
-        success: false,
-        output: "",
-        error: err instanceof Error ? err.message : String(err),
-        durationMs: Date.now() - start,
-      };
+      if (err instanceof ToolError) throw err;
+      throw new ToolError(err instanceof Error ? err.message : String(err), {
+        context: { path: input.path },
+        cause: err instanceof Error ? err : undefined,
+      });
     }
   },
 };

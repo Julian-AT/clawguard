@@ -40,6 +40,8 @@ function eventLabel(evt: StreamEvent): string {
       return `${d.toolName} ${d.success ? "ok" : "failed"} (${d.durationMs}ms)`;
     case "finding:discovered":
       return `[${d.severity}] ${d.type} in ${d.file}:${d.line}`;
+    case "agent:step":
+      return `${d.agentName}: ${(d.detail as string)?.slice(0, 80) ?? "step"}`;
     case "pipeline:stage":
       return `Stage: ${d.stage} ${d.status}`;
     default:

@@ -25,6 +25,15 @@ export async function recordFalsePositive(owner: string, repo: string): Promise<
   await redis.set(key, JSON.stringify(m));
 }
 
+/** Bug/issue indicated a miss vs prior predictions (e.g. no prediction snapshot for the PR). */
+export async function recordMiss(owner: string, repo: string): Promise<void> {
+  const key = `${METRICS_PREFIX}${owner}/${repo}`;
+  const m = await readMetrics(owner, repo);
+  m.misses += 1;
+  m.lastUpdated = new Date().toISOString();
+  await redis.set(key, JSON.stringify(m));
+}
+
 export async function readMetrics(owner: string, repo: string): Promise<TrackingMetrics> {
   const key = `${METRICS_PREFIX}${owner}/${repo}`;
   const raw = await redis.get<string>(key);

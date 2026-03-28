@@ -1,5 +1,46 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const mockOrchestratorRun = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({
+    findings: [
+      {
+        severity: "HIGH" as const,
+        type: "xss",
+        file: "src/api.ts",
+        line: 1,
+        cweId: "CWE-79",
+        owaspCategory: "A03:2021-Injection",
+        description: "Reflected XSS",
+        attackScenario: "Inject script",
+        confidence: "HIGH" as const,
+      },
+    ],
+    summary: "Scan complete",
+    agentResults: [
+      {
+        agentName: "security-scan",
+        findings: [
+          {
+            severity: "HIGH" as const,
+            type: "xss",
+            file: "src/api.ts",
+            line: 1,
+            cweId: "CWE-79",
+            owaspCategory: "A03:2021-Injection",
+            description: "Reflected XSS",
+            attackScenario: "Inject script",
+            confidence: "HIGH" as const,
+          },
+        ],
+        summary: "Scan complete",
+        durationMs: 1,
+      },
+    ],
+    errors: [],
+    durationMs: 1,
+  }),
+);
+
 const {
   mockRunCommand,
   mockStop,
@@ -7,7 +48,6 @@ const {
   mockCreateBashTool,
   mockRunReconnaissance,
   mockRunChangeAnalysis,
-  mockRunSecurityScan,
   mockRunThreatSynthesis,
   defaultRecon,
   defaultScan,
@@ -85,7 +125,6 @@ const {
     breakingChanges: [],
     complexity: "small" as const,
   });
-  const mockRunSecurityScan = vi.fn().mockResolvedValue(defaultScan);
   const mockRunThreatSynthesis = vi.fn().mockResolvedValue(defaultThreat);
 
   return {
@@ -95,7 +134,6 @@ const {
     mockCreateBashTool,
     mockRunReconnaissance,
     mockRunChangeAnalysis,
-    mockRunSecurityScan,
     mockRunThreatSynthesis,
     defaultRecon,
     defaultScan,
@@ -188,8 +226,24 @@ vi.mock("../../lib/analysis/recon", () => ({
   runReconnaissance: mockRunReconnaissance,
 }));
 
-vi.mock("../../lib/analysis/security-scan", () => ({
-  runSecurityScan: mockRunSecurityScan,
+vi.mock("@/lib/agents/registry", () => ({
+  getAllAgents: vi.fn().mockReturnValue([
+    { name: "security-scan" },
+    { name: "dependency-audit" },
+    { name: "secret-scanner" },
+    { name: "infrastructure-review" },
+    { name: "api-security" },
+    { name: "compliance-auditor" },
+    { name: "pentest" },
+  ]),
+  getAgent: vi.fn(),
+  registerAgent: vi.fn(),
+}));
+
+vi.mock("@/lib/agents", () => ({
+  AgentOrchestrator: class {
+    run = mockOrchestratorRun;
+  },
 }));
 
 vi.mock("../../lib/analysis/threat-synthesis", () => ({
@@ -249,7 +303,20 @@ describe("Security Pipeline", () => {
       breakingChanges: [],
       complexity: "small",
     });
-    mockRunSecurityScan.mockResolvedValue(defaultScan);
+    mockOrchestratorRun.mockResolvedValue({
+      findings: defaultScan.findings,
+      summary: defaultScan.summary,
+      agentResults: [
+        {
+          agentName: "security-scan",
+          findings: defaultScan.findings,
+          summary: defaultScan.summary,
+          durationMs: 0,
+        },
+      ],
+      errors: [],
+      durationMs: 0,
+    });
     mockRunThreatSynthesis.mockResolvedValue(defaultThreat);
   });
 
@@ -269,9 +336,15 @@ describe("Security Pipeline", () => {
         complexity: "small",
       };
     });
-    mockRunSecurityScan.mockImplementation(async () => {
+    mockOrchestratorRun.mockImplementation(async () => {
       order.push("scan");
-      return defaultScan;
+      return {
+        findings: defaultScan.findings,
+        summary: defaultScan.summary,
+        agentResults: [],
+        errors: [],
+        durationMs: 0,
+      };
     });
     mockRunThreatSynthesis.mockImplementation(async () => {
       order.push("threat");

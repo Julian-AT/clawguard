@@ -1,8 +1,10 @@
 import type { Sandbox } from "@vercel/sandbox";
 import { z } from "zod";
+import { ToolError } from "@/lib/errors";
 import type { SandboxToolDefinition } from "@/lib/tools/types";
 import type { SearchIndex } from "./ngram-index";
 import { buildSearchIndex } from "./ngram-index";
+import { getRepoSearchOverlay } from "./overlay";
 import { searchWithIndex } from "./query";
 
 let cachedIndex: SearchIndex | null = null;
@@ -26,18 +28,21 @@ export const repoSearchTool: SandboxToolDefinition<z.infer<typeof RepoSearchInpu
   async execute(input, sandbox: Sandbox) {
     const start = Date.now();
 
-    const sandboxKey = sandbox.sandboxId;
+    const sandboxKey = sandbox.sandboxId ?? String(sandbox);
     if (!cachedIndex || indexSandboxId !== sandboxKey) {
       cachedIndex = await buildSearchIndex(sandbox);
       indexSandboxId = sandboxKey;
     }
 
     try {
+      const overlay = getRepoSearchOverlay(sandboxKey);
+
       const result = await searchWithIndex(sandbox, cachedIndex, input.pattern, {
         maxResults: input.maxResults,
         caseSensitive: input.caseSensitive,
         fileGlob: input.fileGlob,
         useRegex: input.regex,
+        overlay,
       });
 
       const output =
@@ -57,12 +62,10 @@ export const repoSearchTool: SandboxToolDefinition<z.infer<typeof RepoSearchInpu
         },
       };
     } catch (err) {
-      return {
-        success: false,
-        output: "",
-        error: err instanceof Error ? err.message : String(err),
-        durationMs: Date.now() - start,
-      };
+      throw new ToolError(err instanceof Error ? err.message : String(err), {
+        context: { pattern: input.pattern.slice(0, 100) },
+        cause: err instanceof Error ? err : undefined,
+      });
     }
   },
 };

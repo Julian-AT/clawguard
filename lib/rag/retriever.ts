@@ -29,7 +29,7 @@ let cachedIndex: VectorIndex | null = null;
 let cachedSandboxKey: string | null = null;
 
 export async function buildRAGIndex(sandbox: Sandbox): Promise<VectorIndex> {
-  const sandboxKey = String(sandbox);
+  const sandboxKey = sandbox.sandboxId ?? String(sandbox);
   if (cachedIndex && cachedSandboxKey === sandboxKey) {
     return cachedIndex;
   }

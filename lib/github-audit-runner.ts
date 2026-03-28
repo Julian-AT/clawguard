@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { Octokit } from "@octokit/rest";
 import type { AuditResult } from "./analysis/types";
 import { formatPipelineStatusMessage } from "./bot-helpers";
@@ -116,6 +117,8 @@ export async function runAuditPipeline(
     await status.edit(`${formatPipelineStatusMessage(progress)}\n\n${cfgSummary}`);
   };
 
+  const pipelineRunId = randomUUID();
+
   let auditResult: AuditResult;
   try {
     auditResult = await reviewPullRequest(
@@ -126,6 +129,13 @@ export async function runAuditPipeline(
         baseBranch: pr.base.ref,
         preloadedConfig: preloaded,
         prNumber,
+        runId: pipelineRunId,
+        onStreamEvent: (event, payload) => {
+          void pushStreamEvent(streamKey, event, {
+            ...(payload as Record<string, unknown>),
+            runId: pipelineRunId,
+          }).catch(() => {});
+        },
       },
       onProgress,
     );

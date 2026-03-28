@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ToolError } from "@/lib/errors";
 import type { SandboxToolDefinition } from "./types";
 
 const FileSearchInputSchema = z.object({
@@ -39,12 +40,9 @@ export const fileSearchTool: SandboxToolDefinition<z.infer<typeof FileSearchInpu
       }
 
       if (result.exitCode !== 0 && result.exitCode !== 1) {
-        return {
-          success: false,
-          output: "",
-          error: stderr.trim() || `ripgrep exited with code ${result.exitCode}`,
-          durationMs,
-        };
+        throw new ToolError(stderr.trim() || `ripgrep exited with code ${result.exitCode}`, {
+          context: { exitCode: result.exitCode },
+        });
       }
 
       const matches: Array<{ file: string; line: number; content: string }> = [];
@@ -79,6 +77,7 @@ export const fileSearchTool: SandboxToolDefinition<z.infer<typeof FileSearchInpu
         },
       };
     } catch (err) {
+      if (err instanceof ToolError) throw err;
       const durationMs = Date.now() - start;
       const stderr = err instanceof Error ? err.message : String(err);
       if (stderr.includes("exit code: 1") || stderr.includes("No matches")) {
@@ -89,12 +88,9 @@ export const fileSearchTool: SandboxToolDefinition<z.infer<typeof FileSearchInpu
           metadata: { matchCount: 0 },
         };
       }
-      return {
-        success: false,
-        output: "",
-        error: stderr,
-        durationMs,
-      };
+      throw new ToolError(stderr, {
+        context: { pattern: input.pattern.slice(0, 100) },
+      });
     }
   },
 };

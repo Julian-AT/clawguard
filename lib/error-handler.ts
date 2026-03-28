@@ -26,6 +26,7 @@ export function handleError(error: unknown, ctx: ErrorContext = {}): HandledErro
     recoverable: classified.recoverable ? 1 : 0,
     operation: ctx.operation as string | undefined,
     agent: ctx.agentName as string | undefined,
+    runId: typeof ctx.runId === "string" ? ctx.runId : undefined,
   };
 
   if (error instanceof ClawGuardError && error.context) {

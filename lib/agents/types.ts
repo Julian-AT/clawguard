@@ -37,6 +37,14 @@ export interface AgentContext {
   memory: AgentMemory;
   /** Signal to abort */
   abortSignal?: AbortSignal;
+  /** Org/repo learnings block for the security-scan agent */
+  learningsBlock?: string;
+  /** Org knowledge block for the security-scan agent */
+  knowledgeBlock?: string;
+  /** Real-time UI / SSE: agent lifecycle, tools, findings */
+  onStreamEvent?: (event: string, payload: unknown) => void;
+  /** Pipeline progress: agent step detail */
+  onAgentStep?: (info: { agentName: string; stepCount: number; detail?: string }) => void;
 }
 
 export interface AgentMemory {

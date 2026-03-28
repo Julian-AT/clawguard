@@ -12,7 +12,7 @@ import type {
   SecurityAgentDefinition,
 } from "./types";
 
-interface OrchestratorInput {
+export interface OrchestratorInput {
   runId: string;
   sandbox: Sandbox;
   recon: ReconResult;
@@ -20,6 +20,12 @@ interface OrchestratorInput {
   policies: PolicyRule[];
   agentNames?: string[];
   abortSignal?: AbortSignal;
+  learningsBlock?: string;
+  knowledgeBlock?: string;
+  /** SSE / report: agent lifecycle, tools, findings */
+  onStreamEvent?: (event: string, payload: unknown) => void;
+  /** Pipeline progress: per-agent step */
+  onAgentStep?: (info: { agentName: string; stepCount: number; detail?: string }) => void;
 }
 
 // Topological sort: returns layers of agents that can run in parallel
@@ -96,6 +102,11 @@ export class AgentOrchestrator {
       const layerPromises = layer.map(async (agentDef) => {
         const agentId = randomUUID();
 
+        input.onStreamEvent?.("agent:started", {
+          agentName: agentDef.name,
+          runId: input.runId,
+        });
+
         const context: AgentContext = {
           runId: input.runId,
           agentId,
@@ -106,6 +117,10 @@ export class AgentOrchestrator {
           priorFindings: memory.getAllFindings(),
           memory,
           abortSignal: input.abortSignal,
+          learningsBlock: input.learningsBlock,
+          knowledgeBlock: input.knowledgeBlock,
+          onStreamEvent: input.onStreamEvent,
+          onAgentStep: input.onAgentStep,
         };
 
         const agentStart = Date.now();
@@ -113,6 +128,29 @@ export class AgentOrchestrator {
           const result = await agentDef.execute(context);
 
           memory.addFindings(agentDef.name, result.findings);
+
+          if (result.error) {
+            input.onStreamEvent?.("agent:error", {
+              agentName: agentDef.name,
+              error: result.error,
+              runId: input.runId,
+            });
+          } else {
+            input.onStreamEvent?.("agent:completed", {
+              agentName: agentDef.name,
+              durationMs: result.durationMs,
+              findingCount: result.findings.length,
+              runId: input.runId,
+            });
+            for (const f of result.findings) {
+              input.onStreamEvent?.("finding:discovered", {
+                severity: f.severity,
+                type: f.type,
+                file: f.file,
+                line: f.line,
+              });
+            }
+          }
 
           return result;
         } catch (err) {
@@ -126,6 +164,12 @@ export class AgentOrchestrator {
           });
 
           errors.push({ agent: agentDef.name, error: message });
+
+          input.onStreamEvent?.("agent:error", {
+            agentName: agentDef.name,
+            error: message,
+            runId: input.runId,
+          });
 
           return {
             agentName: agentDef.name,

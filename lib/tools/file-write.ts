@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ToolError } from "@/lib/errors";
+import { registerRepoSearchOverlay } from "@/lib/tools/search/overlay";
 import type { SandboxToolDefinition } from "./types";
 
 const FileWriteInputSchema = z.object({
@@ -34,6 +35,8 @@ export const fileWriteTool: SandboxToolDefinition<z.infer<typeof FileWriteInputS
     const start = Date.now();
     try {
       await sandbox.writeFiles([{ path, content: Buffer.from(content, "utf-8") }]);
+      const sid = sandbox.sandboxId;
+      if (sid) registerRepoSearchOverlay(sid, path, content);
       return {
         success: true,
         output: `Written ${content.length} bytes to ${path}`,
@@ -41,12 +44,10 @@ export const fileWriteTool: SandboxToolDefinition<z.infer<typeof FileWriteInputS
         metadata: { path, size: content.length },
       };
     } catch (err) {
-      return {
-        success: false,
-        output: "",
-        error: err instanceof Error ? err.message : String(err),
-        durationMs: Date.now() - start,
-      };
+      throw new ToolError(err instanceof Error ? err.message : String(err), {
+        context: { path },
+        cause: err instanceof Error ? err : undefined,
+      });
     }
   },
 };

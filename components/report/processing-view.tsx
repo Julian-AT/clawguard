@@ -16,6 +16,7 @@ interface ProcessingViewProps {
 const STAGE_LABEL: Record<string, string> = {
   starting: "Starting",
   recon: "Reconnaissance",
+  "change-analysis": "Change analysis",
   "security-scan": "Security scan",
   "threat-synthesis": "Threat synthesis",
   "post-processing": "Finalizing",

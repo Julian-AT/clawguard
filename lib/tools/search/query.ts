@@ -1,3 +1,4 @@
+import micromatch from "micromatch";
 import type { Sandbox } from "@vercel/sandbox";
 import type { SearchIndex } from "./ngram-index";
 import { extractCoveringNgrams, hashNgram } from "./ngram-index";
@@ -41,6 +42,47 @@ function getCandidateFiles(index: SearchIndex, query: string): Set<number> | nul
   return candidates;
 }
 
+function pathMatchesGlob(relativePath: string, glob?: string): boolean {
+  if (!glob) return true;
+  return micromatch.isMatch(relativePath, glob, { dot: true });
+}
+
+function searchOverlayInMemory(
+  pattern: string,
+  content: string,
+  filePath: string,
+  opts: { caseSensitive: boolean; useRegex: boolean; maxResults: number },
+): SearchMatch[] {
+  const matches: SearchMatch[] = [];
+  const lines = content.split("\n");
+  let re: RegExp | null = null;
+  if (opts.useRegex) {
+    try {
+      re = new RegExp(pattern, opts.caseSensitive ? "g" : "gi");
+    } catch {
+      return [];
+    }
+  }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (opts.useRegex && re) {
+      re.lastIndex = 0;
+      if (re.test(line)) {
+        matches.push({ file: filePath, line: i + 1, content: line });
+        if (matches.length >= opts.maxResults) break;
+      }
+    } else {
+      const hay = opts.caseSensitive ? line : line.toLowerCase();
+      const needle = opts.caseSensitive ? pattern : pattern.toLowerCase();
+      if (hay.includes(needle)) {
+        matches.push({ file: filePath, line: i + 1, content: line });
+        if (matches.length >= opts.maxResults) break;
+      }
+    }
+  }
+  return matches;
+}
+
 function parseRgJsonLine(line: string): SearchMatch | null {
   if (!line.trim()) return null;
   try {
@@ -74,6 +116,8 @@ export async function searchWithIndex(
     caseSensitive?: boolean;
     fileGlob?: string;
     useRegex?: boolean;
+    /** Live-edit overlay: path → unsaved buffer (matches Cursor-style index + overlay). */
+    overlay?: Map<string, string>;
   },
 ): Promise<SearchResult> {
   const maxResults = options?.maxResults ?? 50;
@@ -134,6 +178,27 @@ export async function searchWithIndex(
     const m = parseRgJsonLine(line);
     if (m) {
       matches.push(m);
+      if (matches.length >= maxResults) break;
+    }
+  }
+
+  const seen = new Set(matches.map((x) => `${x.file}:${x.line}`));
+  if (options?.overlay?.size) {
+    for (const [path, content] of options.overlay) {
+      if (!pathMatchesGlob(path, options.fileGlob)) continue;
+      const extra = searchOverlayInMemory(pattern, content, path, {
+        caseSensitive,
+        useRegex,
+        maxResults: maxResults - matches.length,
+      });
+      for (const ex of extra) {
+        const k = `${ex.file}:${ex.line}`;
+        if (!seen.has(k)) {
+          seen.add(k);
+          matches.push(ex);
+          if (matches.length >= maxResults) break;
+        }
+      }
       if (matches.length >= maxResults) break;
     }
   }

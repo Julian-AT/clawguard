@@ -1,7 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { Octokit } from "@octokit/rest";
 import { Sandbox } from "@vercel/sandbox";
 import { createBashTool } from "bash-tool";
+import { AgentOrchestrator } from "@/lib/agents";
+import { getAllAgents } from "@/lib/agents/registry";
+import type { OrchestratorResult } from "@/lib/agents/types";
 import { type LoadRepoConfigResult, loadRepoConfig } from "@/lib/config";
+import type { ClawGuardConfig } from "@/lib/config/schemas";
 import { getKnowledgeBlockForScan } from "@/lib/knowledge";
 import { getLearningsBlockForScan } from "@/lib/learnings";
 import { logAudit } from "@/lib/logger";
@@ -10,9 +15,45 @@ import { storeAuditPredictions } from "@/lib/tracking/predictions";
 import { runChangeAnalysis } from "./change-analysis";
 import { postProcessAudit } from "./post-process";
 import { runReconnaissance } from "./recon";
-import { runSecurityScan } from "./security-scan";
 import { runThreatSynthesis } from "./threat-synthesis";
 import type { AuditResult, PhaseResult, PRSummary, ReconResult } from "./types";
+
+function resolveAgentNames(config: ClawGuardConfig): string[] | undefined {
+  const all = getAllAgents();
+  if (all.length === 0) return undefined;
+  const names = all
+    .map((a) => a.name)
+    .filter((name) => {
+      if (name === "dependency-audit" && !config.scanning.enableDependencyAudit) return false;
+      if (name === "secret-scanner" && !config.scanning.enableSecretScan) return false;
+      return true;
+    });
+  return names;
+}
+
+function aggregateScanFromOrchestrator(orchestratorResult: OrchestratorResult): {
+  findings: OrchestratorResult["findings"];
+  summary: string;
+  partialFailure: boolean;
+  scanErrorMessage?: string;
+} {
+  const partialFailure =
+    orchestratorResult.errors.length > 0 ||
+    orchestratorResult.agentResults.some((r) => r.error);
+  const parts = [
+    ...orchestratorResult.errors.map((e) => `${e.agent}: ${e.error}`),
+    ...orchestratorResult.agentResults.filter((r) => r.error).map((r) => `${r.agentName}: ${r.error}`),
+  ].filter(Boolean);
+  return {
+    findings: orchestratorResult.findings,
+    summary:
+      orchestratorResult.summary ||
+      orchestratorResult.agentResults.map((r) => r.summary).join("\n\n") ||
+      "Multi-agent scan completed.",
+    partialFailure,
+    scanErrorMessage: parts.length ? parts.join("; ") : undefined,
+  };
+}
 
 export type PipelineProgress =
   | { stage: "recon"; status: "running" | "complete"; detail?: string }
@@ -42,6 +83,10 @@ export interface PipelineInput {
   preloadedConfig?: LoadRepoConfigResult;
   /** Enables post-merge prediction storage when `tracking` is enabled. */
   prNumber?: number;
+  /** Correlates logs, SSE, and orchestrator runs */
+  runId?: string;
+  /** Real-time report stream (Redis SSE) */
+  onStreamEvent?: (event: string, payload: unknown) => void;
 }
 
 export async function runSecurityPipeline(
@@ -100,29 +145,35 @@ export async function runSecurityPipeline(
     const learningsBlock = await getLearningsBlockForScan(input.owner, input.repo, config);
     const knowledgeBlock = await getKnowledgeBlockForScan(input.owner, config);
 
+    const runId = input.runId ?? randomUUID();
+
     await onProgress?.({
       stage: "security-scan",
       status: "running",
-      detail: "Deep vulnerability scan",
+      detail: "Multi-agent vulnerability scan",
     });
-    const scan = await runSecurityScan(
-      tools,
+
+    const orchestrator = new AgentOrchestrator();
+    const orchestratorResult = await orchestrator.run({
+      runId,
+      sandbox,
       recon,
-      policies,
       config,
-      ({ stepCount, detail }) => {
+      policies,
+      learningsBlock,
+      knowledgeBlock,
+      agentNames: resolveAgentNames(config),
+      onStreamEvent: input.onStreamEvent,
+      onAgentStep: (info) => {
         void onProgress?.({
           stage: "security-scan",
           status: "running",
-          step: stepCount,
-          detail: detail ?? `Agent step ${stepCount}`,
+          detail: `${info.agentName}: ${info.detail ?? `step ${info.stepCount}`}`,
         });
       },
-      {
-        learningsBlock,
-        knowledgeBlock,
-      },
-    );
+    });
+
+    const scan = aggregateScanFromOrchestrator(orchestratorResult);
     await onProgress?.({ stage: "security-scan", status: "complete" });
 
     await onProgress?.({
@@ -161,8 +212,10 @@ export async function runSecurityPipeline(
     await recordPipelineDurationMs(durationMs);
 
     let summaryOut = processed.summary;
-    if (scan.partialFailure && scan.scanErrorMessage) {
-      summaryOut = `${summaryOut}\n\n[Scan warning] ${scan.scanErrorMessage}`;
+    if (scan.partialFailure) {
+      summaryOut = scan.scanErrorMessage
+        ? `${summaryOut}\n\n[Scan warning] ${scan.scanErrorMessage}`
+        : `${summaryOut}\n\n[Scan warning] One or more scan agents reported errors.`;
     }
 
     logAudit("audit", "pipeline_complete", {

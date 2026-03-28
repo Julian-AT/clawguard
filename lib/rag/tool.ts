@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ToolError } from "@/lib/errors";
 import type { SandboxToolDefinition } from "@/lib/tools/types";
 import { retrieveContext } from "./retriever";
 
@@ -37,12 +38,10 @@ export const semanticSearchTool: SandboxToolDefinition<z.infer<typeof SemanticSe
           },
         };
       } catch (err) {
-        return {
-          success: false,
-          output: "",
-          error: err instanceof Error ? err.message : String(err),
-          durationMs: Date.now() - start,
-        };
+        throw new ToolError(err instanceof Error ? err.message : String(err), {
+          context: { query: input.query.slice(0, 200) },
+          cause: err instanceof Error ? err : undefined,
+        });
       }
     },
   };

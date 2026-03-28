@@ -2,70 +2,17 @@ import { gateway } from "@ai-sdk/gateway";
 import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { createBashTool } from "bash-tool";
 import { z } from "zod";
+import { buildSecurityScanPrompt } from "@/lib/analysis/recon-context";
 import { registerAgent } from "@/lib/agents/registry";
+import { createOnStepFinish } from "@/lib/agents/step-hooks";
 import type { AgentContext, AgentResult, SecurityAgentDefinition } from "@/lib/agents/types";
-import { type Finding, FindingSchema, type ReconResult } from "@/lib/analysis/types";
-import type { PolicyRule } from "@/lib/config/schemas";
+import { type Finding, FindingSchema } from "@/lib/analysis/types";
 import { injectSkills } from "@/lib/skills";
 
 const OutputSchema = z.object({
   findings: z.array(FindingSchema),
   summary: z.string(),
 });
-
-function policiesBlock(policies: PolicyRule[]): string {
-  if (policies.length === 0) return "(No custom policies in .clawguard/policies.yml)";
-  return policies.map((p) => `- [${p.severity}] ${p.name}: ${p.rule}`).join("\n");
-}
-
-function reconContextBlock(recon: ReconResult): string {
-  const excerpts = recon.fileExcerpts
-    ? Object.entries(recon.fileExcerpts)
-        .map(([path, content]) => `### ${path}\n\`\`\`\n${content}\n\`\`\``)
-        .join("\n\n")
-    : "(No file excerpts)";
-
-  const extra: string[] = [];
-  if (recon.dependencyAuditSnippet) {
-    extra.push(
-      `## Dependency audit (npm/pnpm)\n\`\`\`json\n${recon.dependencyAuditSnippet}\n\`\`\``,
-    );
-  }
-  if (recon.secretPatternHints?.length) {
-    extra.push(
-      "## Secret-pattern heuristics in diff\n" +
-        recon.secretPatternHints.map((h) => `- ${h}`).join("\n"),
-    );
-  }
-  if (recon.optionalSarifSnippet) {
-    extra.push(`## Semgrep SARIF excerpt\n\`\`\`\n${recon.optionalSarifSnippet}\n\`\`\``);
-  }
-
-  return [
-    `Languages: ${recon.languages.join(", ") || "unknown"}`,
-    `Package manager: ${recon.packageManager ?? "unknown"}`,
-    `Framework hints: ${recon.frameworkHints.join(", ") || "none"}`,
-    `Static analysis:\n${recon.staticAnalysisSnippet ?? "none"}`,
-    `Changed files: ${recon.changedFiles.map((f) => f.path).join(", ")}`,
-    excerpts,
-    extra.join("\n\n"),
-  ].join("\n\n");
-}
-
-function buildPrompt(recon: ReconResult, policies: PolicyRule[]): string {
-  return [
-    "## Custom policies",
-    policiesBlock(policies),
-    "",
-    "## Reconnaissance",
-    reconContextBlock(recon),
-    "",
-    "## Diff",
-    "<diff>",
-    recon.diff,
-    "</diff>",
-  ].join("\n");
-}
 
 const AGENT_NAME = "security-scan" as const;
 const REQUIRED_SKILLS = ["owasp-web-security", "code-quality", "reporting"] as const;
@@ -81,6 +28,10 @@ const securityScanAgent: SecurityAgentDefinition = {
   async execute(context: AgentContext): Promise<AgentResult> {
     const start = Date.now();
     const modelRef = `${context.config.model.provider}/${context.config.model.model}`;
+    const maxSteps = Math.min(
+      30,
+      context.config.scanning.maxSteps,
+    );
     const depthHint =
       context.config.scanning.depth === "quick"
         ? "Keep analysis faster and slightly less exhaustive."
@@ -107,38 +58,85 @@ const securityScanAgent: SecurityAgentDefinition = {
       "Avoid duplicate issues. Ignore test-only noise unless policies require it.",
     ].join("\n");
 
-    const instructions = injectSkills(baseInstructions, AGENT_NAME, [...REQUIRED_SKILLS]);
-    const { tools } = await createBashTool({ sandbox: context.sandbox });
-    const prompt = buildPrompt(context.recon, context.policies);
+    const fullInstructions = injectSkills(baseInstructions, AGENT_NAME, [...REQUIRED_SKILLS]);
+    const shortInstructions = injectSkills(
+      [
+        "You are a security engineer. Output ONLY valid JSON matching the schema.",
+        "List security issues in the PR diff with file paths and line numbers from the changed code.",
+        "Be concise; include CWE and OWASP category per finding.",
+      ].join("\n"),
+      AGENT_NAME,
+      [...REQUIRED_SKILLS],
+    );
 
-    try {
+    const { tools } = await createBashTool({ sandbox: context.sandbox });
+    const prompt = buildSecurityScanPrompt(context.recon, context.policies, {
+      learnings: context.learningsBlock,
+      knowledge: context.knowledgeBlock,
+    });
+
+    const onStepFinish = createOnStepFinish(AGENT_NAME, context);
+
+    async function runOnce(instructions: string): Promise<{ findings: Finding[]; summary: string }> {
       const loop = new ToolLoopAgent({
         model: gateway(modelRef),
         tools,
         output: Output.object({ schema: OutputSchema }),
-        stopWhen: stepCountIs(30),
+        stopWhen: stepCountIs(maxSteps),
         instructions,
+        onStepFinish,
       });
-
       const result = await loop.generate({
         prompt,
         abortSignal: context.abortSignal,
       });
-
       return {
-        agentName: AGENT_NAME,
         findings: result.output.findings as Finding[],
         summary: result.output.summary,
-        durationMs: Date.now() - start,
       };
-    } catch (err) {
+    }
+
+    try {
+      const out = await runOnce(fullInstructions);
       return {
         agentName: AGENT_NAME,
-        findings: [],
-        summary: `Agent failed: ${err instanceof Error ? err.message : String(err)}`,
+        findings: out.findings,
+        summary: out.summary,
         durationMs: Date.now() - start,
-        error: err instanceof Error ? err.message : String(err),
       };
+    } catch (firstError) {
+      console.error("[security-scan agent] Agent error (first attempt):", firstError);
+      if (context.config.scanning.maxRetries <= 0) {
+        const msg = firstError instanceof Error ? firstError.message : String(firstError);
+        return {
+          agentName: AGENT_NAME,
+          findings: [],
+          summary:
+            "Security scan could not produce structured output. Check deployment logs or try again.",
+          durationMs: Date.now() - start,
+          error: msg,
+        };
+      }
+      try {
+        const out = await runOnce(shortInstructions);
+        return {
+          agentName: AGENT_NAME,
+          findings: out.findings,
+          summary: `${out.summary}\n\n[Scan note] First attempt failed; retry succeeded. (${firstError instanceof Error ? firstError.message : String(firstError)})`,
+          durationMs: Date.now() - start,
+          metadata: { partialRetry: true },
+        };
+      } catch (secondError) {
+        const msg = secondError instanceof Error ? secondError.message : String(secondError);
+        return {
+          agentName: AGENT_NAME,
+          findings: [],
+          summary:
+            "Security scan could not produce structured output after retry. Check deployment logs or try again.",
+          durationMs: Date.now() - start,
+          error: msg,
+        };
+      }
     }
   },
 };

@@ -3,6 +3,7 @@ import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { createBashTool } from "bash-tool";
 import { z } from "zod";
 import { registerAgent } from "@/lib/agents/registry";
+import { createOnStepFinish } from "@/lib/agents/step-hooks";
 import type { AgentContext, AgentResult, SecurityAgentDefinition } from "@/lib/agents/types";
 import { type Finding, FindingSchema } from "@/lib/analysis/types";
 import type { PolicyRule } from "@/lib/config/schemas";
@@ -90,14 +91,17 @@ const complianceAuditorAgent: SecurityAgentDefinition = {
     const instructions = injectSkills(baseInstructions, AGENT_NAME, [...REQUIRED_SKILLS]);
     const { tools } = await createBashTool({ sandbox: context.sandbox });
     const prompt = buildPrompt(context);
+    const maxSteps = Math.min(10, context.config.scanning.maxSteps);
+    const onStepFinish = createOnStepFinish(AGENT_NAME, context);
 
     try {
       const loop = new ToolLoopAgent({
         model: gateway(modelRef),
         tools,
         output: Output.object({ schema: OutputSchema }),
-        stopWhen: stepCountIs(10),
+        stopWhen: stepCountIs(maxSteps),
         instructions,
+        onStepFinish,
       });
 
       const result = await loop.generate({

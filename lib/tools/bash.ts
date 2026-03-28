@@ -52,13 +52,10 @@ export const bashTool: SandboxToolDefinition<z.infer<typeof BashInputSchema>> = 
         metadata: { exitCode: result.exitCode },
       };
     } catch (err) {
-      const durationMs = Date.now() - start;
-      return {
-        success: false,
-        output: "",
-        error: err instanceof Error ? err.message : String(err),
-        durationMs,
-      };
+      throw new ToolError(err instanceof Error ? err.message : String(err), {
+        context: { command: input.command.slice(0, 200) },
+        cause: err instanceof Error ? err : undefined,
+      });
     }
   },
 };

@@ -3,7 +3,7 @@ import { loadRepoConfig } from "@/lib/config";
 import { DEFAULT_CLAWGUARD_CONFIG } from "@/lib/config/defaults";
 import { appendLearningRepo, extractLearningFromComment } from "@/lib/learnings";
 import { correlateIssueToPrediction } from "@/lib/tracking/correlator";
-import { recordTruePositive } from "@/lib/tracking/metrics";
+import { recordFalsePositive, recordMiss, recordTruePositive } from "@/lib/tracking/metrics";
 import { getPredictions } from "@/lib/tracking/predictions";
 
 type WaitUntil = (task: Promise<unknown>) => void;
@@ -69,6 +69,10 @@ export async function handleIssuesEvent(
   const task = (async () => {
     const pred = await getPredictions(ownerLogin, repoName, prNumber);
     if (!pred) return;
+    if (pred.fingerprints.length === 0) {
+      await recordMiss(ownerLogin, repoName);
+      return;
+    }
     const conf = correlateIssueToPrediction(title, issueBody, pred);
     if (conf >= cfg.tracking.correlationConfidenceThreshold) {
       await recordTruePositive(ownerLogin, repoName);
@@ -84,6 +88,8 @@ export async function handleIssuesEvent(
           sourcePr: prNumber,
         });
       }
+    } else {
+      await recordFalsePositive(ownerLogin, repoName);
     }
   })();
 
