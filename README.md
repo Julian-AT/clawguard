@@ -1,7 +1,7 @@
 <h1 align="center">ClawGuard</h1>
 
 <p align="center">
-  <strong>Agentic PR security: sandboxed analysis, multi-agent <code>ToolLoopAgent</code> orchestration, interactive reports, and optional auto-fix commits — one Next.js deployment on Vercel</strong>
+  <strong>Agentic PR security: isolated execution, layered multi-agent tool-loop orchestration, interactive audit surface, and optional validated fix commits on the branch — single deployable application</strong>
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 
 ## Overview
 
-A GitHub App webhook hits this repo’s Next.js route; the [Chat SDK](https://chat-sdk.dev) GitHub adapter drives the PR thread. Analysis runs in an isolated [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox) (clone, diff, bash, optional Claw tools). [`AgentOrchestrator`](lib/agents/orchestrator.ts) runs registered [Vercel AI SDK](https://ai-sdk.dev) `ToolLoopAgent` specialists in **topological layers** (parallel inside a layer), then threat synthesis and scoring. Structured audits live in **Upstash Redis** (REST); Chat SDK thread state uses **TCP Redis** separately. The bot posts a JSX summary card; users open `/report/[owner]/[repo]/[pr]` for the full UI (Recharts, Mermaid, Shiki, streaming SSE).
+A GitHub App delivers signed webhooks into a serverless route handler; platform-specific bot adapters keep PR thread state and @mention routing. Workloads run in an **ephemeral microVM** (repository checkout, diff-aware commands, optional custom tooling). An [`AgentOrchestrator`](lib/agents/orchestrator.ts) schedules **tool-using agents** in **topological layers** (parallel within a layer, dependency-respecting across layers), then runs threat synthesis and scoring. Audit payloads persist in a **REST-backed key-value store**; **long-lived TCP Redis** holds chat/session state separately. The bot posts a structured summary with a deep link; the report route streams progress over **SSE** and renders charts, diagrams, highlighted code, and tabbed findings.
 
 ## The challenge
 
@@ -26,19 +26,17 @@ Static scanners and linters are fast but often miss cross-file and abuse-path co
 
 ## Core capabilities
 
-| Track | What ships |
-|-------|------------|
-| **MVP** | @mention trigger, recon + layered multi-agent scan, Zod-typed `AuditResult`, interactive report, webhook idempotency |
+| Track           | What ships                                                                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **MVP**         | @mention trigger, recon + layered multi-agent scan, Zod-typed `AuditResult`, interactive report, webhook idempotency                                   |
 | **Remediation** | Deterministic `fix.before`/`fix.after`, fallback fix `ToolLoopAgent`, validation gate (tsc/eslint/biome/tests), Octokit commits to PR branch, re-audit |
-| **Product** | NextAuth dashboard, org learnings / knowledge injection, post-merge tracking metrics, optional Slack/Teams/Linear routes |
-| **Config** | Target-repo `.clawguard/config.yml` + `policies.yml`; defaults in [`lib/config/defaults.ts`](lib/config/defaults.ts) |
+| **Product**     | Dashboard, org learnings / knowledge injection, post-merge tracking metrics, optional Slack/Teams/Linear routes                                        |
+| **Config**      | Target-repo `.clawguard/config.yml` + `policies.yml`; defaults in [`lib/config/defaults.ts`](lib/config/defaults.ts)                                   |
 
-Product UI assets live under [`public/`](public/) (same files power the **#features** carousel on the landing page). The interactive report (`/report/[owner]/[repo]/[pr]`) covers verdict, findings-by-severity, PR summary / diagrams, threat model, and compliance mapping — below is a second view (executive report + compliance).
+Product UI assets live under [`public/`](public/) (same files power the landing **#features** carousel). The interactive report (`/report/[owner]/[repo]/[pr]`) covers verdict, findings-by-severity, PR summary and sequence diagrams, threat model, and compliance cross-walks.
 
 <p align="center">
-  <img src="public/Screenshot%202026-03-28%20at%2010.11.22.png" alt="Interactive security report: verdict, score gauge, OWASP distribution" width="440" />
-  &nbsp;
-  <img src="public/Screenshot%202026-03-28%20at%2010.13.29.png" alt="Compliance tab: CWE and regulatory cross-walks" width="440" />
+  <img src="public/Screenshot%202026-03-28%20at%2010.11.22.png" alt="Interactive security report: verdict, score gauge, OWASP distribution" width="900" />
 </p>
 
 ---
@@ -146,22 +144,22 @@ flowchart TD
 
 Definitions are side-effect registered from [`lib/agents/definitions/index.ts`](lib/agents/definitions/index.ts); resolution via [`lib/agents/registry.ts`](lib/agents/registry.ts).
 
-| Agent | Role | Definition |
-|-------|------|--------------|
-| `security-scan` | Principal AppSec on diff, CWE/OWASP, optional fix hints | [`security-scan.ts`](lib/agents/definitions/security-scan.ts) |
-| `pentest` | Offensive reasoning, attack surface | [`pentest.ts`](lib/agents/definitions/pentest.ts) |
-| `api-security` | HTTP handlers, auth, IDOR, CSRF | [`api-security.ts`](lib/agents/definitions/api-security.ts) |
-| `secret-scanner` | Secrets on added lines | [`secret-scanner.ts`](lib/agents/definitions/secret-scanner.ts) |
-| `dependency-audit` | npm audit / CVE interpretation | [`dependency-audit.ts`](lib/agents/definitions/dependency-audit.ts) |
-| `infrastructure-review` | Docker, K8s, Terraform, CI | [`infrastructure-review.ts`](lib/agents/definitions/infrastructure-review.ts) |
-| `compliance-auditor` | Maps findings to PCI/SOC2/HIPAA/NIST/ASVS | [`compliance-auditor.ts`](lib/agents/definitions/compliance-auditor.ts) |
-| `code-quality` | AST smells, complexity | [`code-quality.ts`](lib/agents/definitions/code-quality.ts) |
-| `architecture` | Coupling, Mermaid from graphs | [`architecture.ts`](lib/agents/definitions/architecture.ts) |
-| `test-coverage` | Changed logic vs tests | [`test-coverage.ts`](lib/agents/definitions/test-coverage.ts) |
-| `documentation` | Doc gaps, API drift | [`documentation.ts`](lib/agents/definitions/documentation.ts) |
-| `performance` | N+1, blocking async | [`performance.ts`](lib/agents/definitions/performance.ts) |
-| `pr-summary` | Structured PR narrative | [`pr-summary.ts`](lib/agents/definitions/pr-summary.ts) |
-| `learnings` | Verdict, team patterns, `finalFindings` | [`learnings.ts`](lib/agents/definitions/learnings.ts) |
+| Agent                   | Role                                                    | Definition                                                                    |
+| ----------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `security-scan`         | Principal AppSec on diff, CWE/OWASP, optional fix hints | [`security-scan.ts`](lib/agents/definitions/security-scan.ts)                 |
+| `pentest`               | Offensive reasoning, attack surface                     | [`pentest.ts`](lib/agents/definitions/pentest.ts)                             |
+| `api-security`          | HTTP handlers, auth, IDOR, CSRF                         | [`api-security.ts`](lib/agents/definitions/api-security.ts)                   |
+| `secret-scanner`        | Secrets on added lines                                  | [`secret-scanner.ts`](lib/agents/definitions/secret-scanner.ts)               |
+| `dependency-audit`      | npm audit / CVE interpretation                          | [`dependency-audit.ts`](lib/agents/definitions/dependency-audit.ts)           |
+| `infrastructure-review` | Docker, K8s, Terraform, CI                              | [`infrastructure-review.ts`](lib/agents/definitions/infrastructure-review.ts) |
+| `compliance-auditor`    | Maps findings to PCI/SOC2/HIPAA/NIST/ASVS               | [`compliance-auditor.ts`](lib/agents/definitions/compliance-auditor.ts)       |
+| `code-quality`          | AST smells, complexity                                  | [`code-quality.ts`](lib/agents/definitions/code-quality.ts)                   |
+| `architecture`          | Coupling, Mermaid from graphs                           | [`architecture.ts`](lib/agents/definitions/architecture.ts)                   |
+| `test-coverage`         | Changed logic vs tests                                  | [`test-coverage.ts`](lib/agents/definitions/test-coverage.ts)                 |
+| `documentation`         | Doc gaps, API drift                                     | [`documentation.ts`](lib/agents/definitions/documentation.ts)                 |
+| `performance`           | N+1, blocking async                                     | [`performance.ts`](lib/agents/definitions/performance.ts)                     |
+| `pr-summary`            | Structured PR narrative                                 | [`pr-summary.ts`](lib/agents/definitions/pr-summary.ts)                       |
+| `learnings`             | Verdict, team patterns, `finalFindings`                 | [`learnings.ts`](lib/agents/definitions/learnings.ts)                         |
 
 ### Auto-fix loop (summary)
 
@@ -171,15 +169,15 @@ Critical/high findings with fix hints → sandbox on PR branch → apply patch o
 
 ## Technology stack
 
-| Layer | Choices |
-|-------|---------|
-| App | Next.js 16 App Router, React 19, TypeScript, [proxy.ts](proxy.ts) + NextAuth |
-| AI | `ai@6` `ToolLoopAgent`, Vercel AI Gateway, Zod 4 structured output |
-| Bot | `chat` + `@chat-adapter/github`, `@chat-adapter/state-redis` (TCP) |
-| Sandbox | `@vercel/sandbox`, `bash-tool` |
-| Data | `@upstash/redis` REST for audits; `REDIS_URL` TCP for Chat SDK |
-| Report UI | Recharts, Mermaid, Shiki, `react-diff-viewer-continued` |
-| Quality | Biome, Vitest |
+| Layer     | Choices                                                                      |
+| --------- | ---------------------------------------------------------------------------- |
+| App       | Next.js 16 App Router, React 19, TypeScript, [proxy.ts](proxy.ts) + NextAuth |
+| AI        | `ai@6` `ToolLoopAgent`, Vercel AI Gateway, Zod 4 structured output           |
+| Bot       | `chat` + `@chat-adapter/github`, `@chat-adapter/state-redis` (TCP)           |
+| Sandbox   | `@vercel/sandbox`, `bash-tool`                                               |
+| Data      | `@upstash/redis` REST for audits; `REDIS_URL` TCP for Chat SDK               |
+| Report UI | Recharts, Mermaid, Shiki, `react-diff-viewer-continued`                      |
+| Quality   | Biome, Vitest                                                                |
 
 More: [`.planning/research/STACK.md`](.planning/research/STACK.md), [CLAUDE.md](CLAUDE.md).
 
@@ -212,14 +210,14 @@ Point the GitHub App webhook at your deployment (or ngrok) with path `/api/webho
 
 See [`.env.example`](.env.example) for the full list. Highlights:
 
-| Variable | Role |
-|----------|------|
-| `GITHUB_APP_*`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_BOT_USERNAME` | GitHub App |
-| `GITHUB_TOKEN` | Octokit: PRs, commits, sandbox git |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` (or Upstash names) | Audit + stream storage |
-| `REDIS_URL` | Chat SDK adapter |
-| `NEXTAUTH_*`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Dashboard OAuth |
-| `NEXT_PUBLIC_APP_URL` | Absolute `/report/...` links in comments |
+| Variable                                                       | Role                                     |
+| -------------------------------------------------------------- | ---------------------------------------- |
+| `GITHUB_APP_*`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_BOT_USERNAME` | GitHub App                               |
+| `GITHUB_TOKEN`                                                 | Octokit: PRs, commits, sandbox git       |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` (or Upstash names)      | Audit + stream storage                   |
+| `REDIS_URL`                                                    | Chat SDK adapter                         |
+| `NEXTAUTH_*`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`       | Dashboard OAuth                          |
+| `NEXT_PUBLIC_APP_URL`                                          | Absolute `/report/...` links in comments |
 
 ## Scripts
 

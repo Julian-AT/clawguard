@@ -16,17 +16,12 @@ export function QuoteSection() {
         </p>
 
         <div className="flex gap-4">
-          <div className="size-10 rounded-full bg-(--landing-brand-fill) border border-border">
-            <Image
-              src="/BP5_9351-0-scaled.webp"
-              alt={quoteSection.author.name}
-              fill
-              className="object-cover rounded-full"
-              style={{ objectFit: "cover" }}
-              sizes="40px"
-              priority
-            />
-          </div>
+          <img
+            src="/BP5_9351-0-scaled.webp"
+            alt={quoteSection.author.name}
+            className="size-10 rounded-full border border-border object-cover"
+            style={{ background: "var(--landing-brand-fill)" }}
+          />
           <div className="text-left">
             <cite className="text-lg font-medium text-primary not-italic">
               {quoteSection.author.name}
