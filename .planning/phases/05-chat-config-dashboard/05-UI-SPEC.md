@@ -58,13 +58,13 @@ Source: Matches existing `px-6 py-8 space-y-6 gap-8` patterns from Phase 4 repor
 | Role | Size | Weight | Line Height | Tailwind Class |
 |------|------|--------|-------------|----------------|
 | Body | 14px | 400 (normal) | 1.5 | `text-sm` |
-| Label | 12px | 500 (medium) | 1.4 | `text-xs font-medium` |
-| Heading | 24px | 700 (bold) | 1.2 | `text-2xl font-bold tracking-tight` |
+| Label | 12px | 400 (normal) | 1.4 | `text-xs` |
+| Heading | 24px | 600 (semibold) | 1.2 | `text-2xl font-semibold tracking-tight` |
 | Subheading | 20px | 600 (semibold) | 1.3 | `text-xl font-semibold` |
 
-Weights used: 400 (normal) + 600 (semibold). 700 (bold) permitted for page-level headings only. 500 (medium) for labels and metadata.
+Weights used: 400 (normal) + 600 (semibold). Labels are differentiated from body via size alone (12px vs 14px). Headings are differentiated from subheadings via size alone (24px vs 20px).
 
-Source: Established in Phase 4 report-header.tsx (`text-2xl font-bold tracking-tight`, `text-sm font-semibold`, `text-xs`)
+Source: Adapted from Phase 4 report-header.tsx patterns. Collapsed from 4 weights to 2 for typographic discipline.
 
 ---
 
@@ -128,6 +128,7 @@ Score grade colors (inherited from Phase 4 `score-gauge.tsx`):
 - **Nav bar**: Full-width, `bg-card border-b border-border`, height 56px (`h-14`)
 - **Nav content**: `max-w-6xl mx-auto px-6` (matches report layout)
 - **Page content**: `max-w-6xl mx-auto px-6 py-8`
+- **Focal point**: Repo card grid with score badges as color anchors. The grade-colored badges (green/amber/red) are the only chromatic elements on an otherwise neutral zinc surface, drawing the eye immediately to repository health status.
 
 ### Repo Card
 
@@ -163,7 +164,7 @@ Score grade colors (inherited from Phase 4 `score-gauge.tsx`):
 ```
 
 - **Table**: shadcn `Table` component. Dense rows, no zebra striping (zinc palette does not need it).
-- **Table header**: `text-xs font-medium text-muted-foreground uppercase tracking-wide`
+- **Table header**: `text-xs text-muted-foreground uppercase tracking-wide`
 - **Table cell**: `text-sm` body text, `py-3 px-4` cell padding
 - **PR column**: `font-mono text-xs` for PR number, `text-sm truncate max-w-xs` for title
 - **Score column**: Grade letter + numeric score in a colored `Badge`
@@ -172,6 +173,7 @@ Score grade colors (inherited from Phase 4 `score-gauge.tsx`):
 - **Report link**: `text-sm text-primary hover:underline` with arrow icon
 - **Sort**: Most recent audit first (default, server-side)
 - **Breadcrumb**: `text-sm text-muted-foreground` with `>` separator, current page not linked
+- **Focal point**: Score column as the horizontal scan line. The grade-colored badges form a vertical stripe of chromatic color in the third column, giving users a fast vertical scan of audit health across all PRs.
 
 ### Auth / Sign-In
 
