@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { Shield } from "lucide-react";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,23 @@ export default async function RepoDashboardPage({ params }: PageProps) {
   const { owner, repo } = await params;
   const keys = await listPrAuditKeys(owner, repo);
   if (keys.length === 0) {
-    notFound();
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="font-mono text-2xl font-semibold tracking-tight">
+            {owner}/{repo}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">Pull request audits and score trend</p>
+        </div>
+        <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
+          <Shield className="size-10 text-muted-foreground/40" aria-hidden />
+          <h2 className="text-lg font-medium text-muted-foreground">Nothing here yet</h2>
+          <p className="max-w-sm text-sm text-muted-foreground/70">
+            @mention ClawGuard on a pull request to run your first security audit.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const loaded = await loadAuditDataForKeys(keys);
