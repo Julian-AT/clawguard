@@ -1,6 +1,7 @@
 import type { AuditResult } from "@/lib/analysis/types";
 import { countBySeverity } from "@/lib/analysis/scoring";
 import { ReportHeader } from "@/components/report/report-header";
+import { ReportShell } from "@/components/report/report-shell";
 import { ScoreGauge } from "@/components/report/score-gauge";
 import { SeverityBadges } from "@/components/report/severity-badges";
 import { OwaspChart } from "@/components/report/owasp-chart";
@@ -28,10 +29,13 @@ export function ReportView({
   timestamp,
 }: ReportViewProps) {
   const counts = countBySeverity(result.findings);
+  const executive =
+    result.summary?.trim() ||
+    `Security audit for PR #${prNumber}: ${result.findings.length} finding(s), score ${result.score}/100 (${result.grade}).`;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+    <ReportShell owner={owner} repo={repo} prNumber={prNumber}>
+      <div className="max-w-6xl mx-auto px-6 py-8 space-y-6 text-foreground">
         <ReportHeader
           owner={owner}
           repo={repo}
@@ -40,14 +44,22 @@ export function ReportView({
           timestamp={timestamp}
         />
 
+        <section className="rounded-xl border border-border bg-card/50 p-5">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+            Executive summary
+          </h2>
+          <p className="text-sm leading-relaxed text-foreground/90">{executive}</p>
+        </section>
+
         {/* Score hero section */}
         <div className="flex items-start gap-8 flex-wrap">
           <ScoreGauge score={result.score} grade={result.grade} />
-          <div className="flex flex-col gap-4 pt-2">
+          <div className="flex flex-col gap-4 pt-2 min-w-[240px] flex-1">
             <SeverityBadges counts={counts} />
             <p className="text-xs text-muted-foreground">
-              {result.findings.length} finding{result.findings.length !== 1 ? "s" : ""} across{" "}
-              {result.phases.length} analysis phases
+              {result.findings.length} finding
+              {result.findings.length !== 1 ? "s" : ""} across{" "}
+              {result.phases?.length ?? 0} pipeline stage(s)
             </p>
             <OwaspChart findings={result.findings} />
           </div>
@@ -78,6 +90,6 @@ export function ReportView({
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </ReportShell>
   );
 }

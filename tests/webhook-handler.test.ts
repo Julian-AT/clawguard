@@ -87,9 +87,11 @@ describe("Webhook Route Handler", () => {
 
     await POST(request);
 
-    // Verify the original request object is passed to the handler unmodified
+    // Handler receives a clone (body consumed on the peeked request first)
     const passedRequest = mockWebhookHandler.mock.calls[0][0];
-    expect(passedRequest).toBe(request);
+    expect(passedRequest).toBeInstanceOf(Request);
+    expect(passedRequest.url).toBe(request.url);
+    expect(passedRequest.method).toBe(request.method);
   });
 
   it("deduplicates via X-GitHub-Delivery + Redis SETNX (HOOK-05)", async () => {

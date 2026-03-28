@@ -11,8 +11,7 @@ export type { ProgressCallback };
 /**
  * Review a pull request for security vulnerabilities.
  *
- * Thin wrapper around the 3-phase security pipeline.
- * Returns a structured AuditResult with findings, score, and grade.
+ * Runs the four-stage pipeline: recon → security scan → threat synthesis → post-process.
  */
 export async function reviewPullRequest(
   input: PipelineInput,

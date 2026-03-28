@@ -1,4 +1,5 @@
 import { Chat } from "chat";
+import type { Thread } from "chat";
 import { createGitHubAdapter } from "@chat-adapter/github";
 import type { GitHubRawMessage } from "@chat-adapter/github";
 import { createRedisState } from "@chat-adapter/state-redis";
@@ -6,12 +7,13 @@ import { Octokit } from "@octokit/rest";
 import { reviewPullRequest } from "./review";
 import type { ProgressCallback } from "./review";
 import { storeAuditResult, getAuditResult } from "./redis";
+import { formatPipelineStatusMessage } from "./bot-helpers";
+import { loadRepoConfig } from "./config";
+import { formatErrorForUser } from "./errors";
 import { buildSummaryCard } from "./cards/summary-card";
 import type { AuditResult } from "./analysis/types";
 import { fixAll, fixFinding } from "./fix";
 import type { FixResult, FixContext } from "./fix/types";
-import { severityEmoji } from "./cards/summary-card";
-
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
 export const bot = new Chat({
@@ -44,7 +46,10 @@ export function detectIntent(body: string, botName: string): Intent {
 
   const afterMention = lower.split(mention).pop()?.trim() ?? "";
 
-  if (afterMention.startsWith("fix all")) {
+  if (
+    afterMention.startsWith("fix all") ||
+    afterMention.includes("fix all critical")
+  ) {
     return { type: "fix-all" };
   }
 
@@ -56,7 +61,10 @@ export function detectIntent(body: string, botName: string): Intent {
   if (
     afterMention.startsWith("audit") ||
     afterMention.startsWith("scan") ||
-    afterMention.startsWith("review")
+    afterMention.startsWith("review") ||
+    afterMention.startsWith("rescan") ||
+    afterMention.startsWith("re-audit") ||
+    afterMention.startsWith("reaudit")
   ) {
     return { type: "re-audit" };
   }
@@ -74,10 +82,12 @@ export function detectIntent(body: string, botName: string): Intent {
  * stores structured AuditResult in Redis, and replaces the progress
  * message with a branded summary card on completion.
  */
+type ThreadPostResult = Awaited<ReturnType<Thread["post"]>>;
+
 async function runAuditAndPost(
-  thread: any,
+  thread: Thread,
   raw: GitHubRawMessage,
-  status: any
+  status: ThreadPostResult
 ): Promise<void> {
   const owner = raw.repository.owner.login;
   const repo = raw.repository.name;
@@ -89,41 +99,84 @@ async function runAuditAndPost(
     pull_number: prNumber,
   });
 
-  const onProgress: ProgressCallback = async (phase, phaseStatus) => {
-    const phases = {
-      quality: { label: "Phase 1: Code Quality Review", done: false },
-      vulnerability: { label: "Phase 2: Vulnerability Scan", done: false },
-      threatModel: { label: "Phase 3: Threat Model", done: false },
-    };
+  const redisKey = `${owner}/${repo}/pr/${prNumber}`;
+  const now = new Date().toISOString();
 
-    // Mark completed phases
-    if (phaseStatus === "complete") phases[phase].done = true;
-    // Also mark all phases before current as complete
-    const order = ["quality", "vulnerability", "threatModel"] as const;
-    const currentIdx = order.indexOf(phase);
-    for (let i = 0; i < currentIdx; i++) phases[order[i]].done = true;
+  let cfgSummary = "";
+  try {
+    const loaded = await loadRepoConfig(
+      octokit,
+      owner,
+      repo,
+      pr.head.ref
+    );
+    cfgSummary = `Using config: **${loaded.configSource}** · policies: **${loaded.policiesSource}** (${loaded.policies.length} rules)`;
+  } catch (e) {
+    cfgSummary = `Config load warning: ${formatErrorForUser(e)}`;
+  }
 
-    const lines = order.map((p) => {
-      const icon = phases[p].done
-        ? "\u2705"
-        : p === phase && phaseStatus === "running"
-          ? "\u23F3"
-          : "\u2B1C";
-      return `${icon} ${phases[p].label}`;
+  await storeAuditResult({
+    key: redisKey,
+    data: {
+      status: "processing",
+      timestamp: now,
+      pr: { owner, repo, number: prNumber, title: pr.title },
+      pipelineStage: "starting",
+    },
+  });
+
+  await status.edit(
+    `${formatPipelineStatusMessage({
+      stage: "recon",
+      status: "running",
+      detail: "Starting",
+    })}\n\n${cfgSummary}`
+  );
+
+  const onProgress: ProgressCallback = async (progress) => {
+    await storeAuditResult({
+      key: redisKey,
+      data: {
+        status: "processing",
+        timestamp: new Date().toISOString(),
+        pr: { owner, repo, number: prNumber, title: pr.title },
+        pipelineStage:
+          progress.stage === "error" ? "error" : progress.stage,
+      },
     });
-
     await status.edit(
-      `## \uD83D\uDEE1\uFE0F ClawGuard Security Audit\n\n${lines.join("\n")}`
+      `${formatPipelineStatusMessage(progress)}\n\n${cfgSummary}`
     );
   };
 
-  const auditResult: AuditResult = await reviewPullRequest(
-    { owner, repo, prBranch: pr.head.ref, baseBranch: pr.base.ref },
-    onProgress
-  );
+  let auditResult: AuditResult;
+  try {
+    auditResult = await reviewPullRequest(
+      { owner, repo, prBranch: pr.head.ref, baseBranch: pr.base.ref },
+      onProgress
+    );
+  } catch (error) {
+    const msg = formatErrorForUser(error);
+    await storeAuditResult({
+      key: redisKey,
+      data: {
+        status: "error",
+        timestamp: new Date().toISOString(),
+        pr: { owner, repo, number: prNumber, title: pr.title },
+        errorMessage: msg,
+      },
+    });
+    await status.edit(
+      `${formatPipelineStatusMessage({
+        stage: "error",
+        error: msg,
+      })}\n\n${cfgSummary}\n\nTry again or check ClawGuard deployment logs.`
+    );
+    throw error;
+  }
 
   await storeAuditResult({
-    key: `${owner}/${repo}/pr/${prNumber}`,
+    key: redisKey,
     data: {
       result: auditResult,
       timestamp: new Date().toISOString(),
@@ -149,7 +202,7 @@ async function runAuditAndPost(
  * Posts per-fix confirmations with commit SHA and a final summary table.
  */
 async function runFixFlow(
-  thread: any,
+  thread: Thread,
   raw: GitHubRawMessage,
   intent: { type: "fix-all" } | { type: "fix-finding"; target: string }
 ): Promise<void> {
@@ -236,7 +289,13 @@ async function runFixFlow(
 
     // Match finding by type (case-insensitive, partial match)
     const targetLower = intent.target.toLowerCase();
-    const finding = auditData.result.findings.find(
+    const auditResult = auditData.result;
+    if (!auditResult) {
+      await thread.post("No audit results found. Run a security audit first.");
+      return;
+    }
+
+    const finding = auditResult.findings.find(
       (f) =>
         f.type.toLowerCase().includes(targetLower) ||
         f.cweId.toLowerCase() === targetLower
@@ -244,7 +303,7 @@ async function runFixFlow(
 
     if (!finding) {
       await thread.post(
-        `Could not find a finding matching "${intent.target}". Available findings: ${auditData.result.findings.map((f) => f.type).join(", ")}`
+        `Could not find a finding matching "${intent.target}". Available findings: ${auditResult.findings.map((f) => f.type).join(", ")}`
       );
       return;
     }
@@ -343,7 +402,7 @@ bot.onSubscribedMessage(async (thread, message) => {
 
 // Action handler for future platform support (D-02)
 bot.onAction("fix-all", async (event) => {
-  const thread = event.thread;
+  const thread = event.thread as Thread | null;
   if (!thread) return;
 
   const raw = event.raw as GitHubRawMessage;
@@ -353,6 +412,28 @@ bot.onAction("fix-all", async (event) => {
     console.error("[bot] onAction error:", error);
     await thread.post(
       "\u274C Something went wrong during auto-fix. Please try again."
+    );
+  }
+});
+
+bot.onAction("re-audit", async (event) => {
+  const thread = event.thread as Thread | null;
+  if (!thread) return;
+
+  const raw = event.raw as GitHubRawMessage;
+  const status = await thread.post(
+    formatPipelineStatusMessage({
+      stage: "recon",
+      status: "running",
+      detail: "Re-audit",
+    })
+  );
+  try {
+    await runAuditAndPost(thread, raw, status);
+  } catch (error) {
+    console.error("[bot] onAction re-audit error:", error);
+    await thread.post(
+      "\u274C Re-audit failed. Please try `@clawguard review` in a new comment."
     );
   }
 });

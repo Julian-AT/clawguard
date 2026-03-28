@@ -23,7 +23,8 @@ const FixOutputSchema = z.object({
 export async function generateFixWithAgent(
   sandbox: Sandbox,
   finding: Finding,
-  previousErrors: string
+  previousErrors: string,
+  options?: { reconSnippet?: string }
 ): Promise<ApplyResult> {
   try {
     const filePath = finding.file;
@@ -50,6 +51,10 @@ export async function generateFixWithAgent(
         `Line: ${finding.line}`,
         `Severity: ${finding.severity}`,
         `Description: ${finding.description}`,
+        "",
+        options?.reconSnippet
+          ? `Repository / PR context:\n${options.reconSnippet.slice(0, 12_000)}`
+          : "",
         "",
         `Previous fix attempt failed validation with these errors:`,
         previousErrors,

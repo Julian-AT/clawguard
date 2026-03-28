@@ -1,29 +1,14 @@
 import { Badge } from "@/components/ui/badge";
-import type { AttackSurfaceEntry, Severity } from "@/lib/analysis/types";
+import type { AttackSurfaceEntry } from "@/lib/analysis/types";
+import { SEVERITY_BADGE_CLASS, SEVERITY_ORDER } from "@/lib/constants";
 
 interface AttackSurfaceTableProps {
   surfaces: AttackSurfaceEntry[];
 }
 
-const riskColor: Record<Severity, string> = {
-  CRITICAL: "bg-red-600 text-white",
-  HIGH: "bg-orange-500 text-white",
-  MEDIUM: "bg-yellow-500 text-black",
-  LOW: "bg-blue-500 text-white",
-  INFO: "bg-gray-500 text-white",
-};
-
-const severityOrder: Record<Severity, number> = {
-  CRITICAL: 0,
-  HIGH: 1,
-  MEDIUM: 2,
-  LOW: 3,
-  INFO: 4,
-};
-
 export function AttackSurfaceTable({ surfaces }: AttackSurfaceTableProps) {
   const sorted = [...surfaces].sort(
-    (a, b) => severityOrder[a.riskLevel] - severityOrder[b.riskLevel]
+    (a, b) => SEVERITY_ORDER[a.riskLevel] - SEVERITY_ORDER[b.riskLevel]
   );
 
   return (
@@ -52,7 +37,9 @@ export function AttackSurfaceTable({ surfaces }: AttackSurfaceTableProps) {
                 {surface.exposure}
               </td>
               <td className="py-2 px-3">
-                <Badge className={`${riskColor[surface.riskLevel]} text-xs`}>
+                <Badge
+                  className={`${SEVERITY_BADGE_CLASS[surface.riskLevel]} text-xs`}
+                >
                   {surface.riskLevel}
                 </Badge>
               </td>

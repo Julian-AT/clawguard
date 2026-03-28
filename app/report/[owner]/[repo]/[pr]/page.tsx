@@ -23,7 +23,18 @@ export default async function ReportPage({ params }: ReportPageProps) {
   }
 
   if (auditData.status === "error") {
-    return <ErrorView owner={owner} repo={repo} pr={pr} />;
+    return (
+      <ErrorView
+        owner={owner}
+        repo={repo}
+        pr={pr}
+        message={auditData.errorMessage}
+      />
+    );
+  }
+
+  if (!auditData.result) {
+    notFound();
   }
 
   const result = AuditResultSchema.parse(auditData.result);

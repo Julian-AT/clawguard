@@ -46,7 +46,7 @@ export function ScoreGauge({ score, grade }: ScoreGaugeProps) {
           cornerRadius={8}
         />
       </RadialBarChart>
-      <div className="absolute bottom-4 flex flex-col items-center">
+      <div className="absolute bottom-4 flex flex-col items-center animate-in fade-in zoom-in-95 duration-500">
         <span className="text-3xl font-bold tabular-nums" style={{ color }}>
           {score}
         </span>

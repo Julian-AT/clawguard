@@ -3,11 +3,9 @@ import type { Finding } from "@/lib/analysis/types";
 import type { ApplyResult } from "@/lib/fix/types";
 import { runValidation } from "@/lib/fix/validate";
 
-/**
- * Normalize content for comparison: trim lines, normalize line endings.
- */
-function normalizeContent(text: string): string {
-  return text.replace(/\r\n/g, "\n").trim();
+/** Normalize line endings only (no trim) — use for exact substring match. */
+function normalizeLineEndings(text: string): string {
+  return text.replace(/\r\n/g, "\n");
 }
 
 /**
@@ -85,10 +83,10 @@ export async function applyStoredFix(
   const originalBuffer = await sandbox.readFileToBuffer({ path: filePath });
   const originalContent = originalBuffer?.toString("utf-8") ?? "";
 
-  // Normalize line endings for consistent matching
-  const normalizedContent = normalContent(originalContent);
-  const normalizedBefore = normalizeContent(finding.fix.before);
-  const normalizedAfter = normalizeContent(finding.fix.after);
+  // Exact path: same line-ending normalization for file and pattern (no trim)
+  const normalizedContent = normalizeLineEndings(originalContent);
+  const normalizedBefore = normalizeLineEndings(finding.fix.before);
+  const normalizedAfter = normalizeLineEndings(finding.fix.after);
 
   let fixedContent: string;
 
@@ -98,7 +96,7 @@ export async function applyStoredFix(
   } else {
     // Try fuzzy line-by-line match
     const fuzzyResult = fuzzyReplace(
-      normalizedContent,
+      normalizeLineEndings(originalContent),
       finding.fix.before,
       finding.fix.after
     );
@@ -149,11 +147,4 @@ export async function applyStoredFix(
     content: fixedContent,
     errors: "",
   };
-}
-
-/**
- * Normalize content: replace \r\n with \n.
- */
-function normalContent(text: string): string {
-  return text.replace(/\r\n/g, "\n");
 }

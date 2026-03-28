@@ -1,12 +1,57 @@
 import { Sandbox } from "@vercel/sandbox";
+import type { Thread } from "chat";
 import type { Finding, AuditResult } from "@/lib/analysis/types";
 import type { FixResult, FixContext } from "@/lib/fix/types";
 import { applyStoredFix } from "@/lib/fix/apply";
 import { generateFixWithAgent } from "@/lib/fix/agent";
-import { commitFixToGitHub } from "@/lib/fix/commit";
+import {
+  commitBatchFixesToGitHub,
+  commitFixToGitHub,
+} from "@/lib/fix/commit";
 import { reviewPullRequest } from "@/lib/review";
 import { getAuditResult, storeAuditResult } from "@/lib/redis";
-import { SEVERITY_ORDER } from "@/lib/cards/summary-card";
+import { SEVERITY_ORDER } from "@/lib/constants";
+
+type PrepareResult = {
+  status: "fixed" | "skipped";
+  tier: "fast" | "agent";
+  error?: string;
+  content?: string;
+};
+
+async function prepareFindingFix(
+  sandbox: Sandbox,
+  finding: Finding
+): Promise<PrepareResult> {
+  try {
+    const fastResult = await applyStoredFix(sandbox, finding);
+    if (fastResult.valid) {
+      return { status: "fixed", tier: "fast", content: fastResult.content };
+    }
+
+    const agentResult = await generateFixWithAgent(
+      sandbox,
+      finding,
+      fastResult.errors
+    );
+
+    if (agentResult.valid) {
+      return { status: "fixed", tier: "agent", content: agentResult.content };
+    }
+
+    return {
+      status: "skipped",
+      tier: "agent",
+      error: `Validation failed after both tiers: ${agentResult.errors}`,
+    };
+  } catch (error) {
+    return {
+      status: "skipped",
+      tier: "fast",
+      error: error instanceof Error ? error.message : "Unexpected error",
+    };
+  }
+}
 
 /**
  * Fix a single finding using a tiered approach:
@@ -21,106 +66,60 @@ export async function fixFinding(
   finding: Finding,
   context: FixContext
 ): Promise<FixResult> {
-  try {
-    // 1. Try fast path: apply stored fix (D-04, D-05)
-    const fastResult = await applyStoredFix(sandbox, finding);
-
-    if (fastResult.valid) {
-      // Fast path succeeded -- commit the fix
-      const sha = await commitFixToGitHub(context.octokit, {
-        owner: context.owner,
-        repo: context.repo,
-        branch: context.prBranch,
-        filePath: finding.file,
-        content: fastResult.content,
-        finding,
-      });
-
-      return {
-        finding,
-        status: "fixed",
-        commitSha: sha,
-        tier: "fast",
-      };
-    }
-
-    // 2. Fast path failed -- try agent fallback (D-06)
-    const agentResult = await generateFixWithAgent(
-      sandbox,
+  const prep = await prepareFindingFix(sandbox, finding);
+  if (prep.status === "fixed" && prep.content) {
+    const sha = await commitFixToGitHub(context.octokit, {
+      owner: context.owner,
+      repo: context.repo,
+      branch: context.prBranch,
+      filePath: finding.file,
+      content: prep.content,
       finding,
-      fastResult.errors
-    );
+    });
 
-    if (agentResult.valid) {
-      // Agent fix succeeded -- commit it
-      const sha = await commitFixToGitHub(context.octokit, {
-        owner: context.owner,
-        repo: context.repo,
-        branch: context.prBranch,
-        filePath: finding.file,
-        content: agentResult.content,
-        finding,
-      });
-
-      return {
-        finding,
-        status: "fixed",
-        commitSha: sha,
-        tier: "agent",
-      };
-    }
-
-    // 3. Both tiers failed (D-10)
     return {
       finding,
-      status: "skipped",
-      error: `Validation failed after both tiers: ${agentResult.errors}`,
-      tier: "agent",
-    };
-  } catch (error) {
-    // Unexpected error -- skip gracefully
-    return {
-      finding,
-      status: "skipped",
-      error:
-        error instanceof Error ? error.message : "Unexpected error",
-      tier: "fast",
+      status: "fixed",
+      commitSha: sha,
+      tier: prep.tier,
     };
   }
+
+  return {
+    finding,
+    status: "skipped",
+    error: prep.error ?? "Unknown error",
+    tier: prep.tier,
+  };
 }
 
 /**
  * Fix all CRITICAL + HIGH findings sequentially in a single sandbox (D-11).
- *
- * Flow:
- * 1. Load audit data from Redis (FIX-05)
- * 2. Filter and sort fixable findings (CRITICAL first)
- * 3. Create sandbox, checkout PR branch, install deps
- * 4. Process each finding via fixFinding (tiered approach)
- * 5. After all fixes, run re-audit (FIX-06) and store results (FIX-07)
+ * Applies all fixes locally, then **one** Git commit for all changed files.
  */
 export async function fixAll(
   context: FixContext & {
     baseBranch: string;
     prTitle: string;
-    thread: any;
+    /** Reserved for progress UI / future streaming */
+    thread?: Thread;
     onFixProgress?: (result: FixResult) => Promise<void>;
   }
 ): Promise<{
   results: FixResult[];
   reauditResult?: AuditResult;
 }> {
-  // 1. Load audit data from Redis
   const auditData = await getAuditResult(
     `${context.owner}/${context.repo}/pr/${context.prNumber}`
   );
 
-  if (!auditData) {
+  if (!auditData?.result) {
     throw new Error("No audit results found");
   }
 
-  // 2. Filter for CRITICAL and HIGH severity findings
-  const fixable = auditData.result.findings
+  const { result: auditResult } = auditData;
+
+  const fixable = auditResult.findings
     .filter((f) => ["CRITICAL", "HIGH"].includes(f.severity))
     .sort(
       (a, b) =>
@@ -128,7 +127,6 @@ export async function fixAll(
         (SEVERITY_ORDER[b.severity] ?? 99)
     );
 
-  // 3. Create sandbox with git source (single sandbox for all fixes)
   const sandbox = await Sandbox.create({
     source: {
       type: "git",
@@ -141,32 +139,60 @@ export async function fixAll(
   });
 
   const results: FixResult[] = [];
+  const pendingFiles = new Map<string, string>();
+  const fixedFindings: Finding[] = [];
 
   try {
-    // 4. Checkout PR branch and install dependencies
     await sandbox.runCommand("git", ["fetch", "origin", context.prBranch]);
     await sandbox.runCommand("git", ["checkout", context.prBranch]);
     await sandbox.runCommand("npm", ["install", "--ignore-scripts"]);
 
-    // 5. Process each finding sequentially
     for (const finding of fixable) {
-      const result = await fixFinding(sandbox, finding, context);
-      results.push(result);
+      const prep = await prepareFindingFix(sandbox, finding);
+      if (prep.status === "skipped") {
+        const res: FixResult = {
+          finding,
+          status: "skipped",
+          error: prep.error,
+          tier: prep.tier,
+        };
+        results.push(res);
+        await context.onFixProgress?.(res);
+        continue;
+      }
 
-      // Report progress
-      await context.onFixProgress?.(result);
+      pendingFiles.set(finding.file, prep.content!);
+      fixedFindings.push(finding);
+      results.push({
+        finding,
+        status: "fixed",
+        tier: prep.tier,
+      });
+    }
 
-      // If fixed, pull changes so sandbox stays in sync
-      if (result.status === "fixed") {
-        await sandbox.runCommand("git", ["pull", "origin", context.prBranch]);
+    if (pendingFiles.size > 0) {
+      const batchSha = await commitBatchFixesToGitHub(context.octokit, {
+        owner: context.owner,
+        repo: context.repo,
+        branch: context.prBranch,
+        files: pendingFiles,
+        findings: fixedFindings,
+      });
+      for (const r of results) {
+        if (r.status === "fixed") {
+          r.commitSha = batchSha;
+        }
+      }
+      for (const r of results) {
+        if (r.status === "fixed") {
+          await context.onFixProgress?.(r);
+        }
       }
     }
   } finally {
-    // 6. Always stop sandbox
     await sandbox.stop();
   }
 
-  // 7. Re-audit if any fixes were committed (FIX-06)
   if (results.some((r) => r.status === "fixed")) {
     const reauditResult = await reviewPullRequest({
       owner: context.owner,
@@ -175,7 +201,6 @@ export async function fixAll(
       baseBranch: context.baseBranch,
     });
 
-    // Store updated results (FIX-07)
     await storeAuditResult({
       key: `${context.owner}/${context.repo}/pr/${context.prNumber}`,
       data: {
@@ -194,6 +219,5 @@ export async function fixAll(
     return { results, reauditResult };
   }
 
-  // No fixes committed -- no re-audit needed
   return { results };
 }

@@ -61,7 +61,7 @@ describe("Summary Card Builder", () => {
 
   describe("buildSummaryCard JSX structure", () => {
     it("renders Card with ClawGuard branded title including score and grade (CARD-01)", () => {
-      expect(cardSource).toContain("ClawGuard Security Audit:");
+      expect(cardSource).toContain("ClawGuard:");
       expect(cardSource).toContain("audit.score");
       expect(cardSource).toContain("audit.grade");
     });
@@ -78,14 +78,14 @@ describe("Summary Card Builder", () => {
       expect(cardSource).toContain('headers={["Severity", "Finding", "Location"]}');
     });
 
-    it("limits findings table to top 5 entries (CARD-02)", () => {
-      expect(cardSource).toContain(".slice(0, 5)");
+    it("limits findings table to top 3 entries (CARD-02)", () => {
+      expect(cardSource).toContain(".slice(0, 3)");
     });
 
     it("includes LinkButton for View Report with correct URL pattern (CARD-03)", () => {
       expect(cardSource).toContain("<LinkButton");
       expect(cardSource).toContain("/report/");
-      expect(cardSource).toContain("View Report");
+      expect(cardSource).toContain("View full report");
     });
 
     it("includes Fix All Button with fix-all id (CARD-04)", () => {
