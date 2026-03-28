@@ -71,7 +71,15 @@ export async function applyStoredFix(
   sandbox: Sandbox,
   finding: Finding
 ): Promise<ApplyResult> {
-  const filePath = finding.location.file;
+  const filePath = finding.file;
+
+  if (!finding.fix) {
+    return {
+      valid: false,
+      content: "",
+      errors: "No stored fix available for this finding",
+    };
+  }
 
   // Read original file from sandbox
   const originalBuffer = await sandbox.readFileToBuffer({ path: filePath });

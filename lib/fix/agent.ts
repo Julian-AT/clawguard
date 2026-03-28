@@ -26,7 +26,7 @@ export async function generateFixWithAgent(
   previousErrors: string
 ): Promise<ApplyResult> {
   try {
-    const filePath = finding.location.file;
+    const filePath = finding.file;
 
     // Read original file for potential restoration
     const originalBuffer = await sandbox.readFileToBuffer({ path: filePath });
@@ -46,8 +46,8 @@ export async function generateFixWithAgent(
         "",
         `Finding type: ${finding.type}`,
         `CWE ID: ${finding.cweId}`,
-        `File: ${finding.location.file}`,
-        `Line: ${finding.location.line}`,
+        `File: ${finding.file}`,
+        `Line: ${finding.line}`,
         `Severity: ${finding.severity}`,
         `Description: ${finding.description}`,
         "",
@@ -67,10 +67,10 @@ export async function generateFixWithAgent(
 
     // Run the agent
     const result = await agent.generate({
-      prompt: `Fix the ${finding.type} vulnerability in ${finding.location.file}`,
+      prompt: `Fix the ${finding.type} vulnerability in ${finding.file}`,
     });
 
-    const fixedCode = result.object.fixedCode;
+    const fixedCode = result.output.fixedCode;
 
     // Write the agent-generated fix to the sandbox
     await sandbox.writeFiles([

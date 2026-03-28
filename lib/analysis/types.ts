@@ -1,64 +1,87 @@
 import { z } from "zod";
 
 export const SeveritySchema = z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]);
+export type Severity = z.infer<typeof SeveritySchema>;
 
-export const ConfidenceSchema = z.enum(["high", "medium", "low"]);
+export const ConfidenceSchema = z.enum(["HIGH", "MEDIUM", "LOW"]);
+export type Confidence = z.infer<typeof ConfidenceSchema>;
+
+export const DataFlowNodeSchema = z.object({
+  label: z.string(),
+  type: z.enum(["source", "transform", "sink"]),
+});
+
+export const DataFlowSchema = z.object({
+  nodes: z.array(DataFlowNodeSchema),
+  description: z.string().optional(),
+});
+
+export const CodeFixSchema = z.object({
+  before: z.string(),
+  after: z.string(),
+  file: z.string().optional(),
+  startLine: z.number().optional(),
+  endLine: z.number().optional(),
+});
+
+export const ComplianceMappingSchema = z.object({
+  pciDss: z.array(z.string()).default([]),
+  soc2: z.array(z.string()).default([]),
+  hipaa: z.array(z.string()).default([]),
+  nist: z.array(z.string()).default([]),
+  owaspAsvs: z.array(z.string()).default([]),
+});
 
 export const FindingSchema = z.object({
-  severity: SeveritySchema.describe("Severity level of the finding"),
-  type: z.string().describe("Vulnerability type, e.g. 'sql-injection', 'hardcoded-secret'"),
-  location: z.object({
-    file: z.string().describe("File path relative to repo root"),
-    line: z.number().describe("Line number where the vulnerability exists"),
-  }),
-  cweId: z.string().describe("CWE identifier, e.g. 'CWE-89'"),
-  owaspCategory: z.string().describe("OWASP Top 10 2021 category, e.g. 'A03:2021-Injection'"),
-  description: z.string().describe("Detailed description of the vulnerability"),
-  attackScenario: z.string().describe("Realistic attack scenario exploiting this vulnerability"),
-  confidence: ConfidenceSchema.describe("Confidence level of this finding"),
-  dataFlow: z
-    .object({
-      source: z.string().describe("Data entry point, e.g. 'req.body.username'"),
-      transform: z.string().describe("How data is transformed, e.g. 'string concatenation'"),
-      sink: z.string().describe("Where tainted data reaches, e.g. 'db.query()'"),
-    })
-    .describe("Source -> Transform -> Sink data flow chain"),
-  fix: z
-    .object({
-      before: z.string().describe("Vulnerable code snippet"),
-      after: z.string().describe("Fixed code snippet"),
-    })
-    .describe("Before/after code fix"),
-  complianceMapping: z
-    .object({
-      pciDss: z.string().optional().describe("PCI DSS reference"),
-      soc2: z.string().optional().describe("SOC 2 control reference"),
-      hipaa: z.string().optional().describe("HIPAA reference"),
-      nist: z.string().optional().describe("NIST 800-53 control"),
-      owaspAsvs: z.string().optional().describe("OWASP ASVS reference"),
-    })
-    .describe("Compliance framework mappings"),
+  id: z.string().optional(),
+  severity: SeveritySchema,
+  type: z.string(),
+  title: z.string().optional(),
+  file: z.string(),
+  line: z.number(),
+  cweId: z.string(),
+  owaspCategory: z.string(),
+  description: z.string(),
+  attackScenario: z.string(),
+  confidence: ConfidenceSchema,
+  dataFlow: DataFlowSchema.optional(),
+  fix: CodeFixSchema.optional(),
+  complianceMapping: ComplianceMappingSchema.optional(),
 });
+export type Finding = z.infer<typeof FindingSchema>;
 
 export const PhaseResultSchema = z.object({
-  summary: z.string().describe("Summary of this analysis phase"),
-  findings: z.array(FindingSchema).describe("Findings from this phase"),
+  phase: z.enum(["code-quality", "vulnerability-scan", "threat-model"]).optional(),
+  findings: z.array(FindingSchema),
+  summary: z.string(),
 });
+export type PhaseResult = z.infer<typeof PhaseResultSchema>;
+
+export const AttackSurfaceEntrySchema = z.object({
+  name: z.string(),
+  type: z.string(),
+  exposure: z.string(),
+  riskLevel: SeveritySchema,
+  description: z.string(),
+});
+export type AttackSurfaceEntry = z.infer<typeof AttackSurfaceEntrySchema>;
+
+export const ThreatModelSchema = z.object({
+  attackSurfaces: z.array(AttackSurfaceEntrySchema),
+  attackPaths: z.array(z.object({
+    name: z.string(),
+    mermaidDiagram: z.string(),
+    riskAssessment: z.string(),
+  })),
+});
+export type ThreatModel = z.infer<typeof ThreatModelSchema>;
 
 export const AuditResultSchema = z.object({
-  phases: z.object({
-    quality: PhaseResultSchema,
-    vulnerability: PhaseResultSchema,
-    threatModel: PhaseResultSchema,
-  }),
-  allFindings: z.array(FindingSchema),
-  score: z.number(),
+  score: z.number().min(0).max(100),
   grade: z.string(),
-  severityCounts: z.record(z.string(), z.number()),
+  phases: z.array(PhaseResultSchema),
+  findings: z.array(FindingSchema),
+  threatModel: ThreatModelSchema.optional(),
+  summary: z.string().optional(),
 });
-
-export type Severity = z.infer<typeof SeveritySchema>;
-export type Confidence = z.infer<typeof ConfidenceSchema>;
-export type Finding = z.infer<typeof FindingSchema>;
-export type PhaseResult = z.infer<typeof PhaseResultSchema>;
 export type AuditResult = z.infer<typeof AuditResultSchema>;

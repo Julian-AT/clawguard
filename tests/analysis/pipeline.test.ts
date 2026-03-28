@@ -31,23 +31,26 @@ const {
       {
         severity: "MEDIUM",
         type: "error-handling-gap",
-        location: { file: "src/api.ts", line: 42 },
+        file: "src/api.ts",
+        line: 42,
         cweId: "CWE-209",
         owaspCategory: "A04:2021-Insecure Design",
         description: "Generic error message leaks stack trace",
         attackScenario:
           "Attacker triggers error to obtain internal stack trace",
-        confidence: "high",
+        confidence: "HIGH",
         dataFlow: {
-          source: "Error object",
-          transform: "toString()",
-          sink: "res.json()",
+          nodes: [
+            { label: "Error object", type: "source" },
+            { label: "toString()", type: "transform" },
+            { label: "res.json()", type: "sink" },
+          ],
         },
         fix: {
           before: "res.json({ error: err.toString() })",
           after: 'res.json({ error: "Internal server error" })',
         },
-        complianceMapping: { nist: "SI-11" },
+        complianceMapping: { nist: ["SI-11"] },
       },
     ],
   };
@@ -58,43 +61,49 @@ const {
       {
         severity: "CRITICAL",
         type: "sql-injection",
-        location: { file: "src/db.ts", line: 15 },
+        file: "src/db.ts",
+        line: 15,
         cweId: "CWE-89",
         owaspCategory: "A03:2021-Injection",
         description: "Unparameterized SQL query with user input",
         attackScenario: "Attacker injects SQL via username field",
-        confidence: "high",
+        confidence: "HIGH",
         dataFlow: {
-          source: "req.body.username",
-          transform: "string concatenation",
-          sink: "db.query()",
+          nodes: [
+            { label: "req.body.username", type: "source" },
+            { label: "string concatenation", type: "transform" },
+            { label: "db.query()", type: "sink" },
+          ],
         },
         fix: {
           before: '`SELECT * FROM users WHERE name = \'${name}\'`',
           after: "db.query('SELECT * FROM users WHERE name = $1', [name])",
         },
-        complianceMapping: { pciDss: "6.5.1", owaspAsvs: "5.3.4" },
+        complianceMapping: { pciDss: ["6.5.1"], owaspAsvs: ["5.3.4"] },
       },
       {
         severity: "HIGH",
         type: "hardcoded-secret",
-        location: { file: "src/config.ts", line: 3 },
+        file: "src/config.ts",
+        line: 3,
         cweId: "CWE-798",
         owaspCategory: "A07:2021-Identification and Authentication Failures",
         description: "API key hardcoded in source code",
         attackScenario:
           "Attacker finds API key in public repo and accesses service",
-        confidence: "high",
+        confidence: "HIGH",
         dataFlow: {
-          source: "hardcoded string",
-          transform: "none",
-          sink: "API client constructor",
+          nodes: [
+            { label: "hardcoded string", type: "source" },
+            { label: "none", type: "transform" },
+            { label: "API client constructor", type: "sink" },
+          ],
         },
         fix: {
           before: 'const API_KEY = "sk-1234567890"',
           after: "const API_KEY = process.env.API_KEY!",
         },
-        complianceMapping: { soc2: "CC6.1" },
+        complianceMapping: { soc2: ["CC6.1"] },
       },
     ],
   };
@@ -105,24 +114,27 @@ const {
       {
         severity: "CRITICAL",
         type: "compound-attack-path",
-        location: { file: "src/api.ts", line: 42 },
+        file: "src/api.ts",
+        line: 42,
         cweId: "CWE-200",
         owaspCategory: "A01:2021-Broken Access Control",
         description:
           "SQL injection combined with verbose error messages enables blind data exfiltration",
         attackScenario:
           "Attacker uses SQL injection to trigger errors, verbose error messages reveal database schema",
-        confidence: "high",
+        confidence: "HIGH",
         dataFlow: {
-          source: "req.body.username",
-          transform: "SQL injection -> error -> toString()",
-          sink: "res.json()",
+          nodes: [
+            { label: "req.body.username", type: "source" },
+            { label: "SQL injection -> error -> toString()", type: "transform" },
+            { label: "res.json()", type: "sink" },
+          ],
         },
         fix: {
           before: "Unparameterized query + verbose errors",
           after: "Parameterized query + generic error messages",
         },
-        complianceMapping: { nist: "SI-11", pciDss: "6.5.1" },
+        complianceMapping: { nist: ["SI-11"], pciDss: ["6.5.1"] },
       },
     ],
   };
@@ -243,8 +255,8 @@ describe("Security Pipeline", () => {
     const result = await runSecurityPipeline(defaultInput);
 
     // phase1: 1 finding, phase2: 2 findings, phase3: 1 finding
-    expect(result.allFindings).toHaveLength(4);
-    expect(result.allFindings.map((f) => f.type)).toEqual([
+    expect(result.findings).toHaveLength(4);
+    expect(result.findings.map((f) => f.type)).toEqual([
       "error-handling-gap",
       "sql-injection",
       "hardcoded-secret",
@@ -300,28 +312,20 @@ describe("Security Pipeline", () => {
     );
   });
 
-  it("returns correct severity counts", async () => {
+  it("returns phases as an array with phase labels", async () => {
     const result = await runSecurityPipeline(defaultInput);
 
-    expect(result.severityCounts).toEqual({
-      CRITICAL: 2,
-      HIGH: 1,
-      MEDIUM: 1,
-      LOW: 0,
-      INFO: 0,
-    });
-  });
-
-  it("returns all phase results in phases object", async () => {
-    const result = await runSecurityPipeline(defaultInput);
-
-    expect(result.phases.quality.summary).toBe(
+    expect(result.phases).toHaveLength(3);
+    expect(result.phases[0].phase).toBe("code-quality");
+    expect(result.phases[0].summary).toBe(
       "Phase 1: No major quality issues found"
     );
-    expect(result.phases.vulnerability.summary).toBe(
+    expect(result.phases[1].phase).toBe("vulnerability-scan");
+    expect(result.phases[1].summary).toBe(
       "Phase 2: Found SQL injection and hardcoded secret"
     );
-    expect(result.phases.threatModel.summary).toBe(
+    expect(result.phases[2].phase).toBe("threat-model");
+    expect(result.phases[2].summary).toBe(
       "Phase 3: SQL injection + error leak enables data exfiltration"
     );
   });

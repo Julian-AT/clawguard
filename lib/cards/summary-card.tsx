@@ -29,13 +29,13 @@ export function buildSummaryCard(
   audit: AuditResult,
   pr: { owner: string; repo: string; number: number }
 ) {
-  const counts = countBySeverity(audit.allFindings);
+  const counts = countBySeverity(audit.findings);
 
-  const fixableCount = audit.allFindings.filter(
+  const fixableCount = audit.findings.filter(
     (f: Finding) => ["CRITICAL", "HIGH"].includes(f.severity)
   ).length;
 
-  const topFindings = audit.allFindings
+  const topFindings = audit.findings
     .filter((f: Finding) =>
       ["CRITICAL", "HIGH", "MEDIUM"].includes(f.severity)
     )
@@ -60,7 +60,7 @@ export function buildSummaryCard(
           rows={topFindings.map((f) => [
             `${severityEmoji(f.severity)} ${f.severity}`,
             f.type,
-            `${f.location.file}:${f.location.line}`,
+            `${f.file}:${f.line}`,
           ])}
         />
       ) : (

@@ -49,7 +49,7 @@ describe("Fix Commit Module", () => {
 
   it("includes finding severity and location in commit body", () => {
     expect(source).toContain("finding.severity");
-    expect(source).toContain("finding.location.line");
+    expect(source).toContain("finding.line");
   });
 
   it("passes the branch parameter to both API calls", () => {

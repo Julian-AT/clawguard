@@ -4,30 +4,14 @@ import type { AuditResult } from "../lib/analysis/types";
 // Use vi.hoisted for mock variables used in vi.mock factories
 const { mockRunSecurityPipeline } = vi.hoisted(() => {
   const mockAuditResult: AuditResult = {
-    phases: {
-      quality: {
-        summary: "No quality issues",
-        findings: [],
-      },
-      vulnerability: {
-        summary: "No vulnerabilities",
-        findings: [],
-      },
-      threatModel: {
-        summary: "No threats",
-        findings: [],
-      },
-    },
-    allFindings: [],
+    phases: [
+      { phase: "code-quality", summary: "No quality issues", findings: [] },
+      { phase: "vulnerability-scan", summary: "No vulnerabilities", findings: [] },
+      { phase: "threat-model", summary: "No threats", findings: [] },
+    ],
+    findings: [],
     score: 100,
     grade: "A",
-    severityCounts: {
-      CRITICAL: 0,
-      HIGH: 0,
-      MEDIUM: 0,
-      LOW: 0,
-      INFO: 0,
-    },
   };
 
   const mockRunSecurityPipeline = vi
@@ -58,14 +42,14 @@ describe("Review Pipeline", () => {
 
     expect(result).toHaveProperty("score");
     expect(result).toHaveProperty("grade");
-    expect(result).toHaveProperty("allFindings");
+    expect(result).toHaveProperty("findings");
     expect(result).toHaveProperty("phases");
     expect(result.score).toBe(100);
     expect(result.grade).toBe("A");
-    expect(result.allFindings).toEqual([]);
-    expect(result.phases.quality.summary).toBe("No quality issues");
-    expect(result.phases.vulnerability.summary).toBe("No vulnerabilities");
-    expect(result.phases.threatModel.summary).toBe("No threats");
+    expect(result.findings).toEqual([]);
+    expect(result.phases[0].summary).toBe("No quality issues");
+    expect(result.phases[1].summary).toBe("No vulnerabilities");
+    expect(result.phases[2].summary).toBe("No threats");
   });
 
   it("reviewPullRequest passes onProgress to pipeline", async () => {

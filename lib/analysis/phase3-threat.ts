@@ -52,7 +52,7 @@ export async function runThreatModel(
       "  may create a higher compound risk than either alone",
       "- Map the relationships between findings to identify systemic issues",
       "",
-      "Set confidence based on certainty: 'high' for definite threats, 'medium' for likely, 'low' for possible.",
+      "Set confidence based on certainty: 'HIGH' for definite threats, 'MEDIUM' for likely, 'LOW' for possible.",
       "",
       "Use bash tools to explore the codebase architecture, trace trust boundaries, and map attack surfaces.",
       "Output format: Provide a brief summary and detailed findings array using the structured output schema.",
