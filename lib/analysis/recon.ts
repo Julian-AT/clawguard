@@ -106,6 +106,33 @@ export async function runReconnaissance(
 
   const linesChanged = (diff.match(/^[-+]/gm) ?? []).length;
 
+  let dependencyAuditSnippet: string | undefined;
+  if (pkgCheck.exitCode === 0) {
+    const audit = await sandbox.runCommand("npm", [
+      "audit",
+      "--json",
+      "--package-lock-only",
+    ]);
+    const out = await audit.stdout();
+    if (out) {
+      dependencyAuditSnippet = out.slice(0, 12_000);
+    }
+  }
+
+  const secretPatternHints = secretHintsFromDiff(diff);
+
+  let optionalSarifSnippet: string | undefined;
+  try {
+    const sarifBuf = await sandbox.readFileToBuffer({
+      path: ".clawguard/semgrep.sarif",
+    });
+    if (sarifBuf) {
+      optionalSarifSnippet = sarifBuf.toString("utf-8").slice(0, 16_000);
+    }
+  } catch {
+    // optional file
+  }
+
   return {
     changedFiles,
     languages: [...languages],
@@ -119,5 +146,26 @@ export async function runReconnaissance(
     fileExcerpts:
       Object.keys(fileExcerpts).length > 0 ? fileExcerpts : undefined,
     linesChanged,
+    dependencyAuditSnippet,
+    secretPatternHints:
+      secretPatternHints.length > 0 ? secretPatternHints : undefined,
+    optionalSarifSnippet,
   };
+}
+
+function secretHintsFromDiff(diff: string): string[] {
+  const hints: string[] = [];
+  const checks: Array<{ label: string; re: RegExp }> = [
+    { label: "Possible live Stripe key", re: /sk_live_[a-z0-9]{20,}/i },
+    { label: "Possible AWS access key id", re: /AKIA[0-9A-Z]{16}/ },
+    {
+      label: "Assignment of secret-like value",
+      re: /(?:api[_-]?key|secret|password|token)\s*[=:]\s*['"][^'"\s]{12,}['"]/i,
+    },
+    { label: "Private key block", re: /-----BEGIN [A-Z ]+PRIVATE KEY-----/ },
+  ];
+  for (const { label, re } of checks) {
+    if (re.test(diff)) hints.push(label);
+  }
+  return [...new Set(hints)].slice(0, 8);
 }

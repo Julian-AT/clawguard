@@ -82,13 +82,19 @@ export interface PostProcessResult {
  */
 export function postProcessAudit(input: PostProcessInput): PostProcessResult {
   let findings = filterIgnoredPaths(input.findings, input.config.ignorePaths);
+  const allowedPaths = new Set(input.recon.changedFiles.map((c) => c.path));
+  findings = findings.filter((f) => allowedPaths.has(f.file));
   findings = dedupeFindings(findings);
   findings = ensureFindingIds(findings);
 
-  findings = findings.map((f) => {
+  const strict: Finding[] = [];
+  for (const f of findings) {
     const parsed = FindingSchema.safeParse(f);
-    return parsed.success ? parsed.data : f;
-  });
+    if (parsed.success) {
+      strict.push(parsed.data);
+    }
+  }
+  findings = strict;
 
   const threatModel = normalizeThreatModel(input.threatModel);
   const score = calculateScore(findings);

@@ -120,6 +120,12 @@ export const ReconResultSchema = z.object({
   fileExcerpts: z.record(z.string(), z.string()).optional(),
   /** Approximate changed hunk lines in diff */
   linesChanged: z.number().optional(),
+  /** Truncated npm/pnpm audit --json output */
+  dependencyAuditSnippet: z.string().optional(),
+  /** Heuristic secret-like strings spotted in diff */
+  secretPatternHints: z.array(z.string()).optional(),
+  /** Optional Semgrep SARIF excerpt if `.clawguard/semgrep.sarif` exists */
+  optionalSarifSnippet: z.string().optional(),
 });
 
 export type ReconResult = z.infer<typeof ReconResultSchema>;
@@ -131,6 +137,11 @@ export const AuditMetadataSchema = z.object({
   modelUsed: z.string(),
   pipelineDurationMs: z.number(),
   configFingerprint: z.string().optional(),
+  /** Security scan failed after retry; findings may be empty or reduced */
+  scanPartialFailure: z.boolean().optional(),
+  scanErrorMessage: z.string().optional(),
+  /** Rough ETA used for this run (from rolling average at start) */
+  pipelineEtaMsEstimate: z.number().optional(),
 });
 
 export type AuditMetadata = z.infer<typeof AuditMetadataSchema>;
