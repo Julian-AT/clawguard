@@ -18,6 +18,8 @@ interface ReportViewProps {
   prNumber: number;
   prTitle: string;
   timestamp: string;
+  /** Shown when scan completed with degraded security stage */
+  partialWarning?: string;
 }
 
 export function ReportView({
@@ -27,6 +29,7 @@ export function ReportView({
   prNumber,
   prTitle,
   timestamp,
+  partialWarning,
 }: ReportViewProps) {
   const counts = countBySeverity(result.findings);
   const executive =
@@ -44,14 +47,23 @@ export function ReportView({
           timestamp={timestamp}
         />
 
-        <section className="rounded-xl border border-border bg-card/50 p-5">
+        {partialWarning && (
+          <div
+            role="alert"
+            className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-100"
+          >
+            <strong className="font-semibold">Partial result:</strong>{" "}
+            {partialWarning}
+          </div>
+        )}
+
+        <section className="rounded-xl border border-border bg-card/50 p-5 print:break-inside-avoid">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
             Executive summary
           </h2>
           <p className="text-sm leading-relaxed text-foreground/90">{executive}</p>
         </section>
 
-        {/* Score hero section */}
         <div className="flex items-start gap-8 flex-wrap">
           <ScoreGauge score={result.score} grade={result.grade} />
           <div className="flex flex-col gap-4 pt-2 min-w-[240px] flex-1">
@@ -67,7 +79,6 @@ export function ReportView({
 
         <Separator />
 
-        {/* Tabbed content */}
         <Tabs defaultValue="findings">
           <TabsList>
             <TabsTrigger value="findings">

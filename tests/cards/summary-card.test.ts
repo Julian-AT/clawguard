@@ -8,33 +8,6 @@ const cardSource = readFileSync(
   "utf-8"
 );
 
-function makeFinding(overrides: Partial<Record<string, unknown>> = {}) {
-  return {
-    severity: "HIGH",
-    type: "sql-injection",
-    file: "src/db/query.ts",
-    line: 42,
-    cweId: "CWE-89",
-    owaspCategory: "A03:2021-Injection",
-    description: "User input concatenated directly into SQL query",
-    attackScenario: "Attacker submits malicious SQL via input field",
-    confidence: "HIGH",
-    dataFlow: {
-      nodes: [
-        { label: "req.body.username", type: "source" },
-        { label: "string concatenation", type: "transform" },
-        { label: "db.query()", type: "sink" },
-      ],
-    },
-    fix: {
-      before: 'db.query(`SELECT * FROM users WHERE name = \'${input}\'`)',
-      after: "db.query('SELECT * FROM users WHERE name = $1', [input])",
-    },
-    complianceMapping: {},
-    ...overrides,
-  };
-}
-
 describe("Summary Card Builder", () => {
   describe("severityEmoji", () => {
     it("maps severity levels to correct emoji", () => {

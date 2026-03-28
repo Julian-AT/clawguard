@@ -1,5 +1,6 @@
 import micromatch from "micromatch";
 import type { ClawGuardConfig } from "@/lib/config/schemas";
+import { SEVERITY_ORDER } from "@/lib/constants";
 import type { Finding, ReconResult, ThreatModel } from "./types";
 import { calculateScore, getGrade } from "./scoring";
 import { FindingSchema } from "./types";
@@ -11,9 +12,6 @@ function ensureFindingIds(findings: Finding[]): Finding[] {
   }));
 }
 
-/**
- * Remove findings whose path matches any ignorePaths glob.
- */
 export function filterIgnoredPaths(
   findings: Finding[],
   ignorePaths: string[]
@@ -36,8 +34,7 @@ function dedupeFindings(findings: Finding[]): Finding[] {
       seen.set(key, f);
       continue;
     }
-    const rank = (s: Finding["severity"]) =>
-      ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"].indexOf(s);
+    const rank = (s: Finding["severity"]) => SEVERITY_ORDER[s];
     if (rank(f.severity) < rank(existing.severity)) {
       seen.set(key, f);
     }
@@ -77,9 +74,6 @@ export interface PostProcessResult {
   grade: string;
 }
 
-/**
- * Filter, dedupe, validate findings; compute score and grade.
- */
 export function postProcessAudit(input: PostProcessInput): PostProcessResult {
   let findings = filterIgnoredPaths(input.findings, input.config.ignorePaths);
   const allowedPaths = new Set(input.recon.changedFiles.map((c) => c.path));

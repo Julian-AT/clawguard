@@ -14,9 +14,6 @@ const LABELS: Record<(typeof ORDER)[number], string> = {
   "post-processing": "Finalizing",
 };
 
-/**
- * Format PR comment body for current pipeline progress.
- */
 export function formatPipelineStatusMessage(
   progress: PipelineProgress | null
 ): string {

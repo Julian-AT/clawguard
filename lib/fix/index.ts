@@ -12,6 +12,22 @@ import { reviewPullRequest } from "@/lib/review";
 import { getAuditResult, storeAuditResult } from "@/lib/redis";
 import { SEVERITY_ORDER } from "@/lib/constants";
 
+function buildFixProgressMarkdown(results: FixResult[]): string {
+  const lines = [
+    "## Auto-fix progress",
+    "",
+    "| Finding | Status | Commit |",
+    "|---------|--------|--------|",
+  ];
+  for (const r of results) {
+    const finding = `${r.finding.type} (${r.finding.cweId})`;
+    const statusText = r.status === "fixed" ? "Fixed" : "Skipped";
+    const commit = r.commitSha ? r.commitSha.slice(0, 7) : "—";
+    lines.push(`| ${finding} | ${statusText} | ${commit} |`);
+  }
+  return lines.join("\n");
+}
+
 type PrepareResult = {
   status: "fixed" | "skipped";
   tier: "fast" | "agent";
@@ -45,6 +61,8 @@ async function prepareFindingFix(
       error: `Validation failed after both tiers: ${agentResult.errors}`,
     };
   } catch (error) {
+    const { handleError } = await import("@/lib/error-handler");
+    handleError(error, { operation: "prepareFindingFix", agentName: "fix-agent" });
     return {
       status: "skipped",
       tier: "fast",
@@ -53,14 +71,6 @@ async function prepareFindingFix(
   }
 }
 
-/**
- * Fix a single finding using a tiered approach:
- * 1. Fast path: apply stored fix.before/fix.after (D-05)
- * 2. Agent fallback: generate fix with ToolLoopAgent (D-06)
- *
- * Commits validated fix to PR branch via Octokit Contents API (FIX-03).
- * Returns skipped status if both tiers fail (D-10).
- */
 export async function fixFinding(
   sandbox: Sandbox,
   finding: Finding,
@@ -93,17 +103,12 @@ export async function fixFinding(
   };
 }
 
-/**
- * Fix all CRITICAL + HIGH findings sequentially in a single sandbox (D-11).
- * Applies all fixes locally, then **one** Git commit for all changed files.
- */
 export async function fixAll(
   context: FixContext & {
     baseBranch: string;
     prTitle: string;
-    /** Reserved for progress UI / future streaming */
     thread?: Thread;
-    onFixProgress?: (result: FixResult) => Promise<void>;
+    onBatchTableUpdate?: (markdown: string) => Promise<void>;
   }
 ): Promise<{
   results: FixResult[];
@@ -157,7 +162,7 @@ export async function fixAll(
           tier: prep.tier,
         };
         results.push(res);
-        await context.onFixProgress?.(res);
+        await context.onBatchTableUpdate?.(buildFixProgressMarkdown(results));
         continue;
       }
 
@@ -168,6 +173,7 @@ export async function fixAll(
         status: "fixed",
         tier: prep.tier,
       });
+      await context.onBatchTableUpdate?.(buildFixProgressMarkdown(results));
     }
 
     if (pendingFiles.size > 0) {
@@ -183,11 +189,7 @@ export async function fixAll(
           r.commitSha = batchSha;
         }
       }
-      for (const r of results) {
-        if (r.status === "fixed") {
-          await context.onFixProgress?.(r);
-        }
-      }
+      await context.onBatchTableUpdate?.(buildFixProgressMarkdown(results));
     }
   } finally {
     await sandbox.stop();

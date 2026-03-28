@@ -3,17 +3,11 @@ import type { Finding } from "@/lib/analysis/types";
 import type { ApplyResult } from "@/lib/fix/types";
 import { runValidation } from "@/lib/fix/validate";
 
-/** Normalize line endings only (no trim) — use for exact substring match. */
 function normalizeLineEndings(text: string): string {
   return text.replace(/\r\n/g, "\n");
 }
 
-/**
- * Attempt a fuzzy line-by-line match and replace.
- *
- * Trims each line of both the search pattern and the content before comparing,
- * handling indentation differences between AI-generated fix.before and actual file content.
- */
+/** Line-by-line fuzzy replace when exact `fix.before` substring is not in file. */
 function fuzzyReplace(
   content: string,
   search: string,
@@ -28,7 +22,6 @@ function fuzzyReplace(
 
   if (searchLines.length === 0) return null;
 
-  // Find a contiguous block of lines in content whose trimmed versions match searchLines
   for (let i = 0; i <= contentLines.length - searchLines.length; i++) {
     let match = true;
     for (let j = 0; j < searchLines.length; j++) {
@@ -39,14 +32,13 @@ function fuzzyReplace(
     }
 
     if (match) {
-      // Preserve the indentation of the first matched line for the replacement
       const leadingWhitespace = contentLines[i].match(/^(\s*)/)?.[1] ?? "";
       const replacementLines = replacement
         .replace(/\r\n/g, "\n")
         .trim()
         .split("\n");
       const indentedReplacement = replacementLines
-        .map((line, idx) => (idx === 0 ? leadingWhitespace + line.trim() : leadingWhitespace + line.trim()))
+        .map((line) => leadingWhitespace + line.trim())
         .join("\n");
 
       const before = contentLines.slice(0, i);
@@ -58,13 +50,6 @@ function fuzzyReplace(
   return null;
 }
 
-/**
- * Apply a stored fix (fix.before -> fix.after) to a file in the sandbox.
- *
- * Reads the original file, replaces fix.before with fix.after (with whitespace
- * normalization and fuzzy matching), validates the result, and restores the
- * original file if validation fails.
- */
 export async function applyStoredFix(
   sandbox: Sandbox,
   finding: Finding
@@ -79,22 +64,18 @@ export async function applyStoredFix(
     };
   }
 
-  // Read original file from sandbox
   const originalBuffer = await sandbox.readFileToBuffer({ path: filePath });
   const originalContent = originalBuffer?.toString("utf-8") ?? "";
 
-  // Exact path: same line-ending normalization for file and pattern (no trim)
   const normalizedContent = normalizeLineEndings(originalContent);
   const normalizedBefore = normalizeLineEndings(finding.fix.before);
   const normalizedAfter = normalizeLineEndings(finding.fix.after);
 
   let fixedContent: string;
 
-  // Try exact match first (with normalized line endings)
   if (normalizedContent.includes(normalizedBefore)) {
     fixedContent = normalizedContent.replace(normalizedBefore, normalizedAfter);
   } else {
-    // Try fuzzy line-by-line match
     const fuzzyResult = fuzzyReplace(
       normalizeLineEndings(originalContent),
       finding.fix.before,
@@ -112,7 +93,6 @@ export async function applyStoredFix(
     fixedContent = fuzzyResult;
   }
 
-  // Verify the replace actually changed something
   if (fixedContent === normalizedContent) {
     return {
       valid: false,
@@ -121,16 +101,13 @@ export async function applyStoredFix(
     };
   }
 
-  // Write fixed file to sandbox
   await sandbox.writeFiles([
     { path: filePath, content: Buffer.from(fixedContent) },
   ]);
 
-  // Validate the fix
   const validation = await runValidation(sandbox);
 
   if (!validation.passed) {
-    // Restore original file on validation failure
     await sandbox.writeFiles([
       { path: filePath, content: Buffer.from(originalContent) },
     ]);

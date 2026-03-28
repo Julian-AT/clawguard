@@ -32,7 +32,7 @@ export async function runThreatSynthesis(
     model: gateway(modelRef),
     tools,
     output: Output.object({ schema: ThreatSynthesisOutputSchema }),
-    stopWhen: stepCountIs(Math.min(25, config.model.maxSteps)),
+    stopWhen: stepCountIs(Math.min(25, config.scanning.maxSteps)),
     instructions: [
       "You are a threat modeling lead. Merge and deduplicate findings, then produce a threat model.",
       "",

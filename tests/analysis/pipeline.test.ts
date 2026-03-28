@@ -38,7 +38,7 @@ const {
       {
         severity: "HIGH" as const,
         type: "xss",
-        file: "src/x.ts",
+        file: "src/api.ts",
         line: 1,
         cweId: "CWE-79",
         owaspCategory: "A03:2021-Injection",
@@ -47,6 +47,7 @@ const {
         confidence: "HIGH" as const,
       },
     ],
+    partialFailure: false,
   };
 
   const defaultThreat = {
@@ -124,6 +125,25 @@ vi.mock("@/lib/config", () => ({
         model: "claude-sonnet-4.6",
         maxSteps: 30,
       },
+      bot: {
+        verbosity: "normal",
+        autoSubscribe: true,
+        language: "en",
+      },
+      scanning: {
+        timeout: 10 * 60 * 1000,
+        maxRetries: 1,
+        enableDependencyAudit: true,
+        enableSecretScan: true,
+        maxSteps: 30,
+        depth: "standard",
+      },
+      notifications: {
+        commentStyle: "comment",
+        minSeverityToComment: "INFO",
+        suppressCleanReports: false,
+        mentionAuthors: false,
+      },
     },
     policies: [],
     configSource: "defaults",
@@ -141,6 +161,15 @@ vi.mock("../../lib/analysis/security-scan", () => ({
 
 vi.mock("../../lib/analysis/threat-synthesis", () => ({
   runThreatSynthesis: mockRunThreatSynthesis,
+}));
+
+vi.mock("@/lib/pipeline-eta", () => ({
+  getEstimatedPipelineMs: vi.fn().mockResolvedValue(null),
+  recordPipelineDurationMs: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/lib/logger", () => ({
+  logAudit: vi.fn(),
 }));
 
 import { runSecurityPipeline } from "../../lib/analysis/pipeline";

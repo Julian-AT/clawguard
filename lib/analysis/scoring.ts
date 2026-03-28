@@ -4,9 +4,6 @@ import {
   SEVERITY_DEDUCTIONS,
 } from "@/lib/constants";
 
-/** @deprecated Use SEVERITY_DEDUCTIONS from lib/constants */
-export const DEDUCTIONS = SEVERITY_DEDUCTIONS;
-
 export { GRADE_THRESHOLDS };
 
 export function calculateScore(findings: Finding[]): number {

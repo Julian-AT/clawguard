@@ -13,25 +13,12 @@ const ESLINT_CONFIGS = [
 const DEFAULT_TEST_STUB =
   'echo "Error: no test specified" && exit 1';
 
-/**
- * Auto-detect available validation tools in the sandbox and run all of them.
- *
- * Detection order:
- * 1. TypeScript (tsconfig.json) -> npx tsc --noEmit
- * 2. ESLint (eslint.config.* or .eslintrc.*) -> npx eslint --no-warn-ignored .
- * 3. Biome (biome.json) -> npx biome check .
- * 4. Test suite (package.json scripts.test) -> npm test
- *
- * Validation passes only when ALL detected tools pass (D-09).
- * Each tool is independently try/caught so one failure doesn't prevent others from running.
- */
 export async function runValidation(
   sandbox: Sandbox
 ): Promise<ValidationResult> {
   const detected: string[] = [];
   const errors: string[] = [];
 
-  // 1. Check for TypeScript
   try {
     const tscCheck = await sandbox.runCommand("ls", ["tsconfig.json"]);
     if (tscCheck.exitCode === 0) {
@@ -42,11 +29,8 @@ export async function runValidation(
         errors.push(`tsc: ${stderr}`);
       }
     }
-  } catch {
-    // TypeScript detection failed, skip
-  }
+  } catch {}
 
-  // 2. Check for ESLint (flat config or legacy)
   try {
     for (const config of ESLINT_CONFIGS) {
       const check = await sandbox.runCommand("ls", [config]);
@@ -64,11 +48,8 @@ export async function runValidation(
         break;
       }
     }
-  } catch {
-    // ESLint detection failed, skip
-  }
+  } catch {}
 
-  // 3. Check for Biome
   try {
     const biomeCheck = await sandbox.runCommand("ls", ["biome.json"]);
     if (biomeCheck.exitCode === 0) {
@@ -79,11 +60,8 @@ export async function runValidation(
         errors.push(`biome: ${stderr}`);
       }
     }
-  } catch {
-    // Biome detection failed, skip
-  }
+  } catch {}
 
-  // 4. Check for test runner via package.json
   try {
     const pkgCheck = await sandbox.runCommand("cat", ["package.json"]);
     if (pkgCheck.exitCode === 0) {
@@ -101,9 +79,7 @@ export async function runValidation(
         }
       }
     }
-  } catch {
-    // Test detection failed, skip
-  }
+  } catch {}
 
   return {
     passed: errors.length === 0,

@@ -94,7 +94,7 @@ async function runScanOnce(
     model: gateway(modelRef),
     tools,
     output: Output.object({ schema: SecurityScanOutputSchema }),
-    stopWhen: stepCountIs(config.model.maxSteps),
+    stopWhen: stepCountIs(config.scanning.maxSteps),
     instructions,
     onStepFinish: onStep
       ? (event) => {
@@ -115,10 +115,6 @@ async function runScanOnce(
   };
 }
 
-/**
- * Single deep security scan with recon + policy context.
- * Retries once with a shorter instruction set if the first attempt throws.
- */
 export async function runSecurityScan(
   tools: ToolSet,
   recon: ReconResult,
@@ -126,7 +122,15 @@ export async function runSecurityScan(
   config: ClawGuardConfig,
   onStepFinish?: (info: SecurityScanStepInfo) => void
 ): Promise<SecurityScanResult> {
+  const depthHint =
+    config.scanning.depth === "quick"
+      ? "Keep analysis faster and slightly less exhaustive."
+      : config.scanning.depth === "deep"
+        ? "Be exhaustive; consider subtle and chained issues."
+        : "";
+
   const fullInstructions = [
+    ...(depthHint ? [depthHint] : []),
     "You are a principal application security engineer.",
     "You receive repository reconnaissance (file excerpts, static analysis) and a PR diff.",
     "Find REAL security issues in the changed code. Prefer evidence from excerpts and diff.",
@@ -166,6 +170,17 @@ export async function runSecurityScan(
     };
   } catch (firstError) {
     console.error("[security-scan] Agent error (first attempt):", firstError);
+    if (config.scanning.maxRetries <= 0) {
+      const msg =
+        firstError instanceof Error ? firstError.message : String(firstError);
+      return {
+        findings: [],
+        summary:
+          "Security scan could not produce structured output. Check deployment logs or try again.",
+        partialFailure: true,
+        scanErrorMessage: msg,
+      };
+    }
     try {
       const out = await runScanOnce(
         tools,

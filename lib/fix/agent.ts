@@ -12,14 +12,6 @@ const FixOutputSchema = z.object({
   explanation: z.string().describe("What was changed and why"),
 });
 
-/**
- * Generate a fix using a ToolLoopAgent as a fallback when the stored
- * fix.before/fix.after fast path fails validation.
- *
- * The agent reads the full file context, understands the vulnerability,
- * and generates a fresh fix. The fix is validated in the sandbox before
- * being accepted. If validation fails, the original file is restored.
- */
 export async function generateFixWithAgent(
   sandbox: Sandbox,
   finding: Finding,
@@ -29,14 +21,11 @@ export async function generateFixWithAgent(
   try {
     const filePath = finding.file;
 
-    // Read original file for potential restoration
     const originalBuffer = await sandbox.readFileToBuffer({ path: filePath });
     const originalContent = originalBuffer?.toString("utf-8") ?? "";
 
-    // Create bash tools for the agent to explore the codebase
     const { tools } = await createBashTool({ sandbox });
 
-    // Create the ToolLoopAgent for fix generation
     const agent = new ToolLoopAgent({
       model: gateway("anthropic/claude-sonnet-4.6"),
       tools,
@@ -70,19 +59,16 @@ export async function generateFixWithAgent(
       ].join("\n"),
     });
 
-    // Run the agent
     const result = await agent.generate({
       prompt: `Fix the ${finding.type} vulnerability in ${finding.file}`,
     });
 
     const fixedCode = result.output.fixedCode;
 
-    // Write the agent-generated fix to the sandbox
     await sandbox.writeFiles([
       { path: filePath, content: Buffer.from(fixedCode) },
     ]);
 
-    // Validate the fix
     const validation = await runValidation(sandbox);
 
     if (validation.passed) {
@@ -93,7 +79,6 @@ export async function generateFixWithAgent(
       };
     }
 
-    // Validation failed -- restore original file
     await sandbox.writeFiles([
       { path: filePath, content: Buffer.from(originalContent) },
     ]);

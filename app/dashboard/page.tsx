@@ -55,12 +55,12 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <a
+          <Link
             href="/api/auth/signout?callbackUrl=/"
             className={cn(buttonVariants({ variant: "outline" }))}
           >
             Sign out
-          </a>
+          </Link>
         </div>
       </header>
 

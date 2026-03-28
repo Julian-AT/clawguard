@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getMermaid } from "@/lib/mermaid-init";
 
 interface MermaidDiagramProps {
@@ -9,7 +9,6 @@ interface MermaidDiagramProps {
 }
 
 export function MermaidDiagram({ chart, id }: MermaidDiagramProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +48,6 @@ export function MermaidDiagram({ chart, id }: MermaidDiagramProps) {
 
   return (
     <div
-      ref={containerRef}
       className="my-4 overflow-x-auto rounded-lg bg-zinc-900 p-4 max-w-full [&_svg]:max-w-none"
       dangerouslySetInnerHTML={{ __html: svg }}
     />

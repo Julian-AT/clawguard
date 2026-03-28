@@ -1,12 +1,11 @@
 import type { Sandbox } from "@vercel/sandbox";
+import type { ClawGuardConfig } from "@/lib/config/schemas";
 import type { ReconResult } from "./types";
+import { logWarn } from "@/lib/logger";
 
 const MAX_EXCERPT_LINES = 120;
 const MAX_EXCERPT_CHARS = 48_000;
 
-/**
- * Parse `git diff` output for changed file paths (new or modified).
- */
 export function parseChangedFilesFromDiff(diff: string): string[] {
   const paths = new Set<string>();
   const re = /^diff --git a\/(.+?) b\/(.+?)$/gm;
@@ -18,12 +17,10 @@ export function parseChangedFilesFromDiff(diff: string): string[] {
   return [...paths];
 }
 
-/**
- * Non-LLM reconnaissance: diff stats, file excerpts, lightweight static signals.
- */
 export async function runReconnaissance(
   sandbox: Sandbox,
-  diff: string
+  diff: string,
+  config: ClawGuardConfig
 ): Promise<ReconResult> {
   const changedFiles = parseChangedFilesFromDiff(diff).map((path) => ({ path }));
 
@@ -65,8 +62,10 @@ export async function runReconnaissance(
         if (deps.express) frameworkHints.push("Express");
         if (deps["@nestjs/core"]) frameworkHints.push("NestJS");
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      logWarn("audit", "Failed to parse package.json for framework hints", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -82,8 +81,10 @@ export async function runReconnaissance(
         excerpt.length > MAX_EXCERPT_CHARS
           ? `${excerpt.slice(0, MAX_EXCERPT_CHARS)}\n/* … truncated … */`
           : excerpt;
-    } catch {
-      // unreadable binary or missing
+    } catch (err) {
+      logWarn("audit", `Skipped unreadable file: ${path}`, {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 
@@ -107,7 +108,7 @@ export async function runReconnaissance(
   const linesChanged = (diff.match(/^[-+]/gm) ?? []).length;
 
   let dependencyAuditSnippet: string | undefined;
-  if (pkgCheck.exitCode === 0) {
+  if (pkgCheck.exitCode === 0 && config.scanning.enableDependencyAudit) {
     const audit = await sandbox.runCommand("npm", [
       "audit",
       "--json",
@@ -119,7 +120,9 @@ export async function runReconnaissance(
     }
   }
 
-  const secretPatternHints = secretHintsFromDiff(diff);
+  const secretPatternHints = config.scanning.enableSecretScan
+    ? secretHintsFromDiff(diff)
+    : [];
 
   let optionalSarifSnippet: string | undefined;
   try {
@@ -129,8 +132,10 @@ export async function runReconnaissance(
     if (sarifBuf) {
       optionalSarifSnippet = sarifBuf.toString("utf-8").slice(0, 16_000);
     }
-  } catch {
-    // optional file
+  } catch (err) {
+    logWarn("audit", "No .clawguard/semgrep.sarif found (optional)", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   return {

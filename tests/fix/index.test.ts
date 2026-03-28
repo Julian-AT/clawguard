@@ -70,8 +70,8 @@ describe("fixAll orchestration", () => {
     expect(indexSource).toContain("prepareFindingFix");
   });
 
-  it("calls onFixProgress callback", () => {
-    expect(indexSource).toContain("onFixProgress");
+  it("supports onBatchTableUpdate for in-place progress table", () => {
+    expect(indexSource).toContain("onBatchTableUpdate");
   });
 
   it("stops sandbox in finally block", () => {

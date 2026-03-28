@@ -1,12 +1,17 @@
 import { Sandbox } from "@vercel/sandbox";
 import { createBashTool } from "bash-tool";
 import { Octokit } from "@octokit/rest";
-import { loadRepoConfig } from "@/lib/config";
+import { loadRepoConfig, type LoadRepoConfigResult } from "@/lib/config";
 import { runReconnaissance } from "./recon";
 import { runSecurityScan } from "./security-scan";
 import { runThreatSynthesis } from "./threat-synthesis";
 import { postProcessAudit } from "./post-process";
 import type { AuditResult, PhaseResult, ReconResult } from "./types";
+import {
+  getEstimatedPipelineMs,
+  recordPipelineDurationMs,
+} from "@/lib/pipeline-eta";
+import { logAudit } from "@/lib/logger";
 
 export type PipelineProgress =
   | { stage: "recon"; status: "running" | "complete"; detail?: string }
@@ -27,20 +32,21 @@ export interface PipelineInput {
   repo: string;
   prBranch: string;
   baseBranch: string;
+  /** When set, skips a second loadRepoConfig call (same ref as prBranch). */
+  preloadedConfig?: LoadRepoConfigResult;
 }
 
-/**
- * Four-stage pipeline: recon → security scan → threat synthesis → post-process.
- */
 export async function runSecurityPipeline(
   input: PipelineInput,
   onProgress?: ProgressCallback
 ): Promise<AuditResult> {
   const started = Date.now();
+  const etaMs = await getEstimatedPipelineMs();
   const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
   const { config, policies, configSource, policiesSource } =
-    await loadRepoConfig(octokit, input.owner, input.repo, input.prBranch);
+    input.preloadedConfig ??
+    (await loadRepoConfig(octokit, input.owner, input.repo, input.prBranch));
 
   const sandbox = await Sandbox.create({
     source: {
@@ -50,7 +56,7 @@ export async function runSecurityPipeline(
       password: process.env.GITHUB_TOKEN!,
       depth: 50,
     },
-    timeout: 10 * 60 * 1000,
+    timeout: config.scanning.timeout,
   });
 
   let recon: ReconResult;
@@ -75,7 +81,7 @@ export async function runSecurityPipeline(
       status: "running",
       detail: "Mapping diff and file context",
     });
-    recon = await runReconnaissance(sandbox, diff);
+    recon = await runReconnaissance(sandbox, diff, config);
     await onProgress?.({ stage: "recon", status: "complete" });
 
     const { tools } = await createBashTool({ sandbox });
@@ -90,12 +96,12 @@ export async function runSecurityPipeline(
       recon,
       policies,
       config,
-      ({ stepCount }) => {
+      ({ stepCount, detail }) => {
         void onProgress?.({
           stage: "security-scan",
           status: "running",
           step: stepCount,
-          detail: `Agent step ${stepCount}`,
+          detail: detail ?? `Agent step ${stepCount}`,
         });
       }
     );
@@ -139,11 +145,25 @@ export async function runSecurityPipeline(
     ];
 
     const metaNote = `config:${configSource},policies:${policiesSource}`;
+    const durationMs = Date.now() - started;
+    await recordPipelineDurationMs(durationMs);
+
+    let summaryOut = processed.summary;
+    if (scan.partialFailure && scan.scanErrorMessage) {
+      summaryOut = `${summaryOut}\n\n[Scan warning] ${scan.scanErrorMessage}`;
+    }
+
+    logAudit("audit", "pipeline_complete", {
+      owner: input.owner,
+      repo: input.repo,
+      durationMs,
+      partial: scan.partialFailure ? 1 : 0,
+    });
 
     return {
       score: processed.score,
       grade: processed.grade,
-      summary: processed.summary,
+      summary: summaryOut,
       phases,
       findings: processed.findings,
       threatModel: processed.threatModel,
@@ -153,8 +173,11 @@ export async function runSecurityPipeline(
         filesChanged: recon.changedFiles.length,
         linesChanged: recon.linesChanged ?? 0,
         modelUsed: config.model.model,
-        pipelineDurationMs: Date.now() - started,
+        pipelineDurationMs: durationMs,
         configFingerprint: metaNote,
+        scanPartialFailure: scan.partialFailure,
+        scanErrorMessage: scan.scanErrorMessage,
+        pipelineEtaMsEstimate: etaMs ?? undefined,
       },
     };
   } catch (e) {

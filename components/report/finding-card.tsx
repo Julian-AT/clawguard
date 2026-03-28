@@ -67,12 +67,10 @@ export function FindingCard({ finding, value }: FindingCardProps) {
         </div>
       </AccordionTrigger>
       <AccordionContent className="space-y-4 pb-4">
-        {/* Description */}
         <p className="text-sm text-muted-foreground leading-relaxed">
           {finding.description}
         </p>
 
-        {/* Attack scenario callout */}
         <div className="border-l-4 border-red-500 bg-red-500/10 rounded-r-md p-4">
           <h4 className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-1">
             Attack Scenario
@@ -80,7 +78,6 @@ export function FindingCard({ finding, value }: FindingCardProps) {
           <p className="text-sm text-foreground/90">{finding.attackScenario}</p>
         </div>
 
-        {/* Compliance badges */}
         {finding.complianceMapping && (
           <div className="flex flex-wrap gap-2">
             {finding.complianceMapping.pciDss.length > 0 && (
@@ -111,7 +108,6 @@ export function FindingCard({ finding, value }: FindingCardProps) {
           </div>
         )}
 
-        {/* Mermaid data flow diagram */}
         {finding.dataFlow &&
           (finding.dataFlow.mermaidDiagram ||
             finding.dataFlow.nodes.length > 0) && (
@@ -129,7 +125,6 @@ export function FindingCard({ finding, value }: FindingCardProps) {
           </div>
         )}
 
-        {/* Before/after code diff */}
         {finding.fix && (
           <div>
             <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">

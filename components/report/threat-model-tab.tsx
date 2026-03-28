@@ -50,7 +50,6 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
         </section>
       )}
 
-      {/* Attack Surfaces */}
       {threatModel.attackSurfaces.length > 0 && (
         <section>
           <h3 className="text-lg font-semibold mb-3">Attack Surfaces</h3>
@@ -58,7 +57,6 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
         </section>
       )}
 
-      {/* Attack Paths */}
       {threatModel.attackPaths.length > 0 && (
         <section>
           <h3 className="text-lg font-semibold mb-3">Attack Paths</h3>

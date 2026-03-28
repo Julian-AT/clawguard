@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Shield } from "lucide-react";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
+import { PrintReportButton } from "@/components/report/print-report-button";
 
 interface ReportShellProps {
   owner: string;
@@ -18,7 +19,7 @@ export function ReportShell({
 }: ReportShellProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 print:hidden">
         <div className="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/"
@@ -47,6 +48,7 @@ export function ReportShell({
             >
               Open in GitHub
             </a>
+            <PrintReportButton />
           </nav>
         </div>
       </header>

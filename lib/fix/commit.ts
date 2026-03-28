@@ -1,15 +1,7 @@
 import type { Octokit } from "@octokit/rest";
 import type { Finding } from "@/lib/analysis/types";
 
-/**
- * Commit a validated fix to the PR branch via the GitHub Contents API.
- *
- * Fetches the current file SHA (never cached -- Pitfall 2), then creates or
- * updates the file content with a descriptive commit message referencing
- * the finding type and CWE ID.
- *
- * @returns The new commit SHA string
- */
+/** Commits via Contents API; always fetches current blob SHA before update. */
 export async function commitFixToGitHub(
   octokit: Octokit,
   params: {
@@ -21,7 +13,6 @@ export async function commitFixToGitHub(
     finding: Finding;
   }
 ): Promise<string> {
-  // 1. Get current file SHA (required for updates -- always fetch fresh)
   const { data: currentFile } = await octokit.repos.getContent({
     owner: params.owner,
     repo: params.repo,
@@ -29,12 +20,10 @@ export async function commitFixToGitHub(
     ref: params.branch,
   });
 
-  // getContent returns array for directories, object for files
   if (Array.isArray(currentFile)) {
     throw new Error("Path is a directory, not a file");
   }
 
-  // 2. Commit the fix with descriptive message
   const { data: commitResult } = await octokit.repos.createOrUpdateFileContents(
     {
       owner: params.owner,
@@ -54,9 +43,6 @@ export async function commitFixToGitHub(
   return commitResult.commit.sha ?? "";
 }
 
-/**
- * Single commit updating multiple files (Git Data API). Reduces PR noise vs one commit per file.
- */
 export async function commitBatchFixesToGitHub(
   octokit: Octokit,
   params: {

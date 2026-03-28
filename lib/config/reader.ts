@@ -39,6 +39,11 @@ function mergeConfig(
   const base = structuredClone(DEFAULT_CLAWGUARD_CONFIG);
   if (!parsed) return ClawGuardConfigSchema.parse(base);
 
+  const model = {
+    ...base.model,
+    ...parsed.model,
+  };
+
   const merged = {
     autoFix: {
       ...base.autoFix,
@@ -56,9 +61,20 @@ function mergeConfig(
       ...base.report,
       ...parsed.report,
     },
-    model: {
-      ...base.model,
-      ...parsed.model,
+    model,
+    bot: {
+      ...base.bot,
+      ...parsed.bot,
+    },
+    scanning: {
+      ...base.scanning,
+      ...parsed.scanning,
+      maxSteps:
+        parsed.scanning?.maxSteps ?? model.maxSteps ?? base.scanning.maxSteps,
+    },
+    notifications: {
+      ...base.notifications,
+      ...parsed.notifications,
     },
   };
 
@@ -107,7 +123,7 @@ export async function loadRepoConfig(
       const parsed = ClawGuardConfigFileSchema.safeParse(raw);
       if (!parsed.success) {
         throw new ConfigError("Invalid .clawguard/config.yml", {
-          issues: parsed.error.flatten(),
+          context: { issues: parsed.error.flatten() },
         });
       }
       config = mergeConfig(parsed.data);
@@ -115,7 +131,7 @@ export async function loadRepoConfig(
     } catch (e) {
       if (e instanceof ConfigError) throw e;
       throw new ConfigError("Failed to parse .clawguard/config.yml", {
-        cause: e instanceof Error ? e.message : String(e),
+        cause: e,
       });
     }
   }
@@ -127,7 +143,7 @@ export async function loadRepoConfig(
       const parsed = PoliciesFileSchema.safeParse(raw);
       if (!parsed.success) {
         throw new ConfigError("Invalid .clawguard/policies.yml", {
-          issues: parsed.error.flatten(),
+          context: { issues: parsed.error.flatten() },
         });
       }
       policies = parsed.data.policies;
@@ -135,7 +151,7 @@ export async function loadRepoConfig(
     } catch (e) {
       if (e instanceof ConfigError) throw e;
       throw new ConfigError("Failed to parse .clawguard/policies.yml", {
-        cause: e instanceof Error ? e.message : String(e),
+        cause: e,
       });
     }
   }

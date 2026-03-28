@@ -44,9 +44,14 @@ export default async function ReportPage({ params }: ReportPageProps) {
       result={result}
       owner={owner}
       repo={repo}
-      prNumber={parseInt(pr)}
+      prNumber={parseInt(pr, 10)}
       prTitle={auditData.pr.title}
       timestamp={auditData.timestamp}
+      partialWarning={
+        auditData.status === "partial_error"
+          ? auditData.partialErrorMessage
+          : undefined
+      }
     />
   );
 }

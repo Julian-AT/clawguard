@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { Finding, Severity } from "@/lib/analysis/types";
+import type { Finding } from "@/lib/analysis/types";
 import { SEVERITY_BADGE_CLASS, SEVERITY_ORDER } from "@/lib/constants";
 
 interface ComplianceTabProps {

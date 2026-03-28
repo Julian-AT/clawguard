@@ -8,6 +8,28 @@ export const SeverityThresholdSchema = z.enum([
   "INFO",
 ]);
 
+export const BotConfigSchema = z.object({
+  verbosity: z.enum(["minimal", "normal", "verbose"]),
+  autoSubscribe: z.boolean(),
+  language: z.string(),
+});
+
+export const ScanningConfigSchema = z.object({
+  timeout: z.number().int().positive(),
+  maxRetries: z.number().int().min(0).max(5),
+  enableDependencyAudit: z.boolean(),
+  enableSecretScan: z.boolean(),
+  maxSteps: z.number().int().positive(),
+  depth: z.enum(["quick", "standard", "deep"]),
+});
+
+export const NotificationsConfigSchema = z.object({
+  commentStyle: z.enum(["comment", "review"]),
+  minSeverityToComment: SeverityThresholdSchema,
+  suppressCleanReports: z.boolean(),
+  mentionAuthors: z.boolean(),
+});
+
 export const ClawGuardConfigFileSchema = z
   .object({
     autoFix: z
@@ -39,6 +61,31 @@ export const ClawGuardConfigFileSchema = z
         maxSteps: z.number().int().positive().optional(),
       })
       .optional(),
+    bot: z
+      .object({
+        verbosity: BotConfigSchema.shape.verbosity.optional(),
+        autoSubscribe: z.boolean().optional(),
+        language: z.string().optional(),
+      })
+      .optional(),
+    scanning: z
+      .object({
+        timeout: z.number().int().positive().optional(),
+        maxRetries: z.number().int().min(0).max(5).optional(),
+        enableDependencyAudit: z.boolean().optional(),
+        enableSecretScan: z.boolean().optional(),
+        maxSteps: z.number().int().positive().optional(),
+        depth: z.enum(["quick", "standard", "deep"]).optional(),
+      })
+      .optional(),
+    notifications: z
+      .object({
+        commentStyle: z.enum(["comment", "review"]).optional(),
+        minSeverityToComment: SeverityThresholdSchema.optional(),
+        suppressCleanReports: z.boolean().optional(),
+        mentionAuthors: z.boolean().optional(),
+      })
+      .optional(),
   })
   .passthrough();
 
@@ -56,7 +103,6 @@ export const PoliciesFileSchema = z.object({
 
 export type PolicyRule = z.infer<typeof PolicyRuleSchema>;
 
-/** Merged runtime config (defaults + repo). */
 export const ClawGuardConfigSchema = z.object({
   autoFix: z.object({
     enabled: z.boolean(),
@@ -79,6 +125,9 @@ export const ClawGuardConfigSchema = z.object({
     model: z.string(),
     maxSteps: z.number().int().positive(),
   }),
+  bot: BotConfigSchema,
+  scanning: ScanningConfigSchema,
+  notifications: NotificationsConfigSchema,
 });
 
 export type ClawGuardConfig = z.infer<typeof ClawGuardConfigSchema>;
