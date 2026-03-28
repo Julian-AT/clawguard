@@ -1,5 +1,6 @@
 import { Shield } from "lucide-react";
 import Link from "next/link";
+import { DemoShowcaseHub } from "@/components/dashboard/demo-showcase-hub";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getSession } from "@/lib/auth";
 import { GRADE_BADGE_CLASS } from "@/lib/constants";
+import { isDemoDashboardRepo } from "@/lib/public-demo-dashboard";
 import { listPrAuditKeys, loadAuditDataForKeys } from "@/lib/redis-queries";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +24,13 @@ interface PageProps {
 
 export default async function RepoDashboardPage({ params }: PageProps) {
   const { owner, repo } = await params;
+  const session = await getSession();
   const keys = await listPrAuditKeys(owner, repo);
+
+  if (isDemoDashboardRepo(owner, repo) && (!session?.user || keys.length === 0)) {
+    return <DemoShowcaseHub />;
+  }
+
   if (keys.length === 0) {
     return (
       <div className="space-y-8">

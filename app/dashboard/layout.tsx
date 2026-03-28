@@ -2,9 +2,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getSession } from "@/lib/auth";
+import { DEMO_OWNER, DEMO_REPO, isPublicDemoDashboardPath } from "@/lib/public-demo-dashboard";
 import { listReposWithAudits } from "@/lib/redis-queries";
-
-const DEMO_DASHBOARD_PATH = "/dashboard/demo/demo";
 
 export default async function DashboardLayout({
   children,
@@ -13,10 +12,11 @@ export default async function DashboardLayout({
 }>) {
   const h = await headers();
   const pathname = h.get("x-pathname") ?? "";
-  const isDemoDashboard =
-    pathname === DEMO_DASHBOARD_PATH || pathname.startsWith(`${DEMO_DASHBOARD_PATH}/`);
+  const session = await getSession();
+  const isDemoPath = isPublicDemoDashboardPath(pathname);
+  const usePublicDemoShell = isDemoPath && !session?.user;
 
-  if (isDemoDashboard) {
+  if (usePublicDemoShell) {
     return (
       <DashboardShell
         user={{
@@ -24,14 +24,13 @@ export default async function DashboardLayout({
           email: "demo@clawguard.dev",
           image: null,
         }}
-        repos={[{ owner: "demo", repo: "demo" }]}
+        repos={[{ owner: DEMO_OWNER, repo: DEMO_REPO }]}
       >
         {children}
       </DashboardShell>
     );
   }
 
-  const session = await getSession();
   if (!session?.user) {
     redirect("/login");
   }

@@ -4,7 +4,10 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 import { PrecisionStatCard } from "@/components/dashboard/precision-stat-card";
 import { TrackingDistributionChart } from "@/components/dashboard/tracking-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getSession } from "@/lib/auth";
+import { demoTracking } from "@/lib/demo-dashboard-data";
 import { formatRelativeTime } from "@/lib/format-relative-time";
+import { isDemoDashboardRepo } from "@/lib/public-demo-dashboard";
 import { readMetrics } from "@/lib/tracking/metrics";
 
 interface PageProps {
@@ -13,7 +16,16 @@ interface PageProps {
 
 export default async function RepoTrackingPage({ params }: PageProps) {
   const { owner, repo } = await params;
-  const m = await readMetrics(owner, repo);
+  const session = await getSession();
+  const m =
+    isDemoDashboardRepo(owner, repo) && !session?.user
+      ? {
+          truePositives: demoTracking.truePositives,
+          falsePositives: demoTracking.falsePositives,
+          misses: demoTracking.misses,
+          lastUpdated: demoTracking.lastUpdated,
+        }
+      : await readMetrics(owner, repo);
   const total = m.truePositives + m.falsePositives + m.misses;
   const precision =
     m.truePositives + m.falsePositives > 0

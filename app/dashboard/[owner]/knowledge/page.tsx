@@ -1,5 +1,8 @@
 import { KnowledgeView } from "@/components/dashboard/knowledge-view";
+import { getSession } from "@/lib/auth";
+import { demoKnowledgeEntries } from "@/lib/demo-dashboard-data";
 import { listKnowledgeOrg } from "@/lib/knowledge";
+import { isDemoDashboardOwner } from "@/lib/public-demo-dashboard";
 
 interface PageProps {
   params: Promise<{ owner: string }>;
@@ -7,7 +10,11 @@ interface PageProps {
 
 export default async function OrgKnowledgePage({ params }: PageProps) {
   const { owner } = await params;
-  const entries = await listKnowledgeOrg(owner);
+  const session = await getSession();
+  const entries =
+    isDemoDashboardOwner(owner) && !session?.user
+      ? demoKnowledgeEntries
+      : await listKnowledgeOrg(owner);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">

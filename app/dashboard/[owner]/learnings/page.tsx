@@ -1,5 +1,8 @@
 import { LearningsView } from "@/components/dashboard/learnings-view";
+import { getSession } from "@/lib/auth";
+import { demoOrgLearnings, demoRepoLearnings } from "@/lib/demo-dashboard-data";
 import { listLearningsOrg, listLearningsRepo } from "@/lib/learnings";
+import { DEMO_REPO, isDemoDashboardOwner } from "@/lib/public-demo-dashboard";
 
 interface PageProps {
   params: Promise<{ owner: string }>;
@@ -9,8 +12,18 @@ interface PageProps {
 export default async function OrgLearningsPage({ params, searchParams }: PageProps) {
   const { owner } = await params;
   const { repo } = await searchParams;
-  const orgLearnings = await listLearningsOrg(owner);
-  const repoLearnings = repo && repo.length > 0 ? await listLearningsRepo(owner, repo) : [];
+  const session = await getSession();
+  const demoData = isDemoDashboardOwner(owner) && !session?.user;
+
+  const orgLearnings = demoData ? demoOrgLearnings : await listLearningsOrg(owner);
+
+  const repoFilter = repo && repo.length > 0 ? repo : demoData ? DEMO_REPO : null;
+  const repoLearnings =
+    repoFilter && demoData
+      ? demoRepoLearnings
+      : repoFilter
+        ? await listLearningsRepo(owner, repoFilter)
+        : [];
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -18,11 +31,11 @@ export default async function OrgLearningsPage({ params, searchParams }: PagePro
         <h1 className="text-2xl font-semibold tracking-tight">Learnings</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Team rules extracted from feedback and scans.
-          {repo ? (
+          {repoFilter ? (
             <>
               {" "}
               Scoped to{" "}
-              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{repo}</code>{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{repoFilter}</code>{" "}
               (organization + repository tabs).
             </>
           ) : (
@@ -33,7 +46,7 @@ export default async function OrgLearningsPage({ params, searchParams }: PagePro
 
       <LearningsView
         owner={owner}
-        repoFilter={repo && repo.length > 0 ? repo : null}
+        repoFilter={repoFilter}
         orgLearnings={orgLearnings}
         repoLearnings={repoLearnings}
       />

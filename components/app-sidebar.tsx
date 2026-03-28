@@ -33,6 +33,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { DEMO_DASHBOARD_HUB_PATH, isPublicDemoDashboardPath } from "@/lib/public-demo-dashboard";
 import { GITHUB_APP_INSTALL_URL } from "@/lib/site";
 
 const LAST_REPO_STORAGE_KEY = "clawguard.dashboard.repo";
@@ -86,7 +87,7 @@ export function AppSidebar({
 }) {
   const pathname = usePathname();
   const dashboardHome = pathname === "/dashboard";
-  const isDemoPage = pathname.startsWith("/dashboard/demo/demo");
+  const isDemoPage = isPublicDemoDashboardPath(pathname);
   const ctx = parseDashboardPath(pathname);
   const githubAppUrl = process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? GITHUB_APP_INSTALL_URL;
 
@@ -185,7 +186,7 @@ export function AppSidebar({
   const demoItem = React.useMemo(
     () => ({
       title: "Demo",
-      url: "/dashboard/demo/demo",
+      url: DEMO_DASHBOARD_HUB_PATH,
       icon: <PlayCircle className="size-4" />,
       isActive: isDemoPage,
     }),
