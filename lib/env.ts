@@ -6,5 +6,5 @@ export function getPublicBaseUrl(): string {
   if (explicit) return explicit.replace(/\/$/, "");
   const vercel = process.env.VERCEL_URL?.trim();
   if (vercel) return `https://${vercel.replace(/\/$/, "")}`;
-  return "http://localhost:3000";
+  return "https://clawguard-psi.vercel.app";
 }
