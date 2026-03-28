@@ -1,7 +1,14 @@
 import { after } from "next/server";
+import { isClawGuardAutomatedCommentBody } from "@/lib/github-automated-comment";
+import { getGithubTokenUserId } from "@/lib/github-pat-user";
 import { redis } from "@/lib/redis";
 
 export const maxDuration = 300;
+
+function commentBodyFromPayload(payload: Record<string, unknown>): string | undefined {
+  const comment = payload.comment as Record<string, unknown> | undefined;
+  return typeof comment?.body === "string" ? comment.body : undefined;
+}
 
 export async function POST(request: Request) {
   console.log("[webhook] POST received", request.headers.get("x-github-event"));
@@ -23,6 +30,45 @@ export async function POST(request: Request) {
   if (sender?.type === "Bot" || commentUser?.type === "Bot") {
     console.log("[webhook] Ignoring bot comment from:", sender?.login);
     return new Response("OK", { status: 200 });
+  }
+
+  // PAT mode: the bot posts as the token owner. Those comments must not re-enter the
+  // Chat SDK (cards and status lines include @GITHUB_BOT_USERNAME).
+  if (
+    process.env.GITHUB_TOKEN &&
+    (githubEvent === "issue_comment" || githubEvent === "pull_request_review_comment")
+  ) {
+    const patUserId = await getGithubTokenUserId();
+    const senderId = typeof sender?.id === "number" ? sender.id : Number(sender?.id);
+    if (
+      patUserId !== null &&
+      senderId === patUserId &&
+      isClawGuardAutomatedCommentBody(commentBodyFromPayload(body))
+    ) {
+      console.log("[webhook] Skipping PAT self-reply (automated ClawGuard comment)");
+      return new Response("OK", { status: 200 });
+    }
+  }
+
+  // @chat-adapter/github only calls processMessage for issue_comment when action is
+  // "created" AND issue.pull_request is set (PR Conversation tab). Otherwise it
+  // returns 200 with no bot work — same symptom as "bot ignored the mention".
+  if (githubEvent === "issue_comment") {
+    const action = body.action;
+    const issue = body.issue as { pull_request?: unknown; number?: number } | undefined;
+    if (action !== "created") {
+      console.log(
+        "[webhook] issue_comment action=%s — adapter only handles action=created (edits are ignored)",
+        action,
+      );
+    } else if (issue && !issue.pull_request) {
+      console.log(
+        "[webhook] issue_comment on issue #%s is not a PR — comment on the pull request Conversation tab instead",
+        issue.number,
+      );
+    } else if (issue?.pull_request) {
+      console.log("[webhook] issue_comment on PR #%s — routing to Chat SDK", issue.number);
+    }
   }
 
   const deliveryId = request.headers.get("x-github-delivery");
