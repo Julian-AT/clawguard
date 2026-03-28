@@ -42,11 +42,18 @@ export function FindingCard({ finding, value }: FindingCardProps) {
           <span className="text-xs text-muted-foreground font-mono">
             {finding.file}:{finding.line}
           </span>
-          <Badge variant="outline" className="text-[10px]">
-            {finding.cweId}
-          </Badge>
-          <Badge variant="secondary" className="text-[10px]">
-            {finding.owaspCategory}
+          {finding.cweId && (
+            <Badge variant="outline" className="text-[10px]">
+              {finding.cweId}
+            </Badge>
+          )}
+          {finding.owaspCategory && (
+            <Badge variant="secondary" className="text-[10px]">
+              {finding.owaspCategory}
+            </Badge>
+          )}
+          <Badge variant="outline" className="text-[10px] capitalize">
+            {finding.category ?? "security"}
           </Badge>
           {finding.remediationEffort && (
             <Badge variant="outline" className="text-[10px] capitalize">
@@ -58,12 +65,14 @@ export function FindingCard({ finding, value }: FindingCardProps) {
       <AccordionContent className="space-y-4 pb-4">
         <p className="text-sm text-muted-foreground leading-relaxed">{finding.description}</p>
 
-        <div className="border-l-4 border-red-500 bg-red-500/10 rounded-r-md p-4">
-          <h4 className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-1">
-            Attack Scenario
-          </h4>
-          <p className="text-sm text-foreground/90">{finding.attackScenario}</p>
-        </div>
+        {finding.attackScenario && (
+          <div className="border-l-4 border-red-500 bg-red-500/10 rounded-r-md p-4">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-1">
+              Attack Scenario
+            </h4>
+            <p className="text-sm text-foreground/90">{finding.attackScenario}</p>
+          </div>
+        )}
 
         {finding.complianceMapping && (
           <div className="flex flex-wrap gap-2">

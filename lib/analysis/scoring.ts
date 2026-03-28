@@ -1,13 +1,25 @@
 import { GRADE_THRESHOLDS, SEVERITY_DEDUCTIONS } from "@/lib/constants";
-import type { Finding, Severity } from "./types";
+import type { Finding, FindingCategory, Severity } from "./types";
 
 export { GRADE_THRESHOLDS };
 
+/** Non-security findings affect score less so the grade stays security-focused */
+const CATEGORY_SCORE_WEIGHT: Record<FindingCategory, number> = {
+  security: 1,
+  quality: 0.35,
+  architecture: 0.35,
+  testing: 0.35,
+  documentation: 0.25,
+  performance: 0.4,
+};
+
 export function calculateScore(findings: Finding[]): number {
-  const totalDeduction = findings.reduce(
-    (sum, f) => sum + (SEVERITY_DEDUCTIONS[f.severity] || 0),
-    0,
-  );
+  const totalDeduction = findings.reduce((sum, f) => {
+    const base = SEVERITY_DEDUCTIONS[f.severity] || 0;
+    const cat = f.category ?? "security";
+    const w = CATEGORY_SCORE_WEIGHT[cat] ?? 0.35;
+    return sum + base * w;
+  }, 0);
   return Math.max(0, 100 - totalDeduction);
 }
 

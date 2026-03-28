@@ -320,7 +320,7 @@ describe("Security Pipeline", () => {
     mockRunThreatSynthesis.mockResolvedValue(defaultThreat);
   });
 
-  it("calls recon → change-analysis → security scan → threat synthesis in order", async () => {
+  it("calls recon → agent swarm → PR summary fallback → threat synthesis in order", async () => {
     const order: string[] = [];
     mockRunReconnaissance.mockImplementation(async () => {
       order.push("recon");
@@ -353,7 +353,7 @@ describe("Security Pipeline", () => {
 
     await runSecurityPipeline(defaultInput);
 
-    expect(order).toEqual(["recon", "change-analysis", "scan", "threat"]);
+    expect(order).toEqual(["recon", "scan", "change-analysis", "threat"]);
   });
 
   it("returns score, grade, summary, threatModel, recon, metadata", async () => {

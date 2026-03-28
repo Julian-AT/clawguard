@@ -41,18 +41,31 @@ export const ComplianceMappingSchema = z.object({
 export const StrideCategorySchema = z.enum(["S", "T", "R", "I", "D", "E"]);
 export type StrideCategory = z.infer<typeof StrideCategorySchema>;
 
+export const FindingCategorySchema = z.enum([
+  "security",
+  "quality",
+  "architecture",
+  "testing",
+  "documentation",
+  "performance",
+]);
+export type FindingCategory = z.infer<typeof FindingCategorySchema>;
+
 export const FindingSchema = z.object({
   id: z.string().optional(),
+  /** Review domain; defaults to security for legacy audits */
+  category: FindingCategorySchema.default("security"),
   severity: SeveritySchema,
   type: z.string(),
   title: z.string().optional(),
   file: z.string(),
   line: z.number(),
   endLine: z.number().optional(),
-  cweId: z.string(),
-  owaspCategory: z.string(),
+  /** Security agents should set these; optional for quality/docs/etc. */
+  cweId: z.string().optional(),
+  owaspCategory: z.string().optional(),
   description: z.string(),
-  attackScenario: z.string(),
+  attackScenario: z.string().optional(),
   confidence: ConfidenceSchema,
   dataFlow: DataFlowSchema.optional(),
   fix: CodeFixSchema.optional(),
@@ -63,6 +76,22 @@ export const FindingSchema = z.object({
   strideCategory: StrideCategorySchema.optional(),
 });
 export type Finding = z.infer<typeof FindingSchema>;
+
+export const ReviewVerdictSchema = z.enum(["approve", "request-changes", "comment"]);
+export type ReviewVerdict = z.infer<typeof ReviewVerdictSchema>;
+
+export const ReviewVerdictResultSchema = z.object({
+  verdict: ReviewVerdictSchema,
+  reasoning: z.string(),
+});
+export type ReviewVerdictResult = z.infer<typeof ReviewVerdictResultSchema>;
+
+export const TeamPatternSchema = z.object({
+  pattern: z.string(),
+  evidence: z.string(),
+  elevated: z.boolean().optional(),
+});
+export type TeamPattern = z.infer<typeof TeamPatternSchema>;
 
 export const PhaseResultSchema = z.object({
   phase: z.enum(["code-quality", "vulnerability-scan", "threat-model", "security-scan"]).optional(),
@@ -215,5 +244,9 @@ export const AuditResultSchema = z.object({
   metadata: AuditMetadataSchema.optional(),
   /** PR change narrative, sequence diagrams, dependency impact (v2) */
   prSummary: PRSummarySchema.optional(),
+  /** Overall review outcome from learnings agent */
+  verdict: ReviewVerdictResultSchema.optional(),
+  /** Recurring team patterns surfaced by learnings agent */
+  teamPatterns: z.array(TeamPatternSchema).optional(),
 });
 export type AuditResult = z.infer<typeof AuditResultSchema>;

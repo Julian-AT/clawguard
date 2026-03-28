@@ -214,7 +214,9 @@ async function runFixFlow(
     }
 
     const finding = auditResult.findings.find(
-      (f) => f.type.toLowerCase().includes(targetLower) || f.cweId.toLowerCase() === targetLower,
+      (f) =>
+        f.type.toLowerCase().includes(targetLower) ||
+        f.cweId?.toLowerCase() === targetLower,
     );
 
     if (!finding) {
@@ -225,7 +227,7 @@ async function runFixFlow(
     }
 
     const status = await thread.post(
-      `Fixing: ${finding.type} (${finding.cweId}) in \`${finding.file}:${finding.line}\`...`,
+      `Fixing: ${finding.type}${finding.cweId ? ` (${finding.cweId})` : ""} in \`${finding.file}:${finding.line}\`...`,
     );
 
     const { Sandbox } = await import("@vercel/sandbox");

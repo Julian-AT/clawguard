@@ -1,16 +1,16 @@
-import type { SecurityAgentDefinition } from "./types";
+import type { AgentDefinition } from "./types";
 
-const agents = new Map<string, SecurityAgentDefinition>();
+const agents = new Map<string, AgentDefinition>();
 
-export function registerAgent(agent: SecurityAgentDefinition): void {
+export function registerAgent(agent: AgentDefinition): void {
   agents.set(agent.name, agent);
 }
 
-export function getAgent(name: string): SecurityAgentDefinition | undefined {
+export function getAgent(name: string): AgentDefinition | undefined {
   return agents.get(name);
 }
 
-export function getAllAgents(): SecurityAgentDefinition[] {
+export function getAllAgents(): AgentDefinition[] {
   return [...agents.values()];
 }
 

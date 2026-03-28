@@ -10,6 +10,7 @@ import {
 
 function makeFinding(overrides: Partial<Finding> = {}): Finding {
   return {
+    category: "security",
     severity: "HIGH",
     type: "sql-injection",
     file: "src/db/query.ts",
