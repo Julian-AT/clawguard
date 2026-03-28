@@ -12,7 +12,6 @@ const MOVEMENT_DAMPING = 1400;
 const GLOBE_CONFIG: COBEOptions = {
   width: 800,
   height: 800,
-  onRender: () => {},
   devicePixelRatio: 2,
   phi: 0,
   theta: 0.3,
@@ -21,36 +20,21 @@ const GLOBE_CONFIG: COBEOptions = {
   mapSamples: 16000,
   mapBrightness: 1.2,
   baseColor: [1, 1, 1],
-  markerColor: [251 / 255, 100 / 255, 21 / 255],
+  markerColor: [1, 1, 1],
   glowColor: [1, 1, 1],
-  markers: [
-    { location: [14.5995, 120.9842], size: 0.03 },
-    { location: [19.076, 72.8777], size: 0.1 },
-    { location: [23.8103, 90.4125], size: 0.05 },
-    { location: [30.0444, 31.2357], size: 0.07 },
-    { location: [39.9042, 116.4074], size: 0.08 },
-    { location: [-23.5505, -46.6333], size: 0.1 },
-    { location: [19.4326, -99.1332], size: 0.1 },
-    { location: [40.7128, -74.006], size: 0.1 },
-    { location: [34.6937, 135.5022], size: 0.05 },
-    { location: [41.0082, 28.9784], size: 0.06 },
-  ],
+  markers: [],
 };
 
 const COLORS = {
   light: {
     base: [1, 1, 1] as [number, number, number],
     glow: [1, 1, 1] as [number, number, number],
-    marker: [251 / 255, 100 / 255, 21 / 255] as [number, number, number],
   },
   dark: {
     base: [0.4, 0.4, 0.4] as [number, number, number],
     glow: [0.24, 0.24, 0.27] as [number, number, number],
-    marker: [251 / 255, 100 / 255, 21 / 255] as [number, number, number],
   },
 };
-
-type CobeRenderState = { phi?: number; width?: number; height?: number };
 
 export function Globe({
   className,
@@ -74,19 +58,23 @@ export function Globe({
     damping: 30,
     stiffness: 100,
   });
+  const rsRef = useRef(rs);
+  rsRef.current = rs;
 
-  const finalConfig = useMemo(
-    () => ({
+  const finalConfig = useMemo(() => {
+    const base = isDarkMode ? COLORS.dark.base : COLORS.light.base;
+    const glow = isDarkMode ? COLORS.dark.glow : COLORS.light.glow;
+    return {
       ...config,
-      baseColor: isDarkMode ? COLORS.dark.base : COLORS.light.base,
-      glowColor: isDarkMode ? COLORS.dark.glow : COLORS.light.glow,
-      markerColor: COLORS.light.marker,
+      baseColor: base,
+      glowColor: glow,
+      markerColor: base,
+      markers: config.markers ?? [],
       dark: isDarkMode ? 1 : 0,
-      diffuse: isDarkMode ? 0.5 : 0.4,
-      mapBrightness: isDarkMode ? 1.4 : 1.2,
-    }),
-    [config, isDarkMode],
-  );
+      diffuse: isDarkMode ? 0.45 : 0.35,
+      mapBrightness: isDarkMode ? 1.25 : 1.1,
+    };
+  }, [config, isDarkMode]);
 
   const updatePointerInteraction = (value: number | null) => {
     pointerInteracting.current = value;
@@ -108,48 +96,56 @@ export function Globe({
     if (!canvas || !container) return;
 
     let globe: ReturnType<typeof createGlobe> | null = null;
+    let rafId = 0;
 
-    const tryCreate = () => {
-      const w = container.clientWidth;
-      if (w < 8 || globe) return;
-      widthRef.current = w;
-
-      const side = widthRef.current * 2;
-      globe = createGlobe(canvas, {
-        ...finalConfig,
-        width: side,
-        height: side,
-        onRender: (state: CobeRenderState) => {
-          if (!pointerInteracting.current) phiRef.current += 0.005;
-          state.phi = phiRef.current + rs.get();
-          const s = widthRef.current * 2;
-          state.width = s;
-          state.height = s;
-        },
-      });
-      canvas.style.opacity = "1";
-    };
-
-    const onContainerResize = () => {
+    const syncWidth = () => {
       const w = container.clientWidth;
       if (w >= 8) {
         widthRef.current = w;
       }
-      tryCreate();
     };
 
-    tryCreate();
-    const ro = new ResizeObserver(onContainerResize);
+    const loop = () => {
+      if (!globe) {
+        syncWidth();
+        const w = widthRef.current;
+        if (w >= 8) {
+          const side = w * 2;
+          globe = createGlobe(canvas, {
+            ...finalConfig,
+            width: side,
+            height: side,
+          });
+          canvas.style.opacity = "1";
+        }
+      } else {
+        syncWidth();
+        if (pointerInteracting.current === null) {
+          phiRef.current += 0.0025;
+        }
+        const s = widthRef.current * 2;
+        globe.update({
+          phi: phiRef.current + rsRef.current.get(),
+          width: s,
+          height: s,
+        });
+      }
+      rafId = requestAnimationFrame(loop);
+    };
+
+    rafId = requestAnimationFrame(loop);
+
+    const ro = new ResizeObserver(syncWidth);
     ro.observe(container);
-    window.addEventListener("resize", onContainerResize);
-    requestAnimationFrame(tryCreate);
+    window.addEventListener("resize", syncWidth);
 
     return () => {
+      cancelAnimationFrame(rafId);
       ro.disconnect();
-      window.removeEventListener("resize", onContainerResize);
+      window.removeEventListener("resize", syncWidth);
       globe?.destroy();
     };
-  }, [finalConfig, rs]);
+  }, [finalConfig]);
 
   return (
     <div

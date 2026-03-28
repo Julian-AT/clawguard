@@ -77,7 +77,7 @@ function statusIcon(status: AgentState["status"], agentName: string) {
   const Icon = AGENT_ICONS[agentName] ?? Shield;
   switch (status) {
     case "running":
-      return <Loader2 className="h-4 w-4 text-blue-400 animate-spin" />;
+      return <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />;
     case "completed":
       return <CheckCircle2 className="h-4 w-4 text-emerald-400" />;
     case "failed":

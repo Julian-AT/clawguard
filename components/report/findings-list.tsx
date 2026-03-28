@@ -1,9 +1,11 @@
 "use client";
 
+import { SearchX, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { FindingCard } from "@/components/report/finding-card";
 import { Accordion } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import type { Finding, Severity } from "@/lib/analysis/types";
 import { SEVERITY_ORDER_LIST } from "@/lib/constants";
 
@@ -49,9 +51,13 @@ export function FindingsList({ findings }: FindingsListProps) {
 
   if (sorted.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground py-4">
-        No findings detected -- the code looks clean.
-      </p>
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+        <ShieldCheck className="size-10 text-muted-foreground/40" strokeWidth={1.25} aria-hidden />
+        <h2 className="text-lg font-medium text-muted-foreground">Nothing here</h2>
+        <p className="max-w-sm text-sm text-muted-foreground/70">
+          No security findings were detected for this pull request.
+        </p>
+      </div>
     );
   }
 
@@ -70,17 +76,21 @@ export function FindingsList({ findings }: FindingsListProps) {
             </Badge>
           ))}
         </div>
-        <input
+        <Input
           type="search"
           placeholder="Search file, CWE, OWASP, title…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="w-full sm:max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full sm:max-w-xs"
+          aria-label="Filter findings"
         />
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4">No findings match the current filters.</p>
+        <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+          <SearchX className="size-8 text-muted-foreground/35" strokeWidth={1.25} aria-hidden />
+          <p className="text-sm text-muted-foreground">No findings match your filters.</p>
+        </div>
       ) : (
         <Accordion type="multiple" className="space-y-2">
           {filtered.map((finding, idx) => (

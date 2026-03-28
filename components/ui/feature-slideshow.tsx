@@ -197,7 +197,7 @@ export const Feature = ({
 
     if (!currentItem) {
       return (
-        <div className="aspect-auto h-full w-full rounded-xl border border-neutral-300/50 bg-gray-200 p-1 animate-pulse" />
+        <div className="aspect-auto h-full w-full animate-pulse rounded-xl border border-white/25 bg-(--landing-brand-fill)/40 p-1" />
       );
     }
 
@@ -207,7 +207,7 @@ export const Feature = ({
           {/* Placeholder/Fallback */}
           <div
             className={cn(
-              "absolute inset-0 bg-gray-200 rounded-xl border border-neutral-300/50",
+              "absolute inset-0 rounded-xl border border-white/25 bg-(--landing-brand-fill)/35",
               "transition-all duration-150",
               imageLoaded ? "opacity-0" : "opacity-100"
             )}
@@ -219,7 +219,7 @@ export const Feature = ({
             src={currentItem.image}
             alt={currentItem.title}
             className={cn(
-              "aspect-auto h-full w-full rounded-xl border border-neutral-300/50 object-cover p-1",
+              "aspect-auto h-full w-full rounded-xl border border-white/25 object-cover p-1",
               "transition-all duration-300",
               imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-xl"
             )}
@@ -258,7 +258,7 @@ export const Feature = ({
     }
 
     return (
-      <div className="aspect-auto h-full w-full rounded-xl border border-neutral-300/50 bg-gray-200 p-1" />
+      <div className="aspect-auto h-full w-full rounded-xl border border-white/25 bg-(--landing-brand-fill)/35 p-1" />
     );
   };
 
@@ -284,9 +284,8 @@ export const Feature = ({
                 <AccordionItem
                   key={item.id}
                   className={cn(
-                    "relative data-[state=open]:bg-white dark:data-[state=open]:bg-[#27272A] rounded-lg data-[state=closed]:rounded-none data-[state=closed]:border-0",
-                    "dark:data-[state=open]:shadow-[0px_0px_0px_1px_rgba(249,250,251,0.06),0px_0px_0px_1px_var(--color-zinc-800,#27272A),0px_1px_2px_-0.5px_rgba(0,0,0,0.24),0px_2px_4px_-1px_rgba(0,0,0,0.24)]",
-                    "data-[state=open]:shadow-[0px_0px_1px_0px_rgba(0,0,0,0.16),0px_1px_2px_-0.5px_rgba(0,0,0,0.16)]"
+                    "relative rounded-lg border border-border bg-card text-foreground data-[state=closed]:rounded-none data-[state=closed]:border-0",
+                    "data-[state=open]:shadow-[0px_0px_0px_1px_rgba(255,255,255,0.08),0px_4px_12px_-2px_rgba(0,0,0,0.15)]",
                   )}
                   value={`item-${index}`}
                 >
@@ -294,7 +293,7 @@ export const Feature = ({
                     className={cn(
                       "absolute overflow-hidden rounded-lg transition-opacity",
                       "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
-                      "bg-neutral-300/50 dark:bg-neutral-300/30",
+                      "bg-white/25",
                       {
                         "bottom-0 top-0 h-full w-0.5 left-0":
                           linePosition === "left",
@@ -334,10 +333,10 @@ export const Feature = ({
                       }}
                     />
                   </div>
-                  <AccordionTrigger className="font-semibold text-lg tracking-tight text-left">
+                  <AccordionTrigger className="text-left text-lg font-semibold tracking-tight text-foreground">
                     {item.title}
                   </AccordionTrigger>
-                  <AccordionContent className="text-sm font-medium">
+                  <AccordionContent className="text-sm font-medium text-muted-foreground">
                     {item.content}
                   </AccordionContent>
                 </AccordionItem>
@@ -362,7 +361,7 @@ export const Feature = ({
             {featureItems.map((item, index) => (
               <a
                 key={item.id}
-                className="card relative grid h-full max-w-64 shrink-0 items-start justify-center p-3 bg-background border-l last:border-r border-t border-b first:rounded-tl-xl last:rounded-tr-xl"
+                className="card relative grid h-full max-w-64 shrink-0 items-start justify-center border-b border-l border-t border-border bg-card p-3 text-foreground last:border-r first:rounded-tl-xl last:rounded-tr-xl"
                 onClick={() => setCurrentIndex(index)}
                 style={{
                   scrollSnapAlign: "center",
@@ -372,7 +371,7 @@ export const Feature = ({
                   className={cn(
                     "absolute overflow-hidden rounded-lg transition-opacity",
                     "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
-                    "bg-neutral-300/50 dark:bg-neutral-300/30",
+                    "bg-white/25",
                     {
                       "bottom-0 top-0 h-full w-0.5 left-0":
                         linePosition === "left",
@@ -412,9 +411,9 @@ export const Feature = ({
                     }}
                   />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-lg font-bold">{item.title}</h2>
-                  <p className="mx-0 max-w-sm text-balance text-sm font-medium leading-relaxed">
+                <div className="relative z-10 flex flex-col gap-2">
+                  <h2 className="text-lg font-bold text-foreground">{item.title}</h2>
+                  <p className="mx-0 max-w-sm text-balance text-sm font-medium leading-relaxed text-muted-foreground">
                     {item.content}
                   </p>
                 </div>

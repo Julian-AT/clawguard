@@ -16,17 +16,17 @@ interface BoxConfig {
 
 const boxConfigs: BoxConfig[] = [
   {
-    title: "Bento grid",
-    className: "bg-secondary text-white",
+    title: "PR audit",
+    className: "bg-(--landing-brand-fill) text-white",
   },
   {
-    title: "Landing Page",
-    className: "bg-secondary/40 text-white",
+    title: "Findings",
+    className: "bg-(--landing-brand-fill)/75 text-white",
   },
   {
-    title: "Add Task",
+    title: "Auto-fix",
     className:
-      "bg-secondary/20 border border-secondary border-dashed text-secondary",
+      "border border-dashed border-white/35 bg-(--landing-brand-fill)/25 text-white",
   },
 ];
 
@@ -113,31 +113,15 @@ export function FourthBentoAnimation({
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="w-px h-5 bg-primary first:bg-transparent"
+              className="h-5 w-px bg-(--landing-brand-fill)/55 first:bg-transparent"
             ></div>
           ))}
         </div>
-        <div className="w-1/2 h-full border-x border-border/70 border-dashed flex items-start justify-between">
+        <div className="flex h-full w-1/2 items-start justify-between border-x border-dashed border-(--landing-brand-fill)/25">
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="w-px h-5 bg-primary first:bg-transparent"
-            ></div>
-          ))}
-        </div>
-        <div className=" w-1/2 h-full flex items-start justify-between">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={index}
-              className="w-px h-5 bg-primary first:bg-transparent"
-            ></div>
-          ))}
-        </div>
-        <div className="w-1/2 h-full border-x border-border/70 border-dashed flex items-start justify-between">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={index}
-              className="w-px h-5 bg-primary first:bg-transparent "
+              className="h-5 w-px bg-(--landing-brand-fill)/55 first:bg-transparent"
             ></div>
           ))}
         </div>
@@ -145,15 +129,15 @@ export function FourthBentoAnimation({
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="w-px h-5 bg-primary first:bg-transparent"
+              className="h-5 w-px bg-(--landing-brand-fill)/55 first:bg-transparent"
             ></div>
           ))}
         </div>
-        <div className="w-1/2 h-full border-x border-border/70 border-dashed flex items-start justify-between">
+        <div className="flex h-full w-1/2 items-start justify-between border-x border-dashed border-(--landing-brand-fill)/25">
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="w-px h-5 bg-primary first:bg-transparent"
+              className="h-5 w-px bg-(--landing-brand-fill)/55 first:bg-transparent"
             ></div>
           ))}
         </div>
@@ -161,22 +145,38 @@ export function FourthBentoAnimation({
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="w-px h-5 bg-primary first:bg-transparent"
+              className="h-5 w-px bg-(--landing-brand-fill)/55 first:bg-transparent"
             ></div>
           ))}
         </div>
-        <div className="w-1/2 h-full border-x border-border/70 border-dashed flex items-start justify-between">
+        <div className="flex h-full w-1/2 items-start justify-between border-x border-dashed border-(--landing-brand-fill)/25">
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={index}
-              className="w-px h-5 bg-primary first:bg-transparent"
+              className="h-5 w-px bg-(--landing-brand-fill)/55 first:bg-transparent"
+            ></div>
+          ))}
+        </div>
+        <div className=" w-1/2 h-full flex items-start justify-between">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-5 w-px bg-(--landing-brand-fill)/55 first:bg-transparent"
+            ></div>
+          ))}
+        </div>
+        <div className="flex h-full w-1/2 items-start justify-between border-x border-dashed border-(--landing-brand-fill)/25">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-5 w-px bg-(--landing-brand-fill)/55 first:bg-transparent"
             ></div>
           ))}
         </div>
       </div>
 
       {/* Days of the week */}
-      <div className="absolute top-4 left-0 right-0 flex justify-between max-w-md mx-auto px-8 text-sm text-gray-500">
+      <div className="absolute top-4 right-0 left-0 mx-auto flex max-w-md justify-between px-8 text-sm font-medium text-(--landing-brand-fill)/85">
         <span>Tue</span>
         <span>Wed</span>
         <span>Thu</span>
@@ -185,7 +185,7 @@ export function FourthBentoAnimation({
       </div>
 
       <motion.div
-        className="absolute top-10 w-[2px] h-[calc(100%-80px)] bg-gradient-to-b from-black dark:from-accent to-transparent z-10"
+        className="absolute top-10 z-10 h-[calc(100%-80px)] w-[2px] bg-gradient-to-b from-(--landing-brand-fill) to-transparent"
         style={{
           x: smoothX,
           translateX: "-50%",
@@ -200,7 +200,7 @@ export function FourthBentoAnimation({
         }}
       />
       <motion.div
-        className="absolute top-14 bg-black dark:bg-accent h-6 z-20 flex items-center justify-center text-xs p-2 rounded-md shadow-[0px_2.2px_6.6px_0px_rgba(18,43,105,0.04),0px_1.1px_2.2px_0px_rgba(18,43,105,0.08),0px_0px_0px_1.1px_rgba(18,43,105,0.08),0px_1.1px_0px_0px_rgba(255,255,255,0.20)_inset,0px_4.4px_6.6px_0px_rgba(255,255,255,0.01)_inset]"
+        className="absolute top-14 z-20 flex h-6 items-center justify-center rounded-md bg-(--landing-brand-fill) p-2 text-xs shadow-[0px_2px_8px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.15)]"
         style={{
           x: smoothX,
           translateX: "-50%",
@@ -214,7 +214,7 @@ export function FourthBentoAnimation({
           default: { duration: 0 }, // Makes position update instant
         }}
       >
-        <span className="text-white">12:00 AM</span>
+        <span className="text-white">Scan</span>
       </motion.div>
 
       <div

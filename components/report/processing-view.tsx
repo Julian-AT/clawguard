@@ -210,7 +210,7 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
                           : severity === "MEDIUM"
                             ? "bg-amber-500/20 text-amber-300"
                             : severity === "LOW"
-                              ? "bg-blue-500/20 text-blue-300"
+                              ? "bg-slate-500/20 text-slate-300"
                               : "bg-zinc-500/20 text-zinc-300"
                     }`}
                   >

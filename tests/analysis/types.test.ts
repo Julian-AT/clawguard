@@ -4,6 +4,8 @@ import {
   AuditResultSchema,
   ConfidenceSchema,
   FindingSchema,
+  normalizeAuditResultInput,
+  parseAuditResult,
   PhaseResultSchema,
   SeveritySchema,
 } from "@/lib/analysis/types";
@@ -163,6 +165,62 @@ describe("Analysis Types - Zod Schemas", () => {
       };
       const result = AuditResultSchema.safeParse(auditResult);
       expect(result.success).toBe(true);
+    });
+
+    it("parseAuditResult accepts phases as a keyed object and missing top-level findings", () => {
+      const f = makeFinding();
+      const raw = {
+        score: 80,
+        grade: "B",
+        summary: "ok",
+        phases: {
+          a: { phase: "security-scan" as const, summary: "scan", findings: [f] },
+          b: { phase: "threat-model" as const, summary: "tm", findings: [] },
+        },
+      };
+      const parsed = parseAuditResult(raw);
+      expect(parsed.phases).toHaveLength(2);
+      expect(parsed.findings).toHaveLength(1);
+      expect(parsed.findings[0].type).toBe(f.type);
+    });
+
+    it("normalizeAuditResultInput leaves array phases unchanged", () => {
+      const raw = normalizeAuditResultInput({
+        score: 90,
+        grade: "A",
+        phases: [{ phase: "security-scan", summary: "s", findings: [] }],
+        findings: [makeFinding()],
+      });
+      expect(AuditResultSchema.safeParse(raw).success).toBe(true);
+    });
+
+    it("parseAuditResult tolerates legacy Redis finding shape (partial fields, string compliance)", () => {
+      const legacyFinding = {
+        severity: "HIGH",
+        type: "xss",
+        description: "Reflected XSS",
+        dataFlow: { description: "flow" },
+        complianceMapping: {
+          pciDss: "6.5.7",
+          soc2: "CC6.6",
+          hipaa: "164.312(e)(1)",
+          nist: "SI-10",
+          owaspAsvs: "5.1.1",
+        },
+      };
+      const parsed = parseAuditResult({
+        score: 70,
+        grade: "C",
+        summary: "ok",
+        phases: [{ summary: "scan", findings: [legacyFinding] }],
+        findings: [legacyFinding],
+      });
+      expect(parsed.findings[0].file).toBe("");
+      expect(parsed.findings[0].line).toBe(0);
+      expect(parsed.findings[0].confidence).toBe("MEDIUM");
+      expect(parsed.findings[0].dataFlow?.nodes).toEqual([]);
+      expect(parsed.findings[0].complianceMapping?.pciDss).toEqual(["6.5.7"]);
+      expect(parsed.phases?.[0]?.findings[0].complianceMapping?.owaspAsvs).toEqual(["5.1.1"]);
     });
   });
 });

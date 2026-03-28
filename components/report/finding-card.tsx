@@ -3,6 +3,7 @@
 import { CodeDiff } from "@/components/report/code-diff";
 import { MermaidDiagram } from "@/components/report/mermaid-diagram";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import type { Finding } from "@/lib/analysis/types";
 import { SEVERITY_BADGE_CLASS } from "@/lib/constants";
@@ -66,12 +67,14 @@ export function FindingCard({ finding, value }: FindingCardProps) {
         <p className="text-sm text-muted-foreground leading-relaxed">{finding.description}</p>
 
         {finding.attackScenario && (
-          <div className="border-l-4 border-red-500 bg-red-500/10 rounded-r-md p-4">
-            <h4 className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-1">
-              Attack Scenario
-            </h4>
-            <p className="text-sm text-foreground/90">{finding.attackScenario}</p>
-          </div>
+          <Alert variant="destructive" className="border-destructive/40 bg-destructive/5">
+            <AlertTitle className="text-xs font-semibold uppercase tracking-wide">
+              Attack scenario
+            </AlertTitle>
+            <AlertDescription className="text-sm text-foreground/90">
+              {finding.attackScenario}
+            </AlertDescription>
+          </Alert>
         )}
 
         {finding.complianceMapping && (

@@ -36,6 +36,8 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
+const LAST_REPO_STORAGE_KEY = "clawguard.dashboard.repo";
+
 /** Parse /dashboard routes: org pages use .../owner/learnings; repo pages use .../owner/repo[/tracking]. */
 function parseDashboardPath(pathname: string): {
   owner?: string;
@@ -66,6 +68,22 @@ function parseDashboardPath(pathname: string): {
   return { owner, repo, isOrgPage: false, isTracking };
 }
 
+function parseRepoDashboardUrl(
+  url: string,
+): { owner: string; repo: string } | null {
+  const m = url.match(/^\/dashboard\/([^/]+)\/([^/]+)$/);
+  if (!m) return null;
+  return { owner: decodeURIComponent(m[1]), repo: decodeURIComponent(m[2]) };
+}
+
+function repoListIncludes(
+  repos: DashboardRepo[],
+  owner: string,
+  repo: string,
+): boolean {
+  return repos.some((r) => r.owner === owner && r.repo === repo);
+}
+
 export function AppSidebar({
   repos,
   user,
@@ -88,18 +106,45 @@ export function AppSidebar({
     [repos],
   );
 
-  const showOrgLinks = Boolean(ctx.owner);
-  const showTracking = Boolean(ctx.owner && ctx.repo && !ctx.isOrgPage);
+  const [persistedRepo, setPersistedRepo] = React.useState<{
+    owner: string;
+    repo: string;
+  } | null>(null);
 
-  const dashboardItem = React.useMemo(
-    () => ({
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: <LayoutDashboardIcon className="size-4" />,
-      isActive: dashboardHome,
-    }),
-    [dashboardHome],
-  );
+  React.useEffect(() => {
+    if (sortedRepos.length === 0) return;
+    try {
+      const raw = sessionStorage.getItem(LAST_REPO_STORAGE_KEY);
+      if (!raw) {
+        setPersistedRepo(null);
+        return;
+      }
+      const parsed = JSON.parse(raw) as { owner?: string; repo?: string };
+      if (
+        typeof parsed.owner === "string" &&
+        typeof parsed.repo === "string" &&
+        repoListIncludes(sortedRepos, parsed.owner, parsed.repo)
+      ) {
+        setPersistedRepo({ owner: parsed.owner, repo: parsed.repo });
+      } else {
+        setPersistedRepo(null);
+      }
+    } catch {
+      setPersistedRepo(null);
+    }
+  }, [sortedRepos]);
+
+  React.useEffect(() => {
+    if (!(ctx.owner && ctx.repo && !ctx.isOrgPage)) return;
+    const next = { owner: ctx.owner, repo: ctx.repo };
+    if (!repoListIncludes(sortedRepos, next.owner, next.repo)) return;
+    setPersistedRepo(next);
+    try {
+      sessionStorage.setItem(LAST_REPO_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore quota / private mode
+    }
+  }, [ctx.owner, ctx.repo, ctx.isOrgPage, sortedRepos]);
 
   const repoNavItems = React.useMemo(
     () =>
@@ -116,6 +161,47 @@ export function AppSidebar({
     [pathname, sortedRepos],
   );
 
+  const trackingTarget = React.useMemo(() => {
+    if (ctx.owner && ctx.repo && !ctx.isOrgPage) {
+      return { owner: ctx.owner, repo: ctx.repo };
+    }
+    const active = repoNavItems.find((r) => r.isActive);
+    if (active) {
+      const parsed = parseRepoDashboardUrl(active.url);
+      if (parsed && repoListIncludes(sortedRepos, parsed.owner, parsed.repo)) {
+        return parsed;
+      }
+    }
+    if (
+      persistedRepo &&
+      repoListIncludes(sortedRepos, persistedRepo.owner, persistedRepo.repo)
+    ) {
+      return persistedRepo;
+    }
+    return null;
+  }, [ctx, repoNavItems, persistedRepo, sortedRepos]);
+
+  const orgOwner = ctx.owner ?? persistedRepo?.owner;
+  const showOrgLinks = Boolean(orgOwner);
+  const showTracking = Boolean(trackingTarget);
+
+  const trackingHref = trackingTarget
+    ? `/dashboard/${encodeURIComponent(trackingTarget.owner)}/${encodeURIComponent(trackingTarget.repo)}/tracking`
+    : "";
+  const trackingNavActive =
+    Boolean(trackingHref) &&
+    (pathname === trackingHref || pathname.startsWith(`${trackingHref}/`));
+
+  const dashboardItem = React.useMemo(
+    () => ({
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: <LayoutDashboardIcon className="size-4" />,
+      isActive: dashboardHome,
+    }),
+    [dashboardHome],
+  );
+
   return (
     <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader className="border-b border-sidebar-border/80">
@@ -123,8 +209,8 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="ClawGuard">
               <Link href="/">
-                <div className="flex size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                  <ClawGuardLogo className="size-4" />
+                <div className="flex size-8 items-center justify-center rounded-md text-sidebar-primary-foreground">
+                  <ClawGuardLogo className="size-8" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">ClawGuard</span>

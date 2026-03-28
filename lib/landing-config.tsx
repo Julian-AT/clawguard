@@ -11,10 +11,17 @@ export const BLUR_FADE_DELAY = 0.15;
 export const siteConfig = {
   name: "ClawGuard",
   description:
-    "AI-powered security agent that reviews GitHub pull requests, finds vulnerabilities, and ships fixes.",
+    "Mention @clawguard on a GitHub pull request for automated security review, interactive reports, and optional fixes on the branch.",
   cta: "View demo",
   url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-  keywords: ["GitHub", "security", "pull request", "SAST", "OWASP", "vulnerability"],
+  keywords: [
+    "GitHub",
+    "security",
+    "pull request",
+    "SAST",
+    "OWASP",
+    "vulnerability",
+  ],
   links: {
     email: "support@clawguard.dev",
     twitter: "https://twitter.com/clawguard",
@@ -31,19 +38,19 @@ export const siteConfig = {
     ],
   },
   hero: {
-    badgeIcon: <Shield className="size-4 text-secondary" aria-hidden />,
+    badgeIcon: <Shield className="size-4 " aria-hidden />,
     badge: "Introducing ClawGuard",
     title: "AI security for every pull request",
     description:
-      "@mention ClawGuard on a PR for a deep security audit, interactive report, and optional auto-fixes committed to your branch — one Next.js deployment.",
+      "@mention @clawguard on any pull request to trigger a deep security audit. Get an interactive report with severity-ranked findings, OWASP mapping, and one-click fixes — right in your PR thread.",
     cta: {
       primary: {
-        text: "View demo report",
-        href: "/report/demo",
+        text: "Dashboard",
+        href: "/dashboard",
       },
       secondary: {
-        text: "Open dashboard",
-        href: "/dashboard",
+        text: "View Demo",
+        href: "/report/demo",
       },
     },
   },
@@ -204,7 +211,10 @@ export const siteConfig = {
               width="92"
               height="20"
             >
-              <path d="M133.02 7.77734H42.4375V26.5404H133.02V7.77734Z" fill="white" />
+              <path
+                d="M133.02 7.77734H42.4375V26.5404H133.02V7.77734Z"
+                fill="white"
+              />
             </mask>
             <g mask="url(#mask0_342_6736)">
               <path d="M53.9534 12.179C53.8381 12.2504 53.7006 12.2758 53.5672 12.2501C53.4343 12.2243 53.3155 12.1494 53.2353 12.0401C52.8379 11.4719 52.3053 11.0113 51.6861 10.6998C51.0663 10.3882 50.3791 10.2355 49.6856 10.2552C46.9763 10.2552 45.3095 12.3991 45.3095 15.4608C45.3095 18.5225 47.0033 20.707 49.7131 20.707C50.4172 20.7231 51.1137 20.5597 51.737 20.232C52.3603 19.9043 52.89 19.4232 53.2763 18.8341C53.3535 18.723 53.47 18.645 53.6023 18.6155C53.7345 18.586 53.8733 18.6072 53.9909 18.6749L55.2744 19.4199C55.34 19.4582 55.3973 19.5096 55.4418 19.5711C55.4863 19.6326 55.5179 19.7028 55.5337 19.7771C55.5495 19.8514 55.5501 19.9282 55.5343 20.0026C55.5191 20.077 55.488 20.1473 55.4436 20.2091C54.8144 21.1522 53.9564 21.9201 52.9491 22.4407C51.9418 22.9614 50.8193 23.2179 49.6856 23.1861C45.3738 23.1861 42.4375 20.0432 42.4375 15.4608C42.4375 10.8784 45.3738 7.77607 49.6417 7.77607C50.7561 7.74511 51.8611 7.98763 52.8601 8.4824C53.8592 8.97716 54.7219 9.70913 55.3727 10.6142C55.4172 10.6749 55.4488 10.7441 55.4658 10.8176C55.4822 10.8911 55.4839 10.9672 55.4699 11.0413C55.4558 11.1153 55.4266 11.1856 55.3844 11.2479C55.3423 11.3102 55.2873 11.3631 55.2235 11.4033L53.9534 12.179Z" />
@@ -247,13 +257,14 @@ export const siteConfig = {
   },
   featureSection: {
     title: "From mention to merge-ready fixes",
-    description: "Four steps from a GitHub comment to a cleaner, safer pull request.",
+    description:
+      "Four steps from a GitHub comment to a cleaner, safer pull request.",
     items: [
       {
         id: 1,
         title: "@mention ClawGuard on the PR",
         content:
-          "Trigger a full security pass from the thread—no extra tickets or context handoffs.",
+          "Type @clawguard in any PR thread to kick off a full security pass — no tickets, no context switching.",
         image:
           "https://images.unsplash.com/photo-1720371300677-ba4838fa0678?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       },
@@ -261,7 +272,7 @@ export const siteConfig = {
         id: 2,
         title: "Deep scan in an isolated sandbox",
         content:
-          "Recon, vulnerability analysis, and threat synthesis with structured findings and CWE/OWASP mapping.",
+          "Your code is cloned into an isolated Vercel Sandbox for recon, static analysis, and threat modeling with CWE/OWASP mapping.",
         image:
           "https://images.unsplash.com/photo-1686170287433-c95faf6d3608?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwzfHx8ZW58MHx8fHx8fA%3D%3D",
       },
@@ -269,7 +280,7 @@ export const siteConfig = {
         id: 3,
         title: "Interactive security report",
         content:
-          "Charts, severity breakdown, Mermaid data-flow diagrams, and diffs you can share with the team.",
+          "Explore findings through charts, severity breakdowns, Mermaid data-flow diagrams, and before/after code diffs.",
         image:
           "https://images.unsplash.com/photo-1720378042271-60aff1e1c538?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxmZWF0dXJlZC1waG90b3MtZmVlZHwxMHx8fGVufDB8fHx8fA%3D%3D",
       },
@@ -277,7 +288,7 @@ export const siteConfig = {
         id: 4,
         title: "Auto-fix and re-audit loop",
         content:
-          "Apply validated fixes from the thread; ClawGuard can commit to the PR branch and re-run the audit until you are clean.",
+          "ClawGuard commits fixes to your PR branch and re-audits in a loop until every finding is resolved or acknowledged.",
         image:
           "https://images.unsplash.com/photo-1666882990322-e7f3b8df4f75?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1yZWxhdGVkfDF8fHxlbnwwfHx8fHw%3D",
       },
@@ -285,47 +296,50 @@ export const siteConfig = {
   },
   bentoSection: {
     title: "Security that fits your GitHub flow",
-    description: "Agentic analysis, integrations, score trends, and fixes—without leaving the PR.",
+    description:
+      "From agentic analysis to auto-fixes — without ever leaving the pull request.",
     items: [
       {
         id: 1,
         content: <FirstBentoAnimation />,
         title: "Agentic security scan",
         description:
-          "Structured findings, reasoning traces, and severity-ranked issues surfaced where your team already works.",
+          "An AI agent reasons through your diff, surfaces severity-ranked vulnerabilities, and explains each finding with full context.",
       },
       {
         id: 2,
         content: <SecondBentoAnimation />,
         title: "GitHub-native integrations",
         description:
-          "Comments, checks, and branch updates stay in sync so security stays part of review—not a side channel.",
+          "PR comments, status checks, and branch commits stay in sync — security lives inside your review, not beside it.",
       },
       {
         id: 3,
         content: (
           <ThirdBentoAnimation
             data={[20, 30, 25, 45, 40, 55, 75]}
-            toolTipValues={[1234, 1678, 2101, 2534, 2967, 3400, 3833, 4266, 4700, 5133]}
+            toolTipValues={[
+              1234, 1678, 2101, 2534, 2967, 3400, 3833, 4266, 4700, 5133,
+            ]}
           />
         ),
         title: "Score and trend tracking",
         description:
-          "Watch security posture move over PRs with scores stored for your dashboard and retros.",
+          "Track your security posture across PRs with per-audit scores stored for dashboards and team retrospectives.",
       },
       {
         id: 4,
         content: <FourthBentoAnimation once={false} />,
         title: "Auto-fix loop",
         description:
-          "Ship patches from the bot, iterate on feedback, and re-audit until the branch meets your bar.",
+          "ClawGuard commits validated patches to your branch, then re-audits automatically until the code meets your bar.",
       },
     ],
   },
   growthSection: {
-    title: "Built for Secure Growth",
+    title: "Enterprise-grade, from day one",
     description:
-      "Where advanced security meets seamless scalability—designed to protect your data and empower your growth.",
+      "Isolated sandboxed analysis, auditable evidence per PR, and the same workflow whether you protect one service or a thousand.",
     items: [
       {
         id: 1,
@@ -501,12 +515,21 @@ export const siteConfig = {
                     />
                     <feOffset dy="1" />
                     <feGaussianBlur stdDeviation="1" />
-                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    />
                     <feColorMatrix
                       type="matrix"
                       values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"
                     />
-                    <feBlend mode="normal" in2="shape" result="effect1_innerShadow_2_34" />
+                    <feBlend
+                      mode="normal"
+                      in2="shape"
+                      result="effect1_innerShadow_2_34"
+                    />
                     <feColorMatrix
                       in="SourceAlpha"
                       type="matrix"
@@ -515,7 +538,12 @@ export const siteConfig = {
                     />
                     <feOffset dy="3" />
                     <feGaussianBlur stdDeviation="1.5" />
-                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    />
                     <feColorMatrix
                       type="matrix"
                       values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0"
@@ -533,7 +561,12 @@ export const siteConfig = {
                     />
                     <feOffset dy="8" />
                     <feGaussianBlur stdDeviation="2.5" />
-                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    />
                     <feColorMatrix
                       type="matrix"
                       values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"
@@ -551,7 +584,12 @@ export const siteConfig = {
                     />
                     <feOffset dy="14" />
                     <feGaussianBlur stdDeviation="3" />
-                    <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
+                    <feComposite
+                      in2="hardAlpha"
+                      operator="arithmetic"
+                      k2="-1"
+                      k3="1"
+                    />
                     <feColorMatrix
                       type="matrix"
                       values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.01 0"
@@ -566,14 +604,19 @@ export const siteConfig = {
               </svg>
             </div>
             <div className="size-full">
-              <FlickeringGrid className="size-full" gridGap={4} squareSize={2} maxOpacity={0.5} />
+              <FlickeringGrid
+                className="size-full"
+                gridGap={4}
+                squareSize={2}
+                maxOpacity={0.5}
+              />
             </div>
           </div>
         ),
 
         title: "Defense in depth",
         description:
-          "Isolate analysis in a sandbox, protect branch workflows, and keep audit evidence tied to the PR.",
+          "Every audit runs in an isolated Vercel Sandbox — your secrets, branches, and production environment are never exposed to the analysis agent.",
       },
       {
         id: 2,
@@ -585,17 +628,18 @@ export const siteConfig = {
 
         title: "Built for every repo",
         description:
-          "From a single service to org-wide rollouts—scale reviews without scaling toil.",
+          "From a solo side-project to org-wide rollouts across hundreds of repositories — scale reviews without scaling headcount.",
       },
     ],
   },
   quoteSection: {
     quote:
-      "ClawGuard turned noisy security feedback into a single PR thread with a report we could act on. Fixes landed the same day instead of the next sprint.",
+      "The only truly secure system is one that is powered off, cast in a block of concrete, and sealed in a lead-lined room with armed guards at the door — and even then I have my doubts.",
     author: {
-      name: "Alex Johnson",
-      role: "CTO, Innovatech",
-      image: "https://randomuser.me/api/portraits/men/91.jpg",
+      name: "Eugene H. Spafford",
+      role: "Professor of Computer Science, Purdue University",
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Gene-spafford.jpg/220px-Gene-spafford.jpg",
     },
   },
   faqSection: {
@@ -625,7 +669,7 @@ export const siteConfig = {
         id: 4,
         question: "Where is my data stored?",
         answer:
-          "Audit results and dashboard data are stored in Redis (Upstash) for fast access. Configure secrets via your deployment environment; follow your org’s retention and compliance requirements.",
+          "Audit summaries and dashboard metrics are stored in encrypted cloud storage for low-latency access. You control secrets through your deployment environment and should align retention with your org’s policies.",
       },
       {
         id: 5,
@@ -635,21 +679,21 @@ export const siteConfig = {
       },
       {
         id: 6,
-        question: "What stack does ClawGuard use?",
+        question: "Is there a free tier?",
         answer:
-          "ClawGuard is a single Next.js app on Vercel: webhooks, AI via Vercel AI Gateway, isolated analysis with Vercel Sandbox, and interactive reports. No separate backend service is required for the core loop.",
+          "Yes. The GitHub App is free for public repositories with reasonable rate limits. Private repos and org-wide rollout are available on Team and Enterprise plans.",
       },
     ],
   },
   ctaSection: {
     id: "cta",
-    title: "Secure your PRs today",
+    title: "Ship faster,",
     backgroundImage: "/agent-cta-background.png",
     button: {
-      text: "View demo report",
+      text: "Try the demo",
       href: "/report/demo",
     },
-    subtext: "Explore the interactive report, then connect your repos",
+    subtext: "See a real security report, then connect your repositories",
   },
   footerLinks: [
     {
@@ -657,26 +701,11 @@ export const siteConfig = {
       links: [
         { id: 1, title: "Demo report", url: "/report/demo" },
         { id: 2, title: "Dashboard", url: "/dashboard" },
-        { id: 3, title: "GitHub", url: "https://github.com/Julian-AT/clawguard" },
-        { id: 4, title: "Documentation", url: "#" },
-      ],
-    },
-    {
-      title: "Company",
-      links: [
-        { id: 5, title: "About", url: "#" },
-        { id: 6, title: "Blog", url: "#" },
-        { id: 7, title: "Contact", url: "#" },
-        { id: 8, title: "Careers", url: "#" },
-      ],
-    },
-    {
-      title: "Resources",
-      links: [
-        { id: 9, title: "Security", url: "#" },
-        { id: 10, title: "Status", url: "#" },
-        { id: 11, title: "Privacy", url: "#" },
-        { id: 12, title: "Terms", url: "#" },
+        {
+          id: 3,
+          title: "GitHub",
+          url: "https://github.com/Julian-AT/clawguard",
+        },
       ],
     },
   ],

@@ -11,7 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { GRADE_BADGE_CLASS } from "@/lib/constants";
 import { listPrAuditKeys, loadAuditDataForKeys } from "@/lib/redis-queries";
+import { cn } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ owner: string; repo: string }>;
@@ -52,7 +54,7 @@ export default async function RepoDashboardPage({ params }: PageProps) {
         score: result?.score ?? 0,
         grade: result?.grade ?? "?",
         timestamp: x.data.timestamp,
-        findings: result?.findings.length ?? 0,
+        findings: result?.findings?.length ?? 0,
       };
     })
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -140,7 +142,14 @@ export default async function RepoDashboardPage({ params }: PageProps) {
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{r.score}</TableCell>
                   <TableCell className="text-right">
-                    <Badge variant="secondary">{r.grade}</Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        GRADE_BADGE_CLASS[r.grade] ?? "border-border text-muted-foreground",
+                      )}
+                    >
+                      {r.grade}
+                    </Badge>
                   </TableCell>
                   <TableCell className="hidden text-muted-foreground md:table-cell">
                     {new Date(r.timestamp).toLocaleString()} · {r.findings} findings

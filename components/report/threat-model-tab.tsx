@@ -2,6 +2,15 @@
 
 import { AttackSurfaceTable } from "@/components/report/attack-surface-table";
 import { MermaidDiagram } from "@/components/report/mermaid-diagram";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { ThreatModel } from "@/lib/analysis/types";
 
 interface ThreatModelTabProps {
@@ -24,24 +33,40 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
         threatModel.compoundRiskSummary) && (
         <section className="grid gap-4 sm:grid-cols-2">
           {threatModel.overallRisk && (
-            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
-              <h3 className="text-xs font-semibold uppercase text-amber-400 mb-1">Overall risk</h3>
-              <p className="text-sm">{threatModel.overallRisk}</p>
-            </div>
+            <Card className="border-amber-500/35 bg-amber-500/5">
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs font-semibold uppercase text-amber-700 dark:text-amber-400">
+                  Overall risk
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-sm">{threatModel.overallRisk}</p>
+              </CardContent>
+            </Card>
           )}
           {threatModel.mergeRecommendation && (
-            <div className="rounded-lg border border-primary/40 bg-primary/10 p-4">
-              <h3 className="text-xs font-semibold uppercase text-primary mb-1">
-                Merge recommendation
-              </h3>
-              <p className="text-sm font-medium">{threatModel.mergeRecommendation}</p>
-            </div>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs font-semibold uppercase tracking-wide">
+                  Merge recommendation
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-sm font-medium text-foreground">{threatModel.mergeRecommendation}</p>
+              </CardContent>
+            </Card>
           )}
           {threatModel.compoundRiskSummary && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 sm:col-span-2">
-              <h3 className="text-xs font-semibold uppercase text-red-400 mb-1">Compound risk</h3>
-              <p className="text-sm">{threatModel.compoundRiskSummary}</p>
-            </div>
+            <Card className="border-destructive/35 bg-destructive/5 sm:col-span-2">
+              <CardHeader className="pb-2">
+                <CardDescription className="text-xs font-semibold uppercase text-destructive">
+                  Compound risk
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-sm">{threatModel.compoundRiskSummary}</p>
+              </CardContent>
+            </Card>
           )}
         </section>
       )}
@@ -51,13 +76,16 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
           <h3 className="text-lg font-semibold mb-3">STRIDE</h3>
           <ul className="space-y-2 text-sm">
             {threatModel.strideCategorization.map((s) => (
-              <li
-                key={`${s.stride}-${s.label}`}
-                className="rounded-md border border-border bg-card/40 px-3 py-2"
-              >
-                <span className="font-mono text-xs text-primary mr-2">[{s.stride}]</span>
-                <span className="font-medium">{s.label}</span>
-                <span className="text-muted-foreground"> — {s.description}</span>
+              <li key={`${s.stride}-${s.label}`}>
+                <Card size="sm" className="py-0">
+                  <CardContent className="flex flex-col gap-1 py-3">
+                    <div>
+                      <span className="font-mono text-xs text-muted-foreground mr-2">[{s.stride}]</span>
+                      <span className="font-medium">{s.label}</span>
+                      <span className="text-muted-foreground"> — {s.description}</span>
+                    </div>
+                  </CardContent>
+                </Card>
               </li>
             ))}
           </ul>
@@ -69,11 +97,15 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
           <h3 className="text-lg font-semibold mb-3">Trust boundaries</h3>
           <div className="space-y-4">
             {threatModel.trustBoundaries.map((tb, idx) => (
-              <div key={tb.name} className="rounded-lg border border-border bg-card p-4">
-                <h4 className="font-semibold text-sm">{tb.name}</h4>
-                <p className="text-sm text-muted-foreground mt-1">{tb.description}</p>
-                {tb.mermaidDiagram && <MermaidDiagram chart={tb.mermaidDiagram} id={`tb-${idx}`} />}
-              </div>
+              <Card key={tb.name}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">{tb.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pt-0">
+                  <p className="text-sm text-muted-foreground">{tb.description}</p>
+                  {tb.mermaidDiagram && <MermaidDiagram chart={tb.mermaidDiagram} id={`tb-${idx}`} />}
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>
@@ -82,31 +114,28 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
       {threatModel.riskMatrix && threatModel.riskMatrix.length > 0 && (
         <section>
           <h3 className="text-lg font-semibold mb-3">Risk matrix</h3>
-          <div className="rounded-lg border border-border overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="text-left p-2">Topic</th>
-                  <th className="text-left p-2">Likelihood</th>
-                  <th className="text-left p-2">Impact</th>
-                  <th className="text-left p-2">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
+          <Card className="overflow-hidden p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Topic</TableHead>
+                  <TableHead>Likelihood</TableHead>
+                  <TableHead>Impact</TableHead>
+                  <TableHead>Notes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {threatModel.riskMatrix.map((r) => (
-                  <tr
-                    key={`${r.topic}-${r.likelihood}-${r.impact}-${r.notes}`}
-                    className="border-b border-border/60"
-                  >
-                    <td className="p-2">{r.topic}</td>
-                    <td className="p-2 capitalize">{r.likelihood}</td>
-                    <td className="p-2 capitalize">{r.impact}</td>
-                    <td className="p-2 text-muted-foreground">{r.notes}</td>
-                  </tr>
+                  <TableRow key={`${r.topic}-${r.likelihood}-${r.impact}-${r.notes}`}>
+                    <TableCell>{r.topic}</TableCell>
+                    <TableCell className="capitalize">{r.likelihood}</TableCell>
+                    <TableCell className="capitalize">{r.impact}</TableCell>
+                    <TableCell className="text-muted-foreground">{r.notes}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </Card>
         </section>
       )}
 
@@ -122,11 +151,15 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
           <h3 className="text-lg font-semibold mb-3">Attack Paths</h3>
           <div className="space-y-6">
             {threatModel.attackPaths.map((path, idx) => (
-              <div key={path.name} className="rounded-lg border border-border bg-card p-4">
-                <h4 className="font-semibold text-sm mb-2">{path.name}</h4>
-                <MermaidDiagram chart={path.mermaidDiagram} id={`attack-path-${idx}`} />
-                <p className="text-sm text-muted-foreground mt-2">{path.riskAssessment}</p>
-              </div>
+              <Card key={path.name}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">{path.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 pt-0">
+                  <MermaidDiagram chart={path.mermaidDiagram} id={`attack-path-${idx}`} />
+                  <p className="text-sm text-muted-foreground">{path.riskAssessment}</p>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>

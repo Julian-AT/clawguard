@@ -1,4 +1,13 @@
+import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { Finding } from "@/lib/analysis/types";
 import { SEVERITY_BADGE_CLASS, SEVERITY_ORDER } from "@/lib/constants";
 
@@ -6,9 +15,9 @@ interface ComplianceTabProps {
   findings: Finding[];
 }
 
-function renderMapping(values: string[] | undefined): React.ReactNode {
+function renderMapping(values: string[] | undefined): ReactNode {
   if (!values || values.length === 0) {
-    return <span className="text-zinc-600">&mdash;</span>;
+    return <span className="text-muted-foreground">&mdash;</span>;
   }
   return values.join(", ");
 }
@@ -27,53 +36,48 @@ export function ComplianceTab({ findings }: ComplianceTabProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="border-b border-zinc-800 text-zinc-400 text-xs uppercase">
-          <tr>
-            <th className="text-left py-2 px-3">Finding</th>
-            <th className="text-left py-2 px-3">CWE</th>
-            <th className="text-left py-2 px-3">PCI DSS</th>
-            <th className="text-left py-2 px-3">SOC 2</th>
-            <th className="text-left py-2 px-3">HIPAA</th>
-            <th className="text-left py-2 px-3">NIST</th>
-            <th className="text-left py-2 px-3">OWASP ASVS</th>
-          </tr>
-        </thead>
-        <tbody>
-          {withCompliance.map((f) => (
-            <tr
-              key={f.id ?? `${f.file}:${f.line}`}
-              className="border-b border-zinc-800/50 hover:bg-zinc-900/50"
-            >
-              <td className="py-2 px-3">
-                <div className="flex items-center gap-2">
-                  <Badge className={`${SEVERITY_BADGE_CLASS[f.severity]} text-[10px] shrink-0`}>
-                    {f.severity}
-                  </Badge>
-                  <span className="text-xs">{f.type}</span>
-                </div>
-              </td>
-              <td className="py-2 px-3 font-mono text-xs">{f.cweId}</td>
-              <td className="py-2 px-3 font-mono text-xs">
-                {renderMapping(f.complianceMapping?.pciDss)}
-              </td>
-              <td className="py-2 px-3 font-mono text-xs">
-                {renderMapping(f.complianceMapping?.soc2)}
-              </td>
-              <td className="py-2 px-3 font-mono text-xs">
-                {renderMapping(f.complianceMapping?.hipaa)}
-              </td>
-              <td className="py-2 px-3 font-mono text-xs">
-                {renderMapping(f.complianceMapping?.nist)}
-              </td>
-              <td className="py-2 px-3 font-mono text-xs">
-                {renderMapping(f.complianceMapping?.owaspAsvs)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="text-xs uppercase text-muted-foreground">Finding</TableHead>
+          <TableHead className="text-xs uppercase text-muted-foreground">CWE</TableHead>
+          <TableHead className="text-xs uppercase text-muted-foreground">PCI DSS</TableHead>
+          <TableHead className="text-xs uppercase text-muted-foreground">SOC 2</TableHead>
+          <TableHead className="text-xs uppercase text-muted-foreground">HIPAA</TableHead>
+          <TableHead className="text-xs uppercase text-muted-foreground">NIST</TableHead>
+          <TableHead className="text-xs uppercase text-muted-foreground">OWASP ASVS</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {withCompliance.map((f) => (
+          <TableRow key={f.id ?? `${f.file}:${f.line}`}>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                <Badge className={`${SEVERITY_BADGE_CLASS[f.severity]} text-[10px] shrink-0`}>
+                  {f.severity}
+                </Badge>
+                <span className="text-xs">{f.type}</span>
+              </div>
+            </TableCell>
+            <TableCell className="font-mono text-xs">{f.cweId}</TableCell>
+            <TableCell className="font-mono text-xs">
+              {renderMapping(f.complianceMapping?.pciDss)}
+            </TableCell>
+            <TableCell className="font-mono text-xs">
+              {renderMapping(f.complianceMapping?.soc2)}
+            </TableCell>
+            <TableCell className="font-mono text-xs">
+              {renderMapping(f.complianceMapping?.hipaa)}
+            </TableCell>
+            <TableCell className="font-mono text-xs">
+              {renderMapping(f.complianceMapping?.nist)}
+            </TableCell>
+            <TableCell className="font-mono text-xs">
+              {renderMapping(f.complianceMapping?.owaspAsvs)}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

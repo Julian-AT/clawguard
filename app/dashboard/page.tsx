@@ -106,9 +106,7 @@ export default async function DashboardPage() {
             criticalFindings={totalCritical}
           />
 
-          <div className="px-4 lg:px-6">
-            <ChartAreaInteractive auditSeries={auditSeries.length > 0 ? auditSeries : undefined} />
-          </div>
+          <ChartAreaInteractive auditSeries={auditSeries.length > 0 ? auditSeries : undefined} />
 
           <DataTable data={rows} />
         </>

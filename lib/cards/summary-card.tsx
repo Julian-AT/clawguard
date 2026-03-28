@@ -135,7 +135,7 @@ export function buildSummaryMarkdown(
     }
   }
 
-  const lines: string[] = [...noteLines, ""];
+  const lines: string[] = [...noteLines, "", "---", ""];
 
   lines.push("| Severity | Count |", "|----------|-------|");
   for (const sev of ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"] as const) {
@@ -144,6 +144,7 @@ export function buildSummaryMarkdown(
   lines.push("");
 
   if (topFindings.length > 0) {
+    lines.push("", "---", "");
     lines.push("| Severity | Finding | Location |", "|----------|---------|----------|");
     for (const f of topFindings) {
       lines.push(

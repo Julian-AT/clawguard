@@ -1,56 +1,81 @@
 "use client";
 
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { GRADE_BADGE_CLASS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 interface ScoreGaugeProps {
   score: number;
   grade: string;
 }
 
+/** Green → lime → amber → orange → red (no purple/blue mid-band). */
 function getScoreColor(score: number): string {
-  if (score >= 90) return "oklch(0.696 0.17 162.48)";
-  if (score >= 80) return "oklch(0.769 0.188 70.08)";
-  if (score >= 70) return "oklch(0.627 0.265 303.9)";
-  if (score >= 60) return "oklch(0.645 0.246 16.439)";
-  return "oklch(0.704 0.191 22.216)";
+  if (score >= 90) return "#22c55e";
+  if (score >= 80) return "#84cc16";
+  if (score >= 70) return "#eab308";
+  if (score >= 60) return "#f97316";
+  return "#ef4444";
 }
 
 export function ScoreGauge({ score, grade }: ScoreGaugeProps) {
   const color = getScoreColor(score);
-  const data = [{ name: "score", value: score, fill: color }];
+  const chartConfig = {
+    score: {
+      label: "Security score",
+      color,
+    },
+  } satisfies ChartConfig;
+
+  const data = [{ name: "score", value: score, fill: "var(--color-score)" }];
 
   return (
     <div className="relative flex flex-col items-center">
-      <RadialBarChart
-        width={220}
-        height={130}
-        cx={110}
-        cy={120}
-        innerRadius={80}
-        outerRadius={115}
-        barSize={16}
-        data={data}
-        startAngle={180}
-        endAngle={0}
+      <ChartContainer
+        config={chartConfig}
+        className="mx-auto aspect-auto h-[130px] w-[220px]"
+        initialDimension={{ width: 220, height: 130 }}
       >
-        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-        <RadialBar
-          background={{ fill: "oklch(0.269 0 0)" }}
-          dataKey="value"
-          angleAxisId={0}
-          cornerRadius={8}
-        />
-      </RadialBarChart>
-      <div className="absolute bottom-4 flex flex-col items-center animate-in fade-in zoom-in-95 duration-500">
+        <RadialBarChart
+          width={220}
+          height={130}
+          cx={110}
+          cy={120}
+          innerRadius={80}
+          outerRadius={115}
+          barSize={16}
+          data={data}
+          startAngle={180}
+          endAngle={0}
+        >
+          <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+          <RadialBar
+            background
+            dataKey="value"
+            angleAxisId={0}
+            cornerRadius={8}
+          />
+        </RadialBarChart>
+      </ChartContainer>
+      <div className="absolute bottom-4 flex flex-col items-center gap-1 animate-in fade-in zoom-in-95 duration-500">
         <span className="text-3xl font-bold tabular-nums" style={{ color }}>
           {score}
         </span>
-        <span className="text-xs text-muted-foreground -mt-0.5">
-          / 100 &middot; Grade{" "}
-          <span className="font-bold text-sm" style={{ color }}>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span>/ 100</span>
+          <span className="text-muted-foreground/80">Grade</span>
+          <Badge
+            variant="outline"
+            className={cn(
+              "h-6 min-w-7 justify-center px-1.5 font-semibold tabular-nums",
+              GRADE_BADGE_CLASS[grade] ?? "border-border text-foreground",
+            )}
+          >
             {grade}
-          </span>
-        </span>
+          </Badge>
+        </div>
       </div>
     </div>
   );

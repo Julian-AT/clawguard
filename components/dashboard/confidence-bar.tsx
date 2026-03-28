@@ -18,7 +18,7 @@ export function ConfidenceBar({ value, className }: ConfidenceBarProps) {
           "h-1.5 flex-1",
           pct >= 70 && "[&_[data-slot=progress-indicator]]:bg-emerald-500",
           pct >= 40 && pct < 70 && "[&_[data-slot=progress-indicator]]:bg-amber-500",
-          pct < 40 && "[&_[data-slot=progress-indicator]]:bg-orange-500",
+          pct < 40 && "[&_[data-slot=progress-indicator]]:bg-rose-500",
         )}
       />
       <span className="w-9 shrink-0 text-right text-xs tabular-nums text-muted-foreground">

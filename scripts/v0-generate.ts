@@ -56,7 +56,7 @@ export const severityColors = {
   CRITICAL: "bg-red-600 text-white",
   HIGH: "bg-orange-500 text-white",
   MEDIUM: "bg-yellow-500 text-black",
-  LOW: "bg-blue-500 text-white",
+  LOW: "bg-slate-500 text-white",
   INFO: "bg-gray-500 text-white",
 };`,
       },

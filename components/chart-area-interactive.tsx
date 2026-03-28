@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -125,12 +125,12 @@ const demoChartData = [
 
 const demoChartConfig = {
   visitors: { label: "Visitors" },
-  desktop: { label: "Desktop", color: "var(--primary)" },
-  mobile: { label: "Mobile", color: "var(--primary)" },
+  desktop: { label: "Desktop", color: "var(--chart-1)" },
+  mobile: { label: "Mobile", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
 const auditChartConfig = {
-  score: { label: "Avg. score", color: "var(--primary)" },
+  score: { label: "Avg. score", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
 function filterByRange<T extends { date: string }>(
@@ -227,100 +227,129 @@ export function ChartAreaInteractive({
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         {useAudit ? (
-          <ChartContainer config={auditChartConfig} className="aspect-auto h-[250px] w-full">
-            <AreaChart data={filteredAudit}>
-              <defs>
-                <linearGradient id="fillScore" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-score)" stopOpacity={1} />
-                  <stop offset="95%" stopColor="var(--color-score)" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
+          <ChartContainer
+            config={auditChartConfig}
+            className="aspect-auto h-[250px] w-full"
+            initialDimension={{ width: 400, height: 250 }}
+          >
+            <LineChart
+              data={filteredAudit}
+              margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+            >
+              <CartesianGrid
+                vertical={false}
+                strokeDasharray="3 3"
+                className="stroke-border/50"
+              />
               <XAxis
                 dataKey="date"
                 tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                minTickGap={32}
+                tickMargin={10}
+                minTickGap={28}
+                tick={{ fontSize: 11 }}
                 tickFormatter={(value) =>
                   new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
                 }
               />
+              <YAxis
+                domain={[0, 100]}
+                tickLine={false}
+                axisLine={false}
+                width={36}
+                tick={{ fontSize: 11 }}
+                tickCount={5}
+              />
               <ChartTooltip
-                cursor={false}
+                cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1, strokeDasharray: "4 4" }}
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) =>
                       new Date(value as string).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
+                        year: "numeric",
                       })
                     }
-                    indicator="dot"
+                    indicator="line"
                   />
                 }
               />
-              <Area
+              <Line
+                type="monotone"
                 dataKey="score"
-                type="natural"
-                fill="url(#fillScore)"
                 stroke="var(--color-score)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0, fill: "var(--color-score)" }}
               />
-            </AreaChart>
+            </LineChart>
           </ChartContainer>
         ) : (
-          <ChartContainer config={demoChartConfig} className="aspect-auto h-[250px] w-full">
-            <AreaChart data={filteredDemo}>
-              <defs>
-                <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-desktop)" stopOpacity={1} />
-                  <stop offset="95%" stopColor="var(--color-desktop)" stopOpacity={0.1} />
-                </linearGradient>
-                <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-mobile)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--color-mobile)" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
+          <ChartContainer
+            config={demoChartConfig}
+            className="aspect-auto h-[250px] w-full"
+            initialDimension={{ width: 400, height: 250 }}
+          >
+            <LineChart
+              data={filteredDemo}
+              margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+            >
+              <CartesianGrid
+                vertical={false}
+                strokeDasharray="3 3"
+                className="stroke-border/50"
+              />
               <XAxis
                 dataKey="date"
                 tickLine={false}
                 axisLine={false}
-                tickMargin={8}
-                minTickGap={32}
+                tickMargin={10}
+                minTickGap={28}
+                tick={{ fontSize: 11 }}
                 tickFormatter={(value) =>
                   new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
                 }
               />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                width={40}
+                tick={{ fontSize: 11 }}
+                tickFormatter={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : String(v))}
+              />
               <ChartTooltip
-                cursor={false}
+                cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1, strokeDasharray: "4 4" }}
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) =>
                       new Date(value as string).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
+                        year: "numeric",
                       })
                     }
-                    indicator="dot"
+                    indicator="line"
                   />
                 }
               />
-              <Area
-                dataKey="mobile"
-                type="natural"
-                fill="url(#fillMobile)"
-                stroke="var(--color-mobile)"
-                stackId="a"
-              />
-              <Area
+              <Line
+                type="monotone"
                 dataKey="desktop"
-                type="natural"
-                fill="url(#fillDesktop)"
                 stroke="var(--color-desktop)"
-                stackId="a"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0 }}
               />
-            </AreaChart>
+              <Line
+                type="monotone"
+                dataKey="mobile"
+                stroke="var(--color-mobile)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 0 }}
+              />
+            </LineChart>
           </ChartContainer>
         )}
       </CardContent>

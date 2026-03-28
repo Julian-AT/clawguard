@@ -11,6 +11,7 @@ import { TeamPatterns } from "@/components/report/team-patterns";
 import { ThreatModelTab } from "@/components/report/threat-model-tab";
 import { VerdictBanner } from "@/components/report/verdict-banner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { countBySeverity } from "@/lib/analysis/scoring";
@@ -73,12 +74,16 @@ export function ReportView({
 
         {result.verdict && <VerdictBanner verdict={result.verdict} />}
 
-        <section className="rounded-xl border border-border bg-card/50 p-5 print:break-inside-avoid">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-            Executive summary
-          </h2>
-          <p className="text-sm leading-relaxed text-foreground/90">{executive}</p>
-        </section>
+        <Card className="print:break-inside-avoid">
+          <CardHeader className="pb-2">
+            <CardDescription className="text-xs font-semibold uppercase tracking-wide">
+              Executive summary
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <p className="text-sm leading-relaxed text-foreground/90">{executive}</p>
+          </CardContent>
+        </Card>
 
         <div className="flex items-start gap-8 flex-wrap">
           <ScoreGauge score={result.score} grade={result.grade} />

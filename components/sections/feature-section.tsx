@@ -8,7 +8,7 @@ export function FeatureSection() {
   return (
     <section
       id="features"
-      className="flex flex-col items-center justify-center gap-5 w-full relative"
+      className="relative flex w-full scroll-mt-28 flex-col items-center justify-center gap-5"
     >
       <SectionHeader>
         <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance">
@@ -23,7 +23,7 @@ export function FeatureSection() {
           collapseDelay={5000}
           linePosition="bottom"
           featureItems={items}
-          lineColor="bg-secondary"
+          lineColor="bg-(--landing-brand-fill)"
         />
       </div>
     </section>

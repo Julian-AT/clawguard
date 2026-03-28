@@ -250,3 +250,128 @@ export const AuditResultSchema = z.object({
   teamPatterns: z.array(TeamPatternSchema).optional(),
 });
 export type AuditResult = z.infer<typeof AuditResultSchema>;
+
+const COMPLIANCE_KEYS = ["pciDss", "soc2", "hipaa", "nist", "owaspAsvs"] as const;
+
+function coerceStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((v) => (typeof v === "string" ? v : String(v)));
+  }
+  if (typeof value === "string") {
+    const t = value.trim();
+    if (t === "") return [];
+    return [t];
+  }
+  return [];
+}
+
+function normalizeComplianceMappingInput(raw: unknown): unknown {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const m = { ...(raw as Record<string, unknown>) };
+  for (const k of COMPLIANCE_KEYS) {
+    if (k in m) {
+      m[k] = coerceStringArray(m[k]);
+    }
+  }
+  return m;
+}
+
+function normalizeDataFlowInput(raw: unknown): unknown {
+  if (raw === null || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const d = { ...(raw as Record<string, unknown>) };
+  if (!Array.isArray(d.nodes)) {
+    d.nodes = [];
+  }
+  return d;
+}
+
+function normalizeConfidence(value: unknown): "HIGH" | "MEDIUM" | "LOW" {
+  if (typeof value === "string") {
+    const u = value.trim().toUpperCase();
+    if (u === "HIGH" || u === "MEDIUM" || u === "LOW") return u;
+  }
+  return "MEDIUM";
+}
+
+/**
+ * Coerces a single finding from Redis / older agent output (missing fields,
+ * compliance strings vs arrays, partial dataFlow).
+ */
+export function normalizeFindingInput(raw: unknown): unknown {
+  if (raw === null || typeof raw !== "object") return raw;
+  const f = { ...(raw as Record<string, unknown>) };
+
+  if (f.file === undefined || f.file === null) {
+    f.file = "";
+  } else if (typeof f.file !== "string") {
+    f.file = String(f.file);
+  }
+
+  if (f.line === undefined || f.line === null) {
+    f.line = 0;
+  } else {
+    const n = Number(f.line);
+    f.line = Number.isFinite(n) ? n : 0;
+  }
+
+  f.confidence = normalizeConfidence(f.confidence);
+
+  if (f.dataFlow !== undefined && f.dataFlow !== null) {
+    f.dataFlow = normalizeDataFlowInput(f.dataFlow);
+  }
+
+  if (f.complianceMapping !== undefined && f.complianceMapping !== null) {
+    f.complianceMapping = normalizeComplianceMappingInput(f.complianceMapping);
+  }
+
+  return f;
+}
+
+function normalizeFindingsArray(value: unknown): unknown[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => normalizeFindingInput(item));
+}
+
+/**
+ * Coerces Redis / legacy payloads before schema parse:
+ * - `phases` may be a plain object (e.g. keyed by stage) instead of an array
+ * - `findings` may be absent when only phase-level findings exist
+ * - per-finding: optional file/line, confidence aliases, dataFlow.nodes, compliance string→array
+ */
+export function normalizeAuditResultInput(raw: unknown): unknown {
+  if (raw === null || typeof raw !== "object") return raw;
+  const o = { ...(raw as Record<string, unknown>) };
+  let phases = o.phases;
+  if (phases != null && !Array.isArray(phases) && typeof phases === "object") {
+    phases = Object.values(phases as Record<string, unknown>);
+  }
+  if (Array.isArray(phases)) {
+    phases = phases.map((p) => {
+      if (p === null || typeof p !== "object") return p;
+      const ph = { ...(p as Record<string, unknown>) };
+      ph.findings = normalizeFindingsArray(ph.findings);
+      return ph;
+    });
+  }
+  o.phases = phases;
+  if (o.findings === undefined || o.findings === null) {
+    if (Array.isArray(phases)) {
+      const merged: unknown[] = [];
+      for (const p of phases) {
+        if (p && typeof p === "object" && Array.isArray((p as { findings?: unknown[] }).findings)) {
+          merged.push(...(p as { findings: unknown[] }).findings);
+        }
+      }
+      o.findings = merged;
+    } else {
+      o.findings = [];
+    }
+  } else {
+    o.findings = normalizeFindingsArray(o.findings);
+  }
+  return o;
+}
+
+export function parseAuditResult(raw: unknown): AuditResult {
+  return AuditResultSchema.parse(normalizeAuditResultInput(raw));
+}

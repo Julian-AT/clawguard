@@ -11,7 +11,7 @@ import { AnimatePresence, motion, useInView } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
 export function ReasoningBasic() {
-  const reasoningText = `Based on your calendar patterns and preferences, I recommend scheduling the team meeting for Tuesday at 2pm. This time slot has historically had the highest attendance rate, and it avoids conflicts with other recurring meetings.`;
+  const reasoningText = `Tracing the diff: new route accepts user input before validation, which can surface injection and auth-bypass risks. Cross-checking against OWASP ASVS and CWE-20: recommend parameterized queries, server-side validation, and tightening the status check so only maintainers can merge while findings are open.`;
 
   return (
     <Reasoning>
@@ -61,7 +61,7 @@ export function FirstBentoAnimation() {
       >
         <div className="flex items-end justify-end gap-3">
           <motion.div
-            className="max-w-[280px] bg-secondary text-white p-4 rounded-2xl ml-auto shadow-[0_0_10px_rgba(0,0,0,0.05)]"
+            className="max-w-[280px] bg-(--landing-brand-fill) p-4 text-white rounded-2xl ml-auto shadow-[0_0_10px_rgba(0,0,0,0.12)]"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{
@@ -70,8 +70,8 @@ export function FirstBentoAnimation() {
             }}
           >
             <p className="text-sm">
-              Hey, I need help scheduling a team meeting that works well for
-              everyone. Any suggestions for finding an optimal time slot?
+              @clawguard can you audit this PR? We touched auth and a new API
+              route — want severity-ranked findings before we merge.
             </p>
           </motion.div>
           <div className="flex items-center bg-background rounded-full w-fit border border-border flex-shrink-0">
@@ -105,7 +105,7 @@ export function FirstBentoAnimation() {
                     {[0, 1, 2].map((index) => (
                       <motion.div
                         key={index}
-                        className="w-2 h-2 bg-primary/50 rounded-full"
+                        className="h-2 w-2 rounded-full bg-(--landing-brand-fill)/70"
                         animate={{ y: [0, -5, 0] }}
                         transition={{
                           duration: 0.6,
@@ -121,7 +121,7 @@ export function FirstBentoAnimation() {
                 <motion.div
                   key="response"
                   layout
-                  className="absolute left-0 top-0 md:min-w-[300px] min-w-[220px] p-4 bg-accent border border-border rounded-xl shadow-[0_0_10px_rgba(0,0,0,0.05)]"
+                  className="absolute left-0 top-0 min-w-[220px] rounded-xl border border-border bg-white p-4 shadow-[0_0_10px_rgba(0,0,0,0.06)] md:min-w-[300px] dark:bg-zinc-900"
                   initial={{ opacity: 0, x: 10 }}
                   animate={{
                     opacity: 1,

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { ErrorView } from "@/components/report/error-view";
 import { ProcessingView } from "@/components/report/processing-view";
 import { ReportView } from "@/components/report/report-view";
-import { AuditResultSchema } from "@/lib/analysis/types";
+import { parseAuditResult } from "@/lib/analysis/types";
 import { getAuditResult } from "@/lib/redis";
 
 interface ReportPageProps {
@@ -30,7 +30,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
     notFound();
   }
 
-  const result = AuditResultSchema.parse(auditData.result);
+  const result = parseAuditResult(auditData.result);
 
   return (
     <ReportView

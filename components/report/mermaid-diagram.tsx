@@ -31,9 +31,9 @@ export function MermaidDiagram({ chart, id }: MermaidDiagramProps) {
 
   if (error) {
     return (
-      <div className="my-4 space-y-2 rounded-lg bg-zinc-900 p-4 text-xs">
-        <p className="text-red-400 font-mono">Failed to render diagram: {error}</p>
-        <pre className="overflow-x-auto text-zinc-400 whitespace-pre-wrap border border-zinc-800 rounded p-2">
+      <div className="my-4 space-y-2 rounded-lg bg-secondary p-4 text-xs text-foreground">
+        <p className="font-mono text-destructive">Failed to render diagram: {error}</p>
+        <pre className="overflow-x-auto whitespace-pre-wrap rounded border border-border p-2 text-muted-foreground">
           {chart}
         </pre>
       </div>
@@ -41,12 +41,12 @@ export function MermaidDiagram({ chart, id }: MermaidDiagramProps) {
   }
 
   if (!svg) {
-    return <div className="my-4 h-24 animate-pulse rounded-lg bg-zinc-900" />;
+    return <div className="my-4 h-24 animate-pulse rounded-lg bg-secondary" />;
   }
 
   return (
     <div
-      className="my-4 overflow-x-auto rounded-lg bg-zinc-900 p-4 max-w-full [&_svg]:max-w-none"
+      className="my-4 max-w-full overflow-x-auto rounded-lg bg-secondary p-4 text-foreground [&_svg]:max-w-none"
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

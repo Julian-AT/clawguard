@@ -16,7 +16,7 @@ const chartConfig = {
   },
   falsePositives: {
     label: "False positives",
-    color: "hsl(38 92% 50%)",
+    color: "oklch(0.72 0.14 85)",
   },
   misses: {
     label: "Misses",

@@ -18,19 +18,36 @@ const LABELS: Record<(typeof ORDER)[number], string> = {
 
 const HEADER = "## ClawGuard Security Audit";
 
+/** Progress UI: NOTE callout + horizontal rule + phase table (GitHub GFM). */
 function buildPhaseTable(rows: { phase: string; status: string }[]): string {
-  const lines = [
+  const tableLines = [
     "| Phase | Status |",
     "|-------|--------|",
     ...rows.map((r) => `| ${r.phase} | ${r.status} |`),
   ];
-  return `${HEADER}\n\n${lines.join("\n")}`;
+  return [
+    HEADER,
+    "",
+    "> [!NOTE]",
+    "> **Pipeline status**",
+    "> Phases run in sequence. This comment updates as each step completes.",
+    "",
+    "---",
+    "",
+    ...tableLines,
+  ].join("\n");
 }
 
 export function formatPipelineStatusMessage(progress: PipelineProgress | null): string {
   if (progress?.stage === "error") {
     const err = progress.error.replace(/\r?\n/g, " ").trim();
-    return `${HEADER}\n\n> [!WARNING]\n> **Error**\n> ${err}`;
+    return [
+      HEADER,
+      "",
+      "> [!WARNING]",
+      "> **Error**",
+      `> ${err}`,
+    ].join("\n");
   }
 
   if (!progress) {

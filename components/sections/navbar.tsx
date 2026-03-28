@@ -58,7 +58,9 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = siteConfig.nav.links.map((item) => item.href.substring(1));
+      const sections = siteConfig.nav.links.map((item) =>
+        item.href.substring(1),
+      );
 
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -131,7 +133,11 @@ export function Navbar() {
                 className="md:hidden border border-border size-8 rounded-md cursor-pointer flex items-center justify-center"
                 onClick={toggleDrawer}
               >
-                {isDrawerOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+                {isDrawerOpen ? (
+                  <X className="size-5" />
+                ) : (
+                  <Menu className="size-5" />
+                )}
               </button>
             </div>
           </div>
@@ -164,7 +170,9 @@ export function Navbar() {
                 <div className="flex items-center justify-between">
                   <Link href="/" className="flex items-center gap-3">
                     <ClawGuardLogo className="size-7 md:size-10" />
-                    <p className="text-lg font-semibold text-primary">ClawGuard</p>
+                    <p className="text-lg font-semibold text-primary">
+                      ClawGuard
+                    </p>
                   </Link>
                   <button
                     type="button"
@@ -189,9 +197,19 @@ export function Navbar() {
                         <a
                           href={item.href}
                           onClick={(e) => {
+                            const id = item.href.substring(1);
+                            const element = document.getElementById(id);
+                            if (!element) return;
                             e.preventDefault();
-                            const element = document.getElementById(item.href.substring(1));
-                            element?.scrollIntoView({ behavior: "smooth" });
+                            window.history.replaceState(
+                              window.history.state,
+                              "",
+                              `#${id}`,
+                            );
+                            element.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
                             setIsDrawerOpen(false);
                           }}
                           className={`underline-offset-4 hover:text-primary/80 transition-colors ${

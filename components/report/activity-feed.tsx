@@ -15,7 +15,7 @@ interface ActivityFeedProps {
 
 function eventIcon(event: string) {
   if (event.startsWith("agent:started"))
-    return <Loader2 className="h-3.5 w-3.5 text-blue-400 animate-spin" />;
+    return <Loader2 className="h-3.5 w-3.5 text-muted-foreground animate-spin" />;
   if (event.startsWith("agent:completed"))
     return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />;
   if (event.startsWith("agent:error"))

@@ -18,18 +18,16 @@ export function FooterSection() {
             <p className="text-xl font-semibold text-primary">ClawGuard</p>
           </Link>
           <p className="tracking-tight text-muted-foreground font-medium">
-            {siteConfig.hero.description}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Security reviews for GitHub pull requests — interactive reports, optional auto-fixes,
-            one deployment.
+            AI-powered security reviews for every GitHub pull request.
           </p>
         </div>
         <div className="pt-5 md:w-1/2">
-          <div className="flex flex-col items-start justify-start md:flex-row md:items-center md:justify-between gap-y-5 lg:pl-10">
+          <div className="flex flex-col items-end justify-end md:flex-row md:items-center md:justify-end gap-y-5 lg:pl-10">
             {siteConfig.footerLinks.map((column) => (
               <ul key={column.title} className="flex flex-col gap-y-2">
-                <li className="mb-2 text-sm font-semibold text-primary">{column.title}</li>
+                <li className="mb-2 text-sm font-semibold text-primary">
+                  {column.title}
+                </li>
                 {column.links.map((link) => (
                   <li
                     key={link.id}
@@ -50,7 +48,7 @@ export function FooterSection() {
         <div className="absolute inset-0 bg-gradient-to-t from-transparent to-background z-10 from-40%" />
         <div className="absolute inset-0 mx-6">
           <FlickeringGrid
-            text={tablet ? "ClawGuard" : "Ship safer code on every PR"}
+            text={tablet ? "ClawGuard" : "@mention ClawGuard"}
             fontSize={tablet ? 70 : 90}
             className="h-full w-full"
             squareSize={2}
