@@ -5,11 +5,11 @@
 
 **Date:** 2026-03-28
 **Phase:** 04-interactive-web-report
-**Areas discussed:** Report layout & navigation, Score gauge & chart presentation, Finding card design & interaction, v0 SDK workflow & scope
+**Areas discussed:** Report layout & navigation, Score gauge & chart presentation, Finding card design & interaction, v0 SDK workflow & scope, v0 SDK risk mitigation, shadcn/ui foundation, Empty & error states, Data loading strategy
 
 ---
 
-## Report Layout & Navigation
+## Report Layout & Navigation (initial session)
 
 ### Page Structure
 
@@ -20,7 +20,6 @@
 | Tabs + sidebar index | Tabs plus left sidebar with findings list for quick jump-to. Most complex. | |
 
 **User's choice:** Tabbed sections
-**Notes:** None
 
 ### Header Density
 
@@ -31,7 +30,6 @@
 | You decide | Let Claude decide best balance. | |
 
 **User's choice:** Dense hero header
-**Notes:** None
 
 ### Information Density
 
@@ -42,7 +40,6 @@
 | You decide | Let Claude pick based on content volume and dark theme readability. | |
 
 **User's choice:** High density
-**Notes:** None
 
 ### Dark Theme Enforcement
 
@@ -53,11 +50,10 @@
 | System preference | Follow OS preference via prefers-color-scheme. Current globals.css already has this. | ✓ |
 
 **User's choice:** System preference
-**Notes:** Builds on existing globals.css pattern
 
 ---
 
-## Score Gauge & Chart Presentation
+## Score Gauge & Chart Presentation (initial session)
 
 ### Score Gauge Style
 
@@ -68,7 +64,6 @@
 | Number + badge | Large number with grade badge. No chart, pure CSS. Fastest to build. | |
 
 **User's choice:** Semicircle gauge
-**Notes:** None
 
 ### OWASP Chart Style
 
@@ -79,7 +74,6 @@
 | You decide | Let Claude pick. | |
 
 **User's choice:** Horizontal bar chart
-**Notes:** None
 
 ### Severity Badges
 
@@ -90,11 +84,10 @@
 | You decide | Let Claude pick. | |
 
 **User's choice:** Inline pill badges
-**Notes:** None
 
 ---
 
-## Finding Card Design & Interaction
+## Finding Card Design & Interaction (initial session)
 
 ### Card Behavior
 
@@ -105,7 +98,6 @@
 | Fully expanded | All details visible always. Long page, no interaction. Simplest. | |
 
 **User's choice:** Accordion expand
-**Notes:** None
 
 ### Mermaid Diagrams
 
@@ -116,7 +108,6 @@
 | You decide | Let Claude decide based on bundle size trade-offs. | |
 
 **User's choice:** Inline Mermaid in card
-**Notes:** None
 
 ### Code Diff Style
 
@@ -127,7 +118,6 @@
 | You decide | Let Claude pick best for dark theme and card width. | |
 
 **User's choice:** Side-by-side diff
-**Notes:** None
 
 ### Sort/Filter
 
@@ -138,23 +128,21 @@
 | You decide | Let Claude decide based on likely finding count. | |
 
 **User's choice:** Severity sort only
-**Notes:** None
 
 ---
 
-## v0 SDK Workflow & Scope
+## v0 SDK Workflow & Scope (initial session)
 
 ### Generation Scope
 
 | Option | Description | Selected |
 |--------|-------------|----------|
-| Full page generation | Use v0 to generate complete report page template with all components. Maximum v0 leverage. | ✓ |
+| Full page generation | Use v0 to generate complete report page template with all components. Maximum v0 leverage. | |
 | Cherry-pick components only | Hand-build page structure, v0 for complex individual components only. More control. | |
 | Skip v0, build manually | Build everything with shadcn/ui + Recharts manually. Simplest workflow. | |
 | You decide | Let Claude decide the right balance. | |
 
-**User's choice:** Full page generation
-**Notes:** None
+**User's choice:** Full page generation (initial) — **Revised to Component-by-component** in update session
 
 ### Workflow Integration
 
@@ -165,7 +153,6 @@
 | You decide | Let Claude decide. | |
 
 **User's choice:** Generate then customize
-**Notes:** None
 
 ### v0 Initialization
 
@@ -176,21 +163,158 @@
 | You decide | Let Claude pick approach for best dark theme consistency. | |
 
 **User's choice:** Template init + design prompt
-**Notes:** None
+
+---
+
+## v0 SDK Risk Mitigation (update session)
+
+### Fallback Strategy
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| v0 optional, manual fallback | Use v0 as time-saver, hand-build with shadcn/ui if it fails | ✓ |
+| Skip v0, hand-build only | Build everything by hand, no v0 dependency | |
+| Time-boxed v0 attempt | Try v0 with 30 min cap, switch if needed | |
+
+**User's choice:** v0 optional, manual fallback
+**Notes:** No hard dependency on v0 — it's a nice-to-have acceleration, not a blocker.
+
+### v0 Timing
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| v0 first, then customize/fallback | Run v0 as first task, customize or rebuild after | ✓ |
+| Build first, v0 polish pass | Hand-build core, use v0 to refine at end | |
+| You decide | Let Claude determine timing | |
+
+**User's choice:** v0 first, then customize/fallback
+
+### v0 Scope (revised)
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Full page generation | Generate complete report page in one prompt | |
+| Component-by-component | Generate individual components as separate v0 prompts | ✓ |
+| Layout only from v0 | Generate structure only, build components by hand | |
+
+**User's choice:** Component-by-component (revised from initial "Full page generation")
+
+---
+
+## shadcn/ui Foundation (update session)
+
+### Style Variant
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| New York style | Standard, widely documented, clean look | ✓ |
+| Default style | Slightly more rounded, softer look | |
+| You decide | Let Claude pick | |
+
+**User's choice:** New York style
+
+### Dark Theme Strategy (confirmed)
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Dark-only | No light mode, dark by default | |
+| System preference toggle | Light for light OS, dark for dark OS | ✓ |
+| Dark default + toggle | Dark by default with manual toggle | |
+
+**User's choice:** System preference toggle (confirmed from initial session)
+
+### Color Palette
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Zinc (neutral grey) | Clean, neutral, works with severity badges | ✓ |
+| Slate (blue-grey) | More like monitoring tools (Datadog/Grafana) | |
+| You decide | Let Claude pick | |
+
+**User's choice:** Zinc (neutral grey)
+
+---
+
+## Empty & Error States (update session)
+
+### Non-existent Report (404)
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Branded 404 page | "Report not found" with ClawGuard branding | ✓ |
+| Redirect to dashboard | Redirect instead of 404 | |
+| You decide | Let Claude decide | |
+
+**User's choice:** Branded 404 page
+
+### Processing State
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Skeleton + auto-refresh | Animated skeleton placeholders, polls every few seconds | ✓ |
+| Simple spinner message | "Analysis in progress..." with spinner | |
+| Skeleton, manual refresh | Skeleton without auto-refresh | |
+
+**User's choice:** Skeleton + auto-refresh
+
+### Error State
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Generic error + re-run hint | Generic message with re-run suggestion | ✓ |
+| Partial results + error banner | Show whatever completed before error | |
+| You decide | Let Claude decide | |
+
+**User's choice:** Generic error + re-run hint
+
+---
+
+## Data Loading Strategy (update session)
+
+### Data Fetch Method
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Server component | Server-side fetch at request time | ✓ |
+| Client-side fetch + polling | Client fetches after page loads | |
+| Server initial + client polling | Hybrid: server for first load, client for updates | |
+
+**User's choice:** Server component
+
+### Polling Mechanism
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Client polling on processing page | Small client component polls API, reloads on complete | ✓ |
+| Manual refresh only | User must refresh manually | |
+| You decide | Let Claude decide | |
+
+**User's choice:** Client polling on processing page
+
+### API Endpoint
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Dedicated API route | `/api/report/[owner]/[repo]/[pr]/route.ts` | ✓ |
+| Server Actions | Lighter weight but less reusable | |
+| You decide | Let Claude decide | |
+
+**User's choice:** Dedicated API route
 
 ---
 
 ## Claude's Discretion
 
 - Exact shadcn/ui component selection and composition
-- Mermaid diagram styling and theme configuration for dark mode
+- Mermaid diagram styling and theme configuration
 - Threat Model tab internal layout
 - Compliance tab table structure
-- Loading states and error states
+- Loading skeleton component design
 - v0 prompt engineering
-- Missing/incomplete audit data handling
-- Exact color palette for severity levels
+- Severity color palette
+- Caching/revalidation strategy
+- Polling interval tuning
 
 ## Deferred Ideas
 
-None
+None — discussion stayed within phase scope
