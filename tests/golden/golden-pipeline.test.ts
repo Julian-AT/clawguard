@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { postProcessAudit } from "@/lib/analysis/post-process";
-import { DEFAULT_CLAWGUARD_CONFIG } from "@/lib/config/defaults";
-import type { Finding, ThreatModel } from "@/lib/analysis/types";
 import { parseChangedFilesFromDiff } from "@/lib/analysis/recon";
+import type { Finding, ThreatModel } from "@/lib/analysis/types";
+import { DEFAULT_CLAWGUARD_CONFIG } from "@/lib/config/defaults";
 
 describe("golden pipeline helpers", () => {
   it("parses changed files from a minimal diff", () => {
@@ -52,6 +52,9 @@ index 111..222 100644
     const threatModel: ThreatModel = {
       attackSurfaces: [],
       attackPaths: [],
+      strideCategorization: [],
+      trustBoundaries: [],
+      riskMatrix: [],
     };
 
     const out = postProcessAudit({

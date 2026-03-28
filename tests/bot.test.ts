@@ -1,15 +1,12 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
-import { resolve } from "path";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
 const botSource = readFileSync(resolve(__dirname, "../lib/bot.ts"), "utf-8");
-const chatAdaptersSource = readFileSync(
-  resolve(__dirname, "../lib/chat-adapters.ts"),
-  "utf-8"
-);
+const chatAdaptersSource = readFileSync(resolve(__dirname, "../lib/chat-adapters.ts"), "utf-8");
 const auditRunnerSource = readFileSync(
   resolve(__dirname, "../lib/github-audit-runner.ts"),
-  "utf-8"
+  "utf-8",
 );
 
 describe("Bot Configuration", () => {
@@ -61,9 +58,7 @@ describe("Live Progress Updates", () => {
   });
 
   it("uses progress callback with status.edit for live updates (D-07)", () => {
-    expect(auditRunnerSource).toMatch(
-      /onProgress.*ProgressCallback|ProgressCallback.*onProgress/
-    );
+    expect(auditRunnerSource).toMatch(/onProgress.*ProgressCallback|ProgressCallback.*onProgress/);
     expect(auditRunnerSource).toContain("status.edit");
   });
 

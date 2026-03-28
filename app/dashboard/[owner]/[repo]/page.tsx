@@ -1,19 +1,10 @@
 import Link from "next/link";
-import { redirect, notFound } from "next/navigation";
-import { getSession } from "@/lib/auth";
-import {
-  listPrAuditKeys,
-  loadAuditDataForKeys,
-} from "@/lib/redis-queries";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { notFound, redirect } from "next/navigation";
 import { TrendChart } from "@/components/dashboard/trend-chart";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getSession } from "@/lib/auth";
+import { listPrAuditKeys, loadAuditDataForKeys } from "@/lib/redis-queries";
 
 interface PageProps {
   params: Promise<{ owner: string; repo: string }>;
@@ -36,13 +27,14 @@ export default async function RepoDashboardPage({ params }: PageProps) {
     .filter((x) => x.data.status === "complete" && x.data.result)
     .map((x) => {
       const prNum = Number(x.key.split("/pr/")[1]);
+      const result = x.data.result;
       return {
         pr: prNum,
         title: x.data.pr.title,
-        score: x.data.result!.score,
-        grade: x.data.result!.grade,
+        score: result?.score ?? 0,
+        grade: result?.grade ?? "?",
         timestamp: x.data.timestamp,
-        findings: x.data.result!.findings.length,
+        findings: result?.findings.length ?? 0,
       };
     })
     .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -54,18 +46,12 @@ export default async function RepoDashboardPage({ params }: PageProps) {
       score: r.score,
     }));
 
-  const avg =
-    rows.length > 0
-      ? Math.round(rows.reduce((s, r) => s + r.score, 0) / rows.length)
-      : 0;
+  const avg = rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.score, 0) / rows.length) : 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border px-6 py-4">
-        <Link
-          href="/dashboard"
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
+        <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
           ← Dashboard
         </Link>
         <h1 className="text-xl font-semibold mt-2 font-mono">
@@ -90,9 +76,7 @@ export default async function RepoDashboardPage({ params }: PageProps) {
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>Latest</CardDescription>
-              <CardTitle className="text-3xl">
-                {rows[0]?.score ?? "—"}
-              </CardTitle>
+              <CardTitle className="text-3xl">{rows[0]?.score ?? "—"}</CardTitle>
             </CardHeader>
           </Card>
         </div>
@@ -123,19 +107,14 @@ export default async function RepoDashboardPage({ params }: PageProps) {
                 <div>
                   <div className="font-medium">
                     PR #{r.pr}{" "}
-                    <span className="text-muted-foreground font-normal text-sm">
-                      {r.title}
-                    </span>
+                    <span className="text-muted-foreground font-normal text-sm">{r.title}</span>
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {new Date(r.timestamp).toLocaleString()} · {r.findings}{" "}
-                    findings
+                    {new Date(r.timestamp).toLocaleString()} · {r.findings} findings
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold tabular-nums">
-                    {r.score}
-                  </span>
+                  <span className="text-lg font-semibold tabular-nums">{r.score}</span>
                   <Badge>{r.grade}</Badge>
                 </div>
               </Link>

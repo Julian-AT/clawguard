@@ -1,12 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   calculateScore,
-  getGrade,
   countBySeverity,
   GRADE_THRESHOLDS,
+  getGrade,
 } from "@/lib/analysis/scoring";
-import { SEVERITY_DEDUCTIONS } from "@/lib/constants";
 import type { Finding } from "@/lib/analysis/types";
+import { SEVERITY_DEDUCTIONS } from "@/lib/constants";
 
 function makeFinding(overrides: Partial<Finding> = {}): Finding {
   return {
@@ -27,7 +27,7 @@ function makeFinding(overrides: Partial<Finding> = {}): Finding {
       ],
     },
     fix: {
-      before: 'db.query(`SELECT * FROM users WHERE name = \'${input}\'`)',
+      before: "db.query(`SELECT * FROM users WHERE name = '${input}'`)",
       after: "db.query('SELECT * FROM users WHERE name = $1', [input])",
     },
     ...overrides,

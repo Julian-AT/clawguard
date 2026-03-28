@@ -1,5 +1,5 @@
-import type { AgentMemory } from "./types";
 import type { Finding } from "@/lib/analysis/types";
+import type { AgentMemory } from "./types";
 
 export class PipelineMemory implements AgentMemory {
   private store = new Map<string, unknown>();

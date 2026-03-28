@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldAlert } from "lucide-react";
 import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ReportNotFound() {
   return (
@@ -15,10 +15,8 @@ export default function ReportNotFound() {
         <CardContent className="text-center space-y-4">
           <p className="text-muted-foreground">
             This PR hasn&apos;t been audited yet. Mention{" "}
-            <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">
-              @clawguard
-            </code>{" "}
-            on a pull request to trigger a security audit.
+            <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">@clawguard</code> on
+            a pull request to trigger a security audit.
           </p>
           <Link
             href="/"

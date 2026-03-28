@@ -9,6 +9,6 @@ export async function POST() {
       error:
         "Discord adapter is not bundled in this deployment. Use GitHub or Slack webhooks, or run a sidecar with @chat-adapter/discord.",
     },
-    { status: 501 }
+    { status: 501 },
   );
 }

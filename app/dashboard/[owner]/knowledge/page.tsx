@@ -1,15 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSession } from "@/lib/auth";
 import { listKnowledgeOrg } from "@/lib/knowledge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface PageProps {
   params: Promise<{ owner: string }>;
@@ -38,8 +32,8 @@ export default async function OrgKnowledgePage({ params }: PageProps) {
 
       {entries.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          No org knowledge yet. Promote learnings from the learnings dashboard or use the
-          API to append entries.
+          No org knowledge yet. Promote learnings from the learnings dashboard or use the API to
+          append entries.
         </p>
       ) : (
         <Card>
@@ -49,10 +43,7 @@ export default async function OrgKnowledgePage({ params }: PageProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             {entries.map((e) => (
-              <div
-                key={e.id}
-                className="rounded-lg border border-border p-3 text-sm space-y-1"
-              >
+              <div key={e.id} className="rounded-lg border border-border p-3 text-sm space-y-1">
                 <div className="flex flex-wrap gap-2 items-center">
                   <Badge variant="secondary">{e.category}</Badge>
                   <span className="font-medium">{e.title}</span>

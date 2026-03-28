@@ -27,11 +27,7 @@ export abstract class ClawGuardError extends Error {
   readonly recoverable: boolean;
   readonly timestamp: string;
 
-  constructor(
-    message: string,
-    category: ErrorCategory,
-    options: ClawGuardErrorOptions = {}
-  ) {
+  constructor(message: string, category: ErrorCategory, options: ClawGuardErrorOptions = {}) {
     super(message, { cause: options.cause });
     Object.setPrototypeOf(this, new.target.prototype);
     this.severity = options.severity ?? "fatal";
@@ -113,8 +109,7 @@ export class ValidationError extends ClawGuardError {
 
 export function formatErrorForUser(error: unknown): string {
   if (error instanceof ClawGuardError) {
-    const prefix =
-      error.category !== "pipeline" ? `${capitalize(error.category)}: ` : "";
+    const prefix = error.category !== "pipeline" ? `${capitalize(error.category)}: ` : "";
     return `${prefix}${error.message}`;
   }
   if (error instanceof Error) return error.message;

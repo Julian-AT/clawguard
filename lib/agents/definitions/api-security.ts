@@ -1,10 +1,10 @@
-import { ToolLoopAgent, Output, stepCountIs } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { createBashTool } from "bash-tool";
 import { z } from "zod";
-import { FindingSchema, type Finding, type ReconResult } from "@/lib/analysis/types";
-import type { SecurityAgentDefinition, AgentContext, AgentResult } from "@/lib/agents/types";
 import { registerAgent } from "@/lib/agents/registry";
+import type { AgentContext, AgentResult, SecurityAgentDefinition } from "@/lib/agents/types";
+import { type Finding, FindingSchema, type ReconResult } from "@/lib/analysis/types";
 import { injectSkills } from "@/lib/skills";
 
 const OutputSchema = z.object({

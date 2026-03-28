@@ -74,14 +74,13 @@ export async function searchWithIndex(
     caseSensitive?: boolean;
     fileGlob?: string;
     useRegex?: boolean;
-  }
+  },
 ): Promise<SearchResult> {
   const maxResults = options?.maxResults ?? 50;
   const caseSensitive = options?.caseSensitive ?? true;
   const useRegex = options?.useRegex ?? false;
 
-  const isLiteral =
-    !useRegex && !/[.*+?^${}()|[\]\\]/.test(pattern);
+  const isLiteral = !useRegex && !/[.*+?^${}()|[\]\\]/.test(pattern);
 
   let candidateSet: Set<number> | null = null;
   let indexUsed = false;
@@ -101,12 +100,7 @@ export async function searchWithIndex(
       };
     }
 
-    if (
-      indexUsed &&
-      candidateSet &&
-      candidateSet.size > 0 &&
-      candidateSet.size < 200
-    ) {
+    if (indexUsed && candidateSet && candidateSet.size > 0 && candidateSet.size < 200) {
       narrowedPaths = [...candidateSet]
         .map((id) => index.fileMap.get(id))
         .filter((p): p is string => Boolean(p));

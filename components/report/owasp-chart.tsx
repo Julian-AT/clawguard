@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
+import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Finding, Severity } from "@/lib/analysis/types";
 
 interface OwaspChartProps {
@@ -38,10 +30,7 @@ interface ChartDatum {
 }
 
 function buildChartData(findings: Finding[]): ChartDatum[] {
-  const grouped = new Map<
-    string,
-    { count: number; highestSeverity: Severity }
-  >();
+  const grouped = new Map<string, { count: number; highestSeverity: Severity }>();
 
   for (const f of findings) {
     const existing = grouped.get(f.owaspCategory);
@@ -49,10 +38,7 @@ function buildChartData(findings: Finding[]): ChartDatum[] {
       grouped.set(f.owaspCategory, { count: 1, highestSeverity: f.severity });
     } else {
       existing.count++;
-      if (
-        SEVERITY_PRIORITY[f.severity] <
-        SEVERITY_PRIORITY[existing.highestSeverity]
-      ) {
+      if (SEVERITY_PRIORITY[f.severity] < SEVERITY_PRIORITY[existing.highestSeverity]) {
         existing.highestSeverity = f.severity;
       }
     }
@@ -71,9 +57,7 @@ export function OwaspChart({ findings }: OwaspChartProps) {
   const data = buildChartData(findings);
 
   if (data.length === 0) {
-    return (
-      <p className="text-xs text-muted-foreground">No OWASP categories found.</p>
-    );
+    return <p className="text-xs text-muted-foreground">No OWASP categories found.</p>;
   }
 
   const chartHeight = Math.max(120, data.length * 36);
@@ -102,8 +86,8 @@ export function OwaspChart({ findings }: OwaspChartProps) {
             }}
           />
           <Bar dataKey="count" radius={[0, 4, 4, 0]} maxBarSize={20}>
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
+            {data.map((entry) => (
+              <Cell key={entry.category} fill={entry.color} />
             ))}
           </Bar>
         </BarChart>

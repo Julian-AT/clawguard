@@ -1,14 +1,10 @@
-import { generateText } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { generateText } from "ai";
 import type { Intent } from "@/lib/intent-types";
 
-const INTENT_MODEL =
-  process.env.CLAWGUARD_INTENT_MODEL ?? "openai/gpt-4o-mini";
+const INTENT_MODEL = process.env.CLAWGUARD_INTENT_MODEL ?? "openai/gpt-4o-mini";
 
-export async function classifyIntentWithLlm(
-  body: string,
-  botName: string
-): Promise<Intent | null> {
+export async function classifyIntentWithLlm(body: string, botName: string): Promise<Intent | null> {
   const mention = `@${botName.toLowerCase()}`;
   if (!body.toLowerCase().includes(mention)) {
     return null;

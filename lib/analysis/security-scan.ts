@@ -1,10 +1,10 @@
-import { ToolLoopAgent, Output, stepCountIs } from "ai";
 import { gateway } from "@ai-sdk/gateway";
 import type { ToolSet } from "ai";
-import type { ClawGuardConfig, PolicyRule } from "@/lib/config/schemas";
-import { FindingSchema, type Finding, type ReconResult } from "./types";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { z } from "zod";
+import type { ClawGuardConfig, PolicyRule } from "@/lib/config/schemas";
 import { detailFromToolCalls } from "./step-detail";
+import { type Finding, FindingSchema, type ReconResult } from "./types";
 
 const SecurityScanOutputSchema = z.object({
   findings: z.array(FindingSchema),
@@ -26,12 +26,7 @@ export type SecurityScanResult = {
 
 function policiesBlock(policies: PolicyRule[]): string {
   if (policies.length === 0) return "(No custom policies in .clawguard/policies.yml)";
-  return policies
-    .map(
-      (p) =>
-        `- [${p.severity}] ${p.name}: ${p.rule}`
-    )
-    .join("\n");
+  return policies.map((p) => `- [${p.severity}] ${p.name}: ${p.rule}`).join("\n");
 }
 
 function reconContextBlock(recon: ReconResult): string {
@@ -43,22 +38,24 @@ function reconContextBlock(recon: ReconResult): string {
 
   const extra: string[] = [];
   if (recon.dependencyAuditSnippet) {
-    extra.push("## Dependency audit (npm/pnpm)\n```json\n" + recon.dependencyAuditSnippet + "\n```");
+    extra.push(
+      `## Dependency audit (npm/pnpm)\n\`\`\`json\n${recon.dependencyAuditSnippet}\n\`\`\``,
+    );
   }
   if (recon.secretPatternHints?.length) {
     extra.push(
       "## Secret-pattern heuristics in diff\n" +
-        recon.secretPatternHints.map((h) => `- ${h}`).join("\n")
+        recon.secretPatternHints.map((h) => `- ${h}`).join("\n"),
     );
   }
   if (recon.optionalSarifSnippet) {
-    extra.push("## Semgrep SARIF excerpt\n```\n" + recon.optionalSarifSnippet + "\n```");
+    extra.push(`## Semgrep SARIF excerpt\n\`\`\`\n${recon.optionalSarifSnippet}\n\`\`\``);
   }
   if (recon.dependencyGraph) {
     extra.push(
       "## Dependency graph (imports, env, sensitive APIs)\n```json\n" +
         JSON.stringify(recon.dependencyGraph, null, 2).slice(0, 32_000) +
-        "\n```"
+        "\n```",
     );
   }
 
@@ -76,7 +73,7 @@ function reconContextBlock(recon: ReconResult): string {
 function buildPrompt(
   recon: ReconResult,
   policies: PolicyRule[],
-  extras?: { learnings?: string; knowledge?: string }
+  extras?: { learnings?: string; knowledge?: string },
 ): string {
   const parts = [
     "## Custom policies",
@@ -100,7 +97,7 @@ async function runScanOnce(
   prompt: string,
   config: ClawGuardConfig,
   instructions: string,
-  onStep?: (info: SecurityScanStepInfo) => void
+  onStep?: (info: SecurityScanStepInfo) => void,
 ): Promise<{ findings: Finding[]; summary: string }> {
   const modelRef = `${config.model.provider}/${config.model.model}`;
   let stepCount = 0;
@@ -114,9 +111,8 @@ async function runScanOnce(
       ? (event) => {
           stepCount += 1;
           const detail =
-            detailFromToolCalls(
-              event.toolCalls as Array<{ toolName?: string; input?: unknown }>
-            ) ?? `Agent step ${stepCount}`;
+            detailFromToolCalls(event.toolCalls as Array<{ toolName?: string; input?: unknown }>) ??
+            `Agent step ${stepCount}`;
           onStep({ stepCount, detail });
         }
       : undefined,
@@ -135,7 +131,7 @@ export async function runSecurityScan(
   policies: PolicyRule[],
   config: ClawGuardConfig,
   onStepFinish?: (info: SecurityScanStepInfo) => void,
-  extras?: { learningsBlock?: string; knowledgeBlock?: string }
+  extras?: { learningsBlock?: string; knowledgeBlock?: string },
 ): Promise<SecurityScanResult> {
   const depthHint =
     config.scanning.depth === "quick"
@@ -175,13 +171,7 @@ export async function runSecurityScan(
   });
 
   try {
-    const out = await runScanOnce(
-      tools,
-      prompt,
-      config,
-      fullInstructions,
-      onStepFinish
-    );
+    const out = await runScanOnce(tools, prompt, config, fullInstructions, onStepFinish);
     return {
       findings: out.findings,
       summary: out.summary,
@@ -190,8 +180,7 @@ export async function runSecurityScan(
   } catch (firstError) {
     console.error("[security-scan] Agent error (first attempt):", firstError);
     if (config.scanning.maxRetries <= 0) {
-      const msg =
-        firstError instanceof Error ? firstError.message : String(firstError);
+      const msg = firstError instanceof Error ? firstError.message : String(firstError);
       return {
         findings: [],
         summary:
@@ -201,13 +190,7 @@ export async function runSecurityScan(
       };
     }
     try {
-      const out = await runScanOnce(
-        tools,
-        prompt,
-        config,
-        shortInstructions,
-        onStepFinish
-      );
+      const out = await runScanOnce(tools, prompt, config, shortInstructions, onStepFinish);
       return {
         findings: out.findings,
         summary: out.summary,
@@ -216,8 +199,7 @@ export async function runSecurityScan(
       };
     } catch (secondError) {
       console.error("[security-scan] Agent error (retry):", secondError);
-      const msg =
-        secondError instanceof Error ? secondError.message : String(secondError);
+      const msg = secondError instanceof Error ? secondError.message : String(secondError);
       return {
         findings: [],
         summary:

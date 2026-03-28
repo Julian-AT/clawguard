@@ -29,10 +29,7 @@ async function writeList(key: string, items: Learning[]): Promise<void> {
   await redis.set(key, JSON.stringify(items));
 }
 
-export async function listLearningsRepo(
-  owner: string,
-  repo: string
-): Promise<Learning[]> {
+export async function listLearningsRepo(owner: string, repo: string): Promise<Learning[]> {
   return readList(repoKey(owner, repo));
 }
 
@@ -45,7 +42,7 @@ export async function appendLearningRepo(
   repo: string,
   learning: Omit<Learning, "id" | "createdAt" | "updatedAt" | "upvotes"> & {
     id?: string;
-  }
+  },
 ): Promise<Learning> {
   const list = await listLearningsRepo(owner, repo);
   const now = new Date().toISOString();
@@ -62,10 +59,7 @@ export async function appendLearningRepo(
   return row;
 }
 
-export async function promoteLearningToOrg(
-  owner: string,
-  learning: Learning
-): Promise<void> {
+export async function promoteLearningToOrg(owner: string, learning: Learning): Promise<void> {
   const list = await listLearningsOrg(owner);
   if (list.some((l) => l.id === learning.id)) return;
   list.push(learning);
@@ -74,23 +68,19 @@ export async function promoteLearningToOrg(
 
 export function formatLearningsForPrompt(
   repoLearnings: Learning[],
-  orgLearnings: Learning[]
+  orgLearnings: Learning[],
 ): string {
   const lines: string[] = [];
   if (orgLearnings.length > 0) {
     lines.push("### Organization learnings");
     for (const l of orgLearnings.slice(0, 40)) {
-      lines.push(
-        `- [${l.action}] ${l.pattern} — ${l.context} (confidence ${l.confidence})`
-      );
+      lines.push(`- [${l.action}] ${l.pattern} — ${l.context} (confidence ${l.confidence})`);
     }
   }
   if (repoLearnings.length > 0) {
     lines.push("### Repository learnings");
     for (const l of repoLearnings.slice(0, 40)) {
-      lines.push(
-        `- [${l.action}] ${l.pattern} — ${l.context} (confidence ${l.confidence})`
-      );
+      lines.push(`- [${l.action}] ${l.pattern} — ${l.context} (confidence ${l.confidence})`);
     }
   }
   return lines.length > 0 ? lines.join("\n") : "";

@@ -2,7 +2,7 @@
  * Derive a short human-readable line from the last tool call in a step (bash/read/write).
  */
 export function detailFromToolCalls(
-  toolCalls: Array<{ toolName?: string; input?: unknown }>
+  toolCalls: Array<{ toolName?: string; input?: unknown }>,
 ): string | undefined {
   if (!toolCalls?.length) return undefined;
   const last = toolCalls[toolCalls.length - 1];

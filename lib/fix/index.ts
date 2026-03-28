@@ -1,16 +1,13 @@
 import { Sandbox } from "@vercel/sandbox";
 import type { Thread } from "chat";
-import type { Finding, AuditResult } from "@/lib/analysis/types";
-import type { FixResult, FixContext } from "@/lib/fix/types";
-import { applyStoredFix } from "@/lib/fix/apply";
-import { generateFixWithAgent } from "@/lib/fix/agent";
-import {
-  commitBatchFixesToGitHub,
-  commitFixToGitHub,
-} from "@/lib/fix/commit";
-import { reviewPullRequest } from "@/lib/review";
-import { getAuditResult, storeAuditResult } from "@/lib/redis";
+import type { AuditResult, Finding } from "@/lib/analysis/types";
 import { SEVERITY_ORDER } from "@/lib/constants";
+import { generateFixWithAgent } from "@/lib/fix/agent";
+import { applyStoredFix } from "@/lib/fix/apply";
+import { commitBatchFixesToGitHub, commitFixToGitHub } from "@/lib/fix/commit";
+import type { FixContext, FixResult } from "@/lib/fix/types";
+import { getAuditResult, storeAuditResult } from "@/lib/redis";
+import { reviewPullRequest } from "@/lib/review";
 
 function buildFixProgressMarkdown(results: FixResult[]): string {
   const lines = [
@@ -35,21 +32,14 @@ type PrepareResult = {
   content?: string;
 };
 
-async function prepareFindingFix(
-  sandbox: Sandbox,
-  finding: Finding
-): Promise<PrepareResult> {
+async function prepareFindingFix(sandbox: Sandbox, finding: Finding): Promise<PrepareResult> {
   try {
     const fastResult = await applyStoredFix(sandbox, finding);
     if (fastResult.valid) {
       return { status: "fixed", tier: "fast", content: fastResult.content };
     }
 
-    const agentResult = await generateFixWithAgent(
-      sandbox,
-      finding,
-      fastResult.errors
-    );
+    const agentResult = await generateFixWithAgent(sandbox, finding, fastResult.errors);
 
     if (agentResult.valid) {
       return { status: "fixed", tier: "agent", content: agentResult.content };
@@ -74,7 +64,7 @@ async function prepareFindingFix(
 export async function fixFinding(
   sandbox: Sandbox,
   finding: Finding,
-  context: FixContext
+  context: FixContext,
 ): Promise<FixResult> {
   const prep = await prepareFindingFix(sandbox, finding);
   if (prep.status === "fixed" && prep.content) {
@@ -109,14 +99,12 @@ export async function fixAll(
     prTitle: string;
     thread?: Thread;
     onBatchTableUpdate?: (markdown: string) => Promise<void>;
-  }
+  },
 ): Promise<{
   results: FixResult[];
   reauditResult?: AuditResult;
 }> {
-  const auditData = await getAuditResult(
-    `${context.owner}/${context.repo}/pr/${context.prNumber}`
-  );
+  const auditData = await getAuditResult(`${context.owner}/${context.repo}/pr/${context.prNumber}`);
 
   if (!auditData?.result) {
     throw new Error("No audit results found");
@@ -126,11 +114,7 @@ export async function fixAll(
 
   const fixable = auditResult.findings
     .filter((f) => ["CRITICAL", "HIGH"].includes(f.severity))
-    .sort(
-      (a, b) =>
-        (SEVERITY_ORDER[a.severity] ?? 99) -
-        (SEVERITY_ORDER[b.severity] ?? 99)
-    );
+    .sort((a, b) => (SEVERITY_ORDER[a.severity] ?? 99) - (SEVERITY_ORDER[b.severity] ?? 99));
 
   const sandbox = await Sandbox.create({
     source: {

@@ -1,15 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Use vi.hoisted for mock variables used in vi.mock factories
-const { mockAfter, mockWebhookHandler, mockRedisSet, mockRedisGet } =
-  vi.hoisted(() => ({
-    mockAfter: vi.fn((fn: () => void) => fn()),
-    mockWebhookHandler: vi
-      .fn()
-      .mockResolvedValue(new Response("OK", { status: 200 })),
-    mockRedisSet: vi.fn().mockResolvedValue("OK"),
-    mockRedisGet: vi.fn().mockResolvedValue(null),
-  }));
+const { mockAfter, mockWebhookHandler, mockRedisSet, mockRedisGet } = vi.hoisted(() => ({
+  mockAfter: vi.fn((fn: () => void) => fn()),
+  mockWebhookHandler: vi.fn().mockResolvedValue(new Response("OK", { status: 200 })),
+  mockRedisSet: vi.fn().mockResolvedValue("OK"),
+  mockRedisGet: vi.fn().mockResolvedValue(null),
+}));
 
 vi.mock("next/server", () => ({
   after: mockAfter,
@@ -30,7 +27,7 @@ vi.mock("@/lib/redis", () => ({
   },
 }));
 
-import { POST, maxDuration } from "@/app/api/webhooks/github/route";
+import { maxDuration, POST } from "@/app/api/webhooks/github/route";
 
 describe("Webhook Route Handler", () => {
   beforeEach(() => {
@@ -71,7 +68,7 @@ describe("Webhook Route Handler", () => {
       expect.any(Request),
       expect.objectContaining({
         waitUntil: expect.any(Function),
-      })
+      }),
     );
   });
 

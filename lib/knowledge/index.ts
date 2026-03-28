@@ -1,3 +1,3 @@
-export * from "./types";
-export * from "./store";
 export { getKnowledgeBlockForScan } from "./injector";
+export * from "./store";
+export * from "./types";

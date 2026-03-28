@@ -12,13 +12,7 @@ export const DEFAULT_CLAWGUARD_CONFIG: ClawGuardConfig = {
     requestChanges: "HIGH",
     commentOnly: "MEDIUM",
   },
-  ignorePaths: [
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "**/fixtures/**",
-    "**/mocks/**",
-    "**/docs/**",
-  ],
+  ignorePaths: ["**/*.test.ts", "**/*.spec.ts", "**/fixtures/**", "**/mocks/**", "**/docs/**"],
   report: {
     generateInteractiveReport: true,
     frameworks: ["OWASP", "PCI-DSS", "SOC2"],

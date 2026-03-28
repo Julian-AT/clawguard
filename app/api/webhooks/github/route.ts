@@ -37,13 +37,11 @@ export async function POST(request: Request) {
 
   if (githubEvent === "pull_request") {
     try {
-      const { handlePullRequestEvent } = await import(
-        "@/lib/github-pull-request-webhook"
-      );
+      const { handlePullRequestEvent } = await import("@/lib/github-pull-request-webhook");
       return await handlePullRequestEvent(body, (task) => {
         after(() => {
           Promise.resolve(task).catch((err) =>
-            console.error("[webhook] Background pull_request task error:", err)
+            console.error("[webhook] Background pull_request task error:", err),
           );
         });
       });
@@ -59,7 +57,7 @@ export async function POST(request: Request) {
       return await handleIssuesEvent(body, (task) => {
         after(() => {
           Promise.resolve(task).catch((err) =>
-            console.error("[webhook] Background issues task error:", err)
+            console.error("[webhook] Background issues task error:", err),
           );
         });
       });
@@ -81,7 +79,7 @@ export async function POST(request: Request) {
       waitUntil: (task) => {
         after(() => {
           Promise.resolve(task).catch((err) =>
-            console.error("[webhook] Background task error:", err)
+            console.error("[webhook] Background task error:", err),
           );
         });
       },

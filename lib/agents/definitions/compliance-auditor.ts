@@ -1,11 +1,11 @@
-import { ToolLoopAgent, Output, stepCountIs } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { createBashTool } from "bash-tool";
 import { z } from "zod";
-import { FindingSchema, type Finding } from "@/lib/analysis/types";
-import type { PolicyRule } from "@/lib/config/schemas";
-import type { SecurityAgentDefinition, AgentContext, AgentResult } from "@/lib/agents/types";
 import { registerAgent } from "@/lib/agents/registry";
+import type { AgentContext, AgentResult, SecurityAgentDefinition } from "@/lib/agents/types";
+import { type Finding, FindingSchema } from "@/lib/analysis/types";
+import type { PolicyRule } from "@/lib/config/schemas";
 import { injectSkills } from "@/lib/skills";
 
 const OutputSchema = z.object({
@@ -18,9 +18,7 @@ const REQUIRED_SKILLS = ["reporting"] as const;
 
 function policiesBlock(policies: PolicyRule[]): string {
   if (policies.length === 0) return "(No custom policies in .clawguard/policies.yml)";
-  return policies
-    .map((p) => `- [${p.severity}] ${p.name}: ${p.rule}`)
-    .join("\n");
+  return policies.map((p) => `- [${p.severity}] ${p.name}: ${p.rule}`).join("\n");
 }
 
 function serializeFindings(findings: Finding[], maxChars: number): string {
@@ -39,7 +37,7 @@ function serializeFindings(findings: Finding[], maxChars: number): string {
     })),
   );
   if (payload.length <= maxChars) return payload;
-  return payload.slice(0, maxChars) + "\n... (truncated)";
+  return `${payload.slice(0, maxChars)}\n... (truncated)`;
 }
 
 function buildPrompt(context: AgentContext): string {

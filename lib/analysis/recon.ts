@@ -1,7 +1,7 @@
 import type { Sandbox } from "@vercel/sandbox";
 import type { ClawGuardConfig } from "@/lib/config/schemas";
-import type { DependencyGraph, ReconResult } from "./types";
 import { logWarn } from "@/lib/logger";
+import type { DependencyGraph, ReconResult } from "./types";
 
 const MAX_EXCERPT_LINES = 120;
 const MAX_EXCERPT_CHARS = 48_000;
@@ -10,9 +10,11 @@ export function parseChangedFilesFromDiff(diff: string): string[] {
   const paths = new Set<string>();
   const re = /^diff --git a\/(.+?) b\/(.+?)$/gm;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(diff)) !== null) {
+  m = re.exec(diff);
+  while (m !== null) {
     const p = m[2] ?? m[1];
     if (p && !p.endsWith("/dev/null")) paths.add(p);
+    m = re.exec(diff);
   }
   return [...paths];
 }
@@ -20,7 +22,7 @@ export function parseChangedFilesFromDiff(diff: string): string[] {
 export async function runReconnaissance(
   sandbox: Sandbox,
   diff: string,
-  config: ClawGuardConfig
+  config: ClawGuardConfig,
 ): Promise<ReconResult> {
   const changedFiles = parseChangedFilesFromDiff(diff).map((path) => ({ path }));
 
@@ -91,12 +93,7 @@ export async function runReconnaissance(
   let staticAnalysisSnippet = "";
   const tsc = await sandbox.runCommand("test", ["-f", "tsconfig.json"]);
   if (tsc.exitCode === 0) {
-    const run = await sandbox.runCommand("npx", [
-      "tsc",
-      "--noEmit",
-      "--pretty",
-      "false",
-    ]);
+    const run = await sandbox.runCommand("npx", ["tsc", "--noEmit", "--pretty", "false"]);
     if (run.exitCode !== 0) {
       const err = await run.stderr();
       staticAnalysisSnippet = `tsc --noEmit (exit ${run.exitCode}):\n${err.slice(0, 4000)}`;
@@ -109,20 +106,14 @@ export async function runReconnaissance(
 
   let dependencyAuditSnippet: string | undefined;
   if (pkgCheck.exitCode === 0 && config.scanning.enableDependencyAudit) {
-    const audit = await sandbox.runCommand("npm", [
-      "audit",
-      "--json",
-      "--package-lock-only",
-    ]);
+    const audit = await sandbox.runCommand("npm", ["audit", "--json", "--package-lock-only"]);
     const out = await audit.stdout();
     if (out) {
       dependencyAuditSnippet = out.slice(0, 12_000);
     }
   }
 
-  const secretPatternHints = config.scanning.enableSecretScan
-    ? secretHintsFromDiff(diff)
-    : [];
+  const secretPatternHints = config.scanning.enableSecretScan ? secretHintsFromDiff(diff) : [];
 
   let optionalSarifSnippet: string | undefined;
   try {
@@ -143,7 +134,7 @@ export async function runReconnaissance(
     dependencyGraph = buildDependencyGraphHeuristic(
       changedFiles.map((c) => c.path),
       fileExcerpts,
-      config.analysis.contextDepth
+      config.analysis.contextDepth,
     );
     if (config.analysis.contextDepth === "deep" && dependencyGraph) {
       await enrichImportedByWithSandbox(sandbox, dependencyGraph);
@@ -156,16 +147,11 @@ export async function runReconnaissance(
     packageManager,
     frameworkHints,
     staticAnalysisSnippet: staticAnalysisSnippet || undefined,
-    diff:
-      diff.length > 200_000
-        ? `${diff.slice(0, 200_000)}\n\n/* … diff truncated … */`
-        : diff,
-    fileExcerpts:
-      Object.keys(fileExcerpts).length > 0 ? fileExcerpts : undefined,
+    diff: diff.length > 200_000 ? `${diff.slice(0, 200_000)}\n\n/* … diff truncated … */` : diff,
+    fileExcerpts: Object.keys(fileExcerpts).length > 0 ? fileExcerpts : undefined,
     linesChanged,
     dependencyAuditSnippet,
-    secretPatternHints:
-      secretPatternHints.length > 0 ? secretPatternHints : undefined,
+    secretPatternHints: secretPatternHints.length > 0 ? secretPatternHints : undefined,
     optionalSarifSnippet,
     dependencyGraph,
   };
@@ -174,24 +160,24 @@ export async function runReconnaissance(
 function buildDependencyGraphHeuristic(
   paths: string[],
   fileExcerpts: Record<string, string>,
-  depth: "standard" | "deep"
+  depth: "standard" | "deep",
 ): DependencyGraph {
   const changedModules = paths.map((path) => {
     const text = fileExcerpts[path] ?? "";
     const imports: string[] = [];
     for (const line of text.split("\n")) {
-      const m = line.match(
-        /^import(?:\s+type)?\s+[\s\S]*?from\s+['"]([^'"]+)['"]/
-      );
+      const m = line.match(/^import(?:\s+type)?\s+[\s\S]*?from\s+['"]([^'"]+)['"]/);
       if (m) imports.push(m[1]);
     }
     const exportRe =
       /^(?:export\s+(?:async\s+)?function\s+(\w+)|export\s+const\s+(\w+)|export\s+class\s+(\w+))/gm;
     const exportsUsedElsewhere: string[] = [];
     let em: RegExpExecArray | null;
-    while ((em = exportRe.exec(text)) !== null) {
+    em = exportRe.exec(text);
+    while (em !== null) {
       const name = em[1] ?? em[2] ?? em[3];
       if (name) exportsUsedElsewhere.push(name);
+      em = exportRe.exec(text);
     }
     return {
       file: path,
@@ -205,12 +191,15 @@ function buildDependencyGraphHeuristic(
   const envVars = new Set<string>();
   const envRe = /process\.env\.([A-Z0-9_]+)/g;
   let ev: RegExpExecArray | null;
-  while ((ev = envRe.exec(allText))) envVars.add(ev[1]);
+  ev = envRe.exec(allText);
+  while (ev !== null) {
+    envVars.add(ev[1]);
+    ev = envRe.exec(allText);
+  }
 
   const securitySensitiveAPIs: string[] = [];
   if (/\beval\s*\(/.test(allText)) securitySensitiveAPIs.push("eval()");
-  if (/\b(?:child_process\.)?exec\s*\(/.test(allText))
-    securitySensitiveAPIs.push("exec");
+  if (/\b(?:child_process\.)?exec\s*\(/.test(allText)) securitySensitiveAPIs.push("exec");
   if (/dangerouslySetInnerHTML/.test(allText))
     securitySensitiveAPIs.push("dangerouslySetInnerHTML");
   if (/\binnerHTML\s*=/.test(allText)) securitySensitiveAPIs.push("innerHTML assignment");
@@ -225,18 +214,17 @@ function buildDependencyGraphHeuristic(
 
 async function enrichImportedByWithSandbox(
   sandbox: Sandbox,
-  graph: DependencyGraph
+  graph: DependencyGraph,
 ): Promise<void> {
   for (const mod of graph.changedModules) {
-    const base = mod.file.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "";
+    const base =
+      mod.file
+        .split("/")
+        .pop()
+        ?.replace(/\.[^.]+$/, "") ?? "";
     if (!base || base.length < 2) continue;
     try {
-      const rg = await sandbox.runCommand("rg", [
-        "-l",
-        `--glob=!**/node_modules/**`,
-        base,
-        ".",
-      ]);
+      const rg = await sandbox.runCommand("rg", ["-l", `--glob=!**/node_modules/**`, base, "."]);
       if (rg.exitCode !== 0) continue;
       const out = await rg.stdout();
       const files = out

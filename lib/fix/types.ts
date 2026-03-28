@@ -1,5 +1,5 @@
-import type { Finding } from "@/lib/analysis/types";
 import type { Octokit } from "@octokit/rest";
+import type { Finding } from "@/lib/analysis/types";
 
 export interface FixResult {
   finding: Finding;

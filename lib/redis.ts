@@ -21,10 +21,7 @@ export interface AuditData {
   etaMsEstimate?: number;
 }
 
-export async function storeAuditResult(params: {
-  key: string;
-  data: AuditData;
-}): Promise<void> {
+export async function storeAuditResult(params: { key: string; data: AuditData }): Promise<void> {
   await redis.set(params.key, JSON.stringify(params.data));
 }
 

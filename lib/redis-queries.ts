@@ -1,5 +1,5 @@
-import { redis } from "@/lib/redis";
 import type { AuditData } from "@/lib/redis";
+import { redis } from "@/lib/redis";
 
 const KEY_PATTERN = /^([^/]+)\/([^/]+)\/pr\/(\d+)$/;
 
@@ -39,10 +39,7 @@ export async function listReposWithAudits(): Promise<RepoKey[]> {
 /**
  * All PR audit keys for a repository.
  */
-export async function listPrAuditKeys(
-  owner: string,
-  repo: string
-): Promise<string[]> {
+export async function listPrAuditKeys(owner: string, repo: string): Promise<string[]> {
   const prefix = `${owner}/${repo}/pr/`;
   const keys: string[] = [];
   let cur: string | number = "0";
@@ -61,7 +58,7 @@ export async function listPrAuditKeys(
 }
 
 export async function loadAuditDataForKeys(
-  keys: string[]
+  keys: string[],
 ): Promise<Array<{ key: string; data: AuditData }>> {
   const out: Array<{ key: string; data: AuditData }> = [];
   for (const key of keys) {

@@ -1,26 +1,18 @@
+import { Octokit } from "@octokit/rest";
 import { Sandbox } from "@vercel/sandbox";
 import { createBashTool } from "bash-tool";
-import { Octokit } from "@octokit/rest";
-import { loadRepoConfig, type LoadRepoConfigResult } from "@/lib/config";
-import { getLearningsBlockForScan } from "@/lib/learnings";
+import { type LoadRepoConfigResult, loadRepoConfig } from "@/lib/config";
 import { getKnowledgeBlockForScan } from "@/lib/knowledge";
+import { getLearningsBlockForScan } from "@/lib/learnings";
+import { logAudit } from "@/lib/logger";
+import { getEstimatedPipelineMs, recordPipelineDurationMs } from "@/lib/pipeline-eta";
 import { storeAuditPredictions } from "@/lib/tracking/predictions";
-import { runReconnaissance } from "./recon";
 import { runChangeAnalysis } from "./change-analysis";
+import { postProcessAudit } from "./post-process";
+import { runReconnaissance } from "./recon";
 import { runSecurityScan } from "./security-scan";
 import { runThreatSynthesis } from "./threat-synthesis";
-import { postProcessAudit } from "./post-process";
-import type {
-  AuditResult,
-  PhaseResult,
-  PRSummary,
-  ReconResult,
-} from "./types";
-import {
-  getEstimatedPipelineMs,
-  recordPipelineDurationMs,
-} from "@/lib/pipeline-eta";
-import { logAudit } from "@/lib/logger";
+import type { AuditResult, PhaseResult, PRSummary, ReconResult } from "./types";
 
 export type PipelineProgress =
   | { stage: "recon"; status: "running" | "complete"; detail?: string }
@@ -54,7 +46,7 @@ export interface PipelineInput {
 
 export async function runSecurityPipeline(
   input: PipelineInput,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
 ): Promise<AuditResult> {
   const started = Date.now();
   const etaMs = await getEstimatedPipelineMs();
@@ -78,12 +70,7 @@ export async function runSecurityPipeline(
   let recon: ReconResult;
 
   try {
-    await sandbox.runCommand("git", [
-      "fetch",
-      "origin",
-      input.prBranch,
-      input.baseBranch,
-    ]);
+    await sandbox.runCommand("git", ["fetch", "origin", input.prBranch, input.baseBranch]);
     await sandbox.runCommand("git", ["checkout", input.prBranch]);
 
     const diffResult = await sandbox.runCommand("git", [
@@ -103,20 +90,14 @@ export async function runSecurityPipeline(
     await onProgress?.({
       stage: "change-analysis",
       status: "running",
-      detail: config.analysis.generatePRSummary
-        ? "PR summary & diagrams"
-        : "Skipped",
+      detail: config.analysis.generatePRSummary ? "PR summary & diagrams" : "Skipped",
     });
     const prSummary: PRSummary = await runChangeAnalysis(recon, config);
     await onProgress?.({ stage: "change-analysis", status: "complete" });
 
     const { tools } = await createBashTool({ sandbox });
 
-    const learningsBlock = await getLearningsBlockForScan(
-      input.owner,
-      input.repo,
-      config
-    );
+    const learningsBlock = await getLearningsBlockForScan(input.owner, input.repo, config);
     const knowledgeBlock = await getKnowledgeBlockForScan(input.owner, config);
 
     await onProgress?.({
@@ -140,7 +121,7 @@ export async function runSecurityPipeline(
       {
         learningsBlock,
         knowledgeBlock,
-      }
+      },
     );
     await onProgress?.({ stage: "security-scan", status: "complete" });
 
@@ -149,13 +130,7 @@ export async function runSecurityPipeline(
       status: "running",
       detail: "Threat model & deduplication",
     });
-    const threat = await runThreatSynthesis(
-      tools,
-      recon,
-      scan.findings,
-      scan.summary,
-      config
-    );
+    const threat = await runThreatSynthesis(tools, recon, scan.findings, scan.summary, config);
     await onProgress?.({ stage: "threat-synthesis", status: "complete" });
 
     await onProgress?.({ stage: "post-processing", status: "running" });
@@ -209,7 +184,7 @@ export async function runSecurityPipeline(
           input.repo,
           input.prNumber,
           prRef.head.sha,
-          processed.findings
+          processed.findings,
         );
       } catch (e) {
         console.warn("[pipeline] storeAuditPredictions failed:", e);

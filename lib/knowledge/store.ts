@@ -31,12 +31,11 @@ export async function listKnowledgeOrg(owner: string): Promise<KnowledgeEntry[]>
 
 export async function appendKnowledgeOrg(
   owner: string,
-  entry: Omit<KnowledgeEntry, "id" | "createdAt"> & { id?: string }
+  entry: Omit<KnowledgeEntry, "id" | "createdAt"> & { id?: string },
 ): Promise<KnowledgeEntry> {
   const list = await listKnowledgeOrg(owner);
   const now = new Date().toISOString();
-  const id =
-    entry.id ?? `k_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  const id = entry.id ?? `k_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
   const row: KnowledgeEntry = {
     ...entry,
     id,

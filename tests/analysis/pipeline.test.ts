@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   mockRunCommand,
@@ -21,9 +21,7 @@ const {
     runCommand: mockRunCommand,
     stop: mockStop,
   });
-  const mockCreateBashTool = vi
-    .fn()
-    .mockResolvedValue({ tools: { bash: {} } });
+  const mockCreateBashTool = vi.fn().mockResolvedValue({ tools: { bash: {} } });
 
   const defaultRecon = {
     changedFiles: [{ path: "src/api.ts" }],
@@ -317,9 +315,7 @@ describe("Security Pipeline", () => {
   it("stops sandbox when recon throws", async () => {
     mockRunReconnaissance.mockRejectedValueOnce(new Error("recon failed"));
 
-    await expect(runSecurityPipeline(defaultInput)).rejects.toThrow(
-      "recon failed"
-    );
+    await expect(runSecurityPipeline(defaultInput)).rejects.toThrow("recon failed");
     expect(mockStop).toHaveBeenCalled();
   });
 
@@ -329,7 +325,7 @@ describe("Security Pipeline", () => {
     expect(mockSandboxCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         timeout: 10 * 60 * 1000,
-      })
+      }),
     );
   });
 });

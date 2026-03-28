@@ -1,5 +1,5 @@
-import { redis } from "@/lib/redis";
 import type { Finding } from "@/lib/analysis/types";
+import { redis } from "@/lib/redis";
 
 export interface StoredPrediction {
   headSha: string;
@@ -17,7 +17,7 @@ export async function storeAuditPredictions(
   repo: string,
   prNumber: number,
   headSha: string,
-  findings: Finding[]
+  findings: Finding[],
 ): Promise<void> {
   const key = `predictions:${owner}/${repo}/pr/${prNumber}`;
   const payload: StoredPrediction = {
@@ -36,7 +36,7 @@ export async function storeAuditPredictions(
 export async function getPredictions(
   owner: string,
   repo: string,
-  prNumber: number
+  prNumber: number,
 ): Promise<StoredPrediction | null> {
   const key = `predictions:${owner}/${repo}/pr/${prNumber}`;
   const raw = await redis.get<string>(key);

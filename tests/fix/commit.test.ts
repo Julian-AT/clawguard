@@ -1,11 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
-import { resolve } from "path";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
-const source = readFileSync(
-  resolve(__dirname, "../../lib/fix/commit.ts"),
-  "utf-8"
-);
+const source = readFileSync(resolve(__dirname, "../../lib/fix/commit.ts"), "utf-8");
 
 describe("Fix Commit Module", () => {
   it("exports commitFixToGitHub as an async function", () => {

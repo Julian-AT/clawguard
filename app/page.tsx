@@ -1,13 +1,8 @@
+import { LayoutDashboard, Shield, Sparkles, Wrench } from "lucide-react";
 import Link from "next/link";
-import { Shield, Sparkles, Wrench, LayoutDashboard } from "lucide-react";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 export default function Home() {
   return (
@@ -17,10 +12,7 @@ export default function Home() {
           <Shield className="size-6 text-primary" />
           ClawGuard
         </div>
-        <Link
-          href="/dashboard"
-          className={cn(buttonVariants({ variant: "outline" }))}
-        >
+        <Link href="/dashboard" className={cn(buttonVariants({ variant: "outline" }))}>
           Dashboard
         </Link>
       </header>
@@ -31,15 +23,11 @@ export default function Home() {
             AI security for every pull request
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            @mention ClawGuard on a PR for a deep security audit, interactive
-            report, and optional auto-fixes committed to your branch — one Next.js
-            deployment.
+            @mention ClawGuard on a PR for a deep security audit, interactive report, and optional
+            auto-fixes committed to your branch — one Next.js deployment.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link
-              href="/report/demo"
-              className={cn(buttonVariants({ size: "lg" }))}
-            >
+            <Link href="/report/demo" className={cn(buttonVariants({ size: "lg" }))}>
               View demo report
             </Link>
             <Link
@@ -57,8 +45,8 @@ export default function Home() {
               <Sparkles className="size-8 text-primary mb-2" />
               <CardTitle className="text-lg">Agentic analysis</CardTitle>
               <CardDescription>
-                Recon, vulnerability scan, and threat synthesis with structured
-                findings, CWE/OWASP mapping, and Mermaid data-flow diagrams.
+                Recon, vulnerability scan, and threat synthesis with structured findings, CWE/OWASP
+                mapping, and Mermaid data-flow diagrams.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -67,8 +55,8 @@ export default function Home() {
               <Wrench className="size-8 text-primary mb-2" />
               <CardTitle className="text-lg">Auto-fix loop</CardTitle>
               <CardDescription>
-                Apply validated fixes from the PR thread; re-audit runs
-                automatically when fixes land.
+                Apply validated fixes from the PR thread; re-audit runs automatically when fixes
+                land.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -77,8 +65,7 @@ export default function Home() {
               <LayoutDashboard className="size-8 text-primary mb-2" />
               <CardTitle className="text-lg">Dashboard</CardTitle>
               <CardDescription>
-                GitHub sign-in, repo overview, and score trends over PR audits
-                stored in Redis.
+                GitHub sign-in, repo overview, and score trends over PR audits stored in Redis.
               </CardDescription>
             </CardHeader>
           </Card>

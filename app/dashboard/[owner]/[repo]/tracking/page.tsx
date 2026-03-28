@@ -1,14 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSession } from "@/lib/auth";
 import { readMetrics } from "@/lib/tracking/metrics";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 interface PageProps {
   params: Promise<{ owner: string; repo: string }>;
@@ -47,8 +41,7 @@ export default async function RepoTrackingPage({ params }: PageProps) {
         <CardHeader>
           <CardTitle>Signals</CardTitle>
           <CardDescription>
-            Updated when bug-labeled issues match predictions. Last update:{" "}
-            {m.lastUpdated}
+            Updated when bug-labeled issues match predictions. Last update: {m.lastUpdated}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-3 text-sm">
@@ -70,9 +63,7 @@ export default async function RepoTrackingPage({ params }: PageProps) {
       <Card>
         <CardHeader>
           <CardTitle>Precision (estimated)</CardTitle>
-          <CardDescription>
-            TP / (TP + FP) when both are non-zero.
-          </CardDescription>
+          <CardDescription>TP / (TP + FP) when both are non-zero.</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-semibold">

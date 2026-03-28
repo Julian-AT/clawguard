@@ -3,7 +3,7 @@ import { formatKnowledgeForPrompt, listKnowledgeOrg } from "./store";
 
 export async function getKnowledgeBlockForScan(
   owner: string,
-  config: ClawGuardConfig
+  config: ClawGuardConfig,
 ): Promise<string> {
   if (!config.learnings.enabled || !config.learnings.allowOrgInheritance) {
     return "";

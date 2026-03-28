@@ -3,7 +3,7 @@ export type LogScope = "audit" | "bot" | "fix" | "rate-limit" | "agent" | "tool"
 export function logAudit(
   scope: LogScope,
   message: string,
-  ctx: Record<string, string | number | undefined>
+  ctx: Record<string, string | number | undefined>,
 ): void {
   const payload: Record<string, unknown> = { scope, msg: message, ts: Date.now() };
   for (const [k, v] of Object.entries(ctx)) {
@@ -15,7 +15,7 @@ export function logAudit(
 export function logWarn(
   scope: LogScope,
   message: string,
-  ctx: Record<string, string | number | undefined> = {}
+  ctx: Record<string, string | number | undefined> = {},
 ): void {
   const payload: Record<string, unknown> = {
     scope,

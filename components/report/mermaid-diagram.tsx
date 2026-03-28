@@ -41,9 +41,7 @@ export function MermaidDiagram({ chart, id }: MermaidDiagramProps) {
   }
 
   if (!svg) {
-    return (
-      <div className="my-4 h-24 animate-pulse rounded-lg bg-zinc-900" />
-    );
+    return <div className="my-4 h-24 animate-pulse rounded-lg bg-zinc-900" />;
   }
 
   return (

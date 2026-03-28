@@ -78,7 +78,9 @@ const component = componentIdx !== -1 ? process.argv[componentIdx + 1] : null;
 
 if (!component) {
   console.log("Available components:");
-  Object.keys(prompts).forEach((name) => console.log(`  --component ${name}`));
+  for (const name of Object.keys(prompts)) {
+    console.log(`  --component ${name}`);
+  }
   console.log("\nUsage: V0_API_KEY=xxx npx tsx scripts/v0-generate.ts --component <name>");
   process.exit(0);
 }

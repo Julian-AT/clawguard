@@ -3,12 +3,7 @@ import { redis } from "@/lib/redis";
 const RUNNING_PREFIX = "audit:running:";
 const COOLDOWN_PREFIX = "audit:cooldown:";
 
-function auditRunningKey(
-  owner: string,
-  repo: string,
-  prNumber: number,
-  headSha: string
-): string {
+function auditRunningKey(owner: string, repo: string, prNumber: number, headSha: string): string {
   return `${RUNNING_PREFIX}${owner}/${repo}/${prNumber}:${headSha}`;
 }
 
@@ -21,7 +16,7 @@ export async function tryAcquireAuditLock(
   repo: string,
   prNumber: number,
   headSha: string,
-  ttlSeconds: number
+  ttlSeconds: number,
 ): Promise<boolean> {
   const key = auditRunningKey(owner, repo, prNumber, headSha);
   const ok = await redis.set(key, "1", { nx: true, ex: ttlSeconds });
@@ -35,7 +30,7 @@ export async function setAuditCooldown(
   owner: string,
   repo: string,
   prNumber: number,
-  cooldownSeconds: number
+  cooldownSeconds: number,
 ): Promise<void> {
   if (cooldownSeconds <= 0) return;
   const key = `${COOLDOWN_PREFIX}${owner}/${repo}/${prNumber}`;
@@ -48,7 +43,7 @@ export async function setAuditCooldown(
 export async function isAuditCooldownActive(
   owner: string,
   repo: string,
-  prNumber: number
+  prNumber: number,
 ): Promise<boolean> {
   const key = `${COOLDOWN_PREFIX}${owner}/${repo}/${prNumber}`;
   const v = await redis.get(key);
@@ -61,7 +56,7 @@ export async function releaseAuditLock(
   owner: string,
   repo: string,
   prNumber: number,
-  headSha: string
+  headSha: string,
 ): Promise<void> {
   await redis.del(auditRunningKey(owner, repo, prNumber, headSha));
 }

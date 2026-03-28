@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { SandboxToolDefinition } from "./types";
 import { ToolError } from "@/lib/errors";
+import type { SandboxToolDefinition } from "./types";
 
 const MAX_FILE_SIZE = 512_000;
 

@@ -1,8 +1,8 @@
 import type { Sandbox } from "@vercel/sandbox";
-import { VectorIndex, type SearchHit } from "./index";
-import { chunkFileContent, embedChunks, embedQuery } from "./embedder";
-import type { CodeChunk } from "./embedder";
 import { logAudit } from "@/lib/logger";
+import type { CodeChunk } from "./embedder";
+import { chunkFileContent, embedChunks, embedQuery } from "./embedder";
+import { type SearchHit, VectorIndex } from "./index";
 
 const SKIP_EXTENSIONS = new Set([
   ".png",
@@ -68,9 +68,7 @@ export async function buildRAGIndex(sandbox: Sandbox): Promise<VectorIndex> {
       const text = buf.toString("utf-8");
       const chunks = chunkFileContent(cleanPath, fileId++, text);
       allChunks.push(...chunks);
-    } catch {
-      continue;
-    }
+    } catch {}
   }
 
   if (allChunks.length === 0) {
@@ -95,7 +93,7 @@ export async function buildRAGIndex(sandbox: Sandbox): Promise<VectorIndex> {
 export async function retrieveContext(
   sandbox: Sandbox,
   query: string,
-  topK: number = 10
+  topK: number = 10,
 ): Promise<SearchHit[]> {
   const index = await buildRAGIndex(sandbox);
   const queryEmb = await embedQuery(query);

@@ -1,12 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { Finding } from "@/lib/analysis/types";
 import {
+  AuditResultSchema,
+  ConfidenceSchema,
   FindingSchema,
   PhaseResultSchema,
-  AuditResultSchema,
   SeveritySchema,
-  ConfidenceSchema,
 } from "@/lib/analysis/types";
-import type { Finding } from "@/lib/analysis/types";
 
 function makeFinding(overrides: Partial<Finding> = {}): Finding {
   return {
@@ -27,7 +27,7 @@ function makeFinding(overrides: Partial<Finding> = {}): Finding {
       ],
     },
     fix: {
-      before: 'db.query(`SELECT * FROM users WHERE name = \'${input}\'`)',
+      before: "db.query(`SELECT * FROM users WHERE name = '${input}'`)",
       after: "db.query('SELECT * FROM users WHERE name = $1', [input])",
     },
     complianceMapping: {
@@ -81,13 +81,15 @@ describe("Analysis Types - Zod Schemas", () => {
     });
 
     it("accepts finding where complianceMapping fields have empty arrays", () => {
-      const finding = makeFinding({ complianceMapping: {
-        pciDss: [],
-        soc2: [],
-        hipaa: [],
-        nist: [],
-        owaspAsvs: [],
-      } });
+      const finding = makeFinding({
+        complianceMapping: {
+          pciDss: [],
+          soc2: [],
+          hipaa: [],
+          nist: [],
+          owaspAsvs: [],
+        },
+      });
       const result = FindingSchema.safeParse(finding);
       expect(result.success).toBe(true);
     });

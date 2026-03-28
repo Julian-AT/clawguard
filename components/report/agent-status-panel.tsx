@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Loader2, Shield, XCircle } from "lucide-react";
 import type { StreamEvent } from "./activity-feed";
 
 interface AgentState {
@@ -73,8 +73,8 @@ export function AgentStatusPanel({ events }: AgentStatusPanelProps) {
             <p className="text-xs font-medium truncate">{agent.name}</p>
             {agent.status === "completed" && (
               <p className="text-[10px] text-muted-foreground">
-                {agent.findingCount} finding{agent.findingCount !== 1 ? "s" : ""}{" "}
-                &middot; {Math.round((agent.durationMs ?? 0) / 1000)}s
+                {agent.findingCount} finding{agent.findingCount !== 1 ? "s" : ""} &middot;{" "}
+                {Math.round((agent.durationMs ?? 0) / 1000)}s
               </p>
             )}
             {agent.status === "failed" && (

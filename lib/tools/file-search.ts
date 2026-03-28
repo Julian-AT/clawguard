@@ -66,9 +66,7 @@ export const fileSearchTool: SandboxToolDefinition<z.infer<typeof FileSearchInpu
               content: entry.data.lines?.text?.trimEnd() ?? "",
             });
           }
-        } catch {
-          continue;
-        }
+        } catch {}
       }
 
       return {

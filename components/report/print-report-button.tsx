@@ -9,10 +9,7 @@ export function PrintReportButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className={cn(
-        buttonVariants({ variant: "outline", size: "sm" }),
-        "print:hidden gap-1.5"
-      )}
+      className={cn(buttonVariants({ variant: "outline", size: "sm" }), "print:hidden gap-1.5")}
     >
       <Printer className="size-3.5" />
       Print

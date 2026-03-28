@@ -1,9 +1,4 @@
-import {
-  ClawGuardError,
-  classifyError,
-  type ErrorSeverity,
-  type ErrorCategory,
-} from "./errors";
+import { ClawGuardError, classifyError, type ErrorCategory, type ErrorSeverity } from "./errors";
 import { logAudit } from "./logger";
 
 interface ErrorContext {
@@ -23,8 +18,7 @@ interface HandledError {
 
 export function handleError(error: unknown, ctx: ErrorContext = {}): HandledError {
   const classified = classifyError(error);
-  const message =
-    error instanceof Error ? error.message : String(error);
+  const message = error instanceof Error ? error.message : String(error);
 
   const logCtx: Record<string, string | number | undefined> = {
     severity: classified.severity,
@@ -45,7 +39,7 @@ export function handleError(error: unknown, ctx: ErrorContext = {}): HandledErro
   logAudit(
     classified.severity === "warning" ? "bot" : "audit",
     `error:${classified.category}:${message.slice(0, 200)}`,
-    logCtx
+    logCtx,
   );
 
   return {

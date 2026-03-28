@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldAlert } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function ReportError({
   reset,
@@ -20,10 +20,11 @@ export default function ReportError({
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-muted-foreground">
-            This audit encountered an error. Please re-run by @mentioning
-            ClawGuard on the pull request.
+            This audit encountered an error. Please re-run by @mentioning ClawGuard on the pull
+            request.
           </p>
           <button
+            type="button"
             onClick={reset}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >

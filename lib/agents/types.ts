@@ -1,5 +1,5 @@
+import type { Finding, ReconResult, ThreatModel } from "@/lib/analysis/types";
 import type { ToolPermission } from "@/lib/tools/types";
-import type { Finding, ThreatModel, ReconResult } from "@/lib/analysis/types";
 
 export interface AgentResult {
   agentName: string;

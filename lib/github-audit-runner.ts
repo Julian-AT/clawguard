@@ -1,15 +1,15 @@
 import type { Octokit } from "@octokit/rest";
-import { reviewPullRequest } from "./review";
-import type { ProgressCallback } from "./review";
-import { storeAuditResult } from "./redis";
-import { formatPipelineStatusMessage } from "./bot-helpers";
-import { loadRepoConfig, type LoadRepoConfigResult } from "./config";
-import { formatErrorForUser } from "./errors";
-import { buildSummaryCard, buildSummaryMarkdown } from "./cards/summary-card";
 import type { AuditResult } from "./analysis/types";
-import { checkAuditRateLimits } from "./rate-limit";
+import { formatPipelineStatusMessage } from "./bot-helpers";
+import { buildSummaryCard, buildSummaryMarkdown } from "./cards/summary-card";
+import { type LoadRepoConfigResult, loadRepoConfig } from "./config";
+import { formatErrorForUser } from "./errors";
 import { logAudit } from "./logger";
 import { getEstimatedPipelineMs } from "./pipeline-eta";
+import { checkAuditRateLimits } from "./rate-limit";
+import { storeAuditResult } from "./redis";
+import type { ProgressCallback } from "./review";
+import { reviewPullRequest } from "./review";
 import { getStreamKey, pushStreamEvent } from "./stream-events";
 
 /** Minimal interface for updating PR thread status (Chat SDK thread or GitHub comment). */
@@ -32,7 +32,7 @@ export async function runAuditPipeline(
     preloadedConfig?: LoadRepoConfigResult;
     /** `markdown` for GitHub Issues API comments; default `jsx` for Chat SDK cards. */
     summaryFormat?: "jsx" | "markdown";
-  }
+  },
 ): Promise<void> {
   const rate = await checkAuditRateLimits({
     installationId: undefined,
@@ -59,9 +59,7 @@ export async function runAuditPipeline(
   let cfgSummary = "";
   let preloaded: LoadRepoConfigResult | undefined = options?.preloadedConfig;
   try {
-    preloaded =
-      preloaded ??
-      (await loadRepoConfig(octokit, owner, repo, pr.head.ref));
+    preloaded = preloaded ?? (await loadRepoConfig(octokit, owner, repo, pr.head.ref));
     cfgSummary = `Using config: **${preloaded.configSource}** · policies: **${preloaded.policiesSource}** (${preloaded.policies.length} rules)`;
   } catch (e) {
     cfgSummary = `Config load warning: ${formatErrorForUser(e)}`;
@@ -89,7 +87,7 @@ export async function runAuditPipeline(
       stage: "recon",
       status: "running",
       detail: "Starting",
-    })}\n\n${cfgSummary}`
+    })}\n\n${cfgSummary}`,
   );
 
   const onProgress: ProgressCallback = async (progress) => {
@@ -111,14 +109,11 @@ export async function runAuditPipeline(
         status: "processing",
         timestamp: new Date().toISOString(),
         pr: { owner, repo, number: prNumber, title: pr.title },
-        pipelineStage:
-          progress.stage === "error" ? "error" : progress.stage,
+        pipelineStage: progress.stage === "error" ? "error" : progress.stage,
         etaMsEstimate: etaHint ?? undefined,
       },
     });
-    await status.edit(
-      `${formatPipelineStatusMessage(progress)}\n\n${cfgSummary}`
-    );
+    await status.edit(`${formatPipelineStatusMessage(progress)}\n\n${cfgSummary}`);
   };
 
   let auditResult: AuditResult;
@@ -132,7 +127,7 @@ export async function runAuditPipeline(
         preloadedConfig: preloaded,
         prNumber,
       },
-      onProgress
+      onProgress,
     );
   } catch (error) {
     const msg = formatErrorForUser(error);
@@ -149,7 +144,7 @@ export async function runAuditPipeline(
       `${formatPipelineStatusMessage({
         stage: "error",
         error: msg,
-      })}\n\n${cfgSummary}\n\nTry again or check ClawGuard deployment logs.`
+      })}\n\n${cfgSummary}\n\nTry again or check ClawGuard deployment logs.`,
     );
     throw error;
   }
@@ -162,9 +157,7 @@ export async function runAuditPipeline(
       timestamp: new Date().toISOString(),
       pr: { owner, repo, number: prNumber, title: pr.title },
       status: partial ? "partial_error" : "complete",
-      partialErrorMessage: partial
-        ? auditResult.metadata?.scanErrorMessage
-        : undefined,
+      partialErrorMessage: partial ? auditResult.metadata?.scanErrorMessage : undefined,
     },
   });
 
@@ -182,7 +175,7 @@ export async function runAuditPipeline(
         owner,
         repo,
         number: prNumber,
-      })
+      }),
     );
   } else {
     const card = buildSummaryCard(auditResult, {

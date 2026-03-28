@@ -1,10 +1,10 @@
 import { Octokit } from "@octokit/rest";
 import { loadRepoConfig } from "@/lib/config";
 import { DEFAULT_CLAWGUARD_CONFIG } from "@/lib/config/defaults";
-import { correlateIssueToPrediction } from "@/lib/tracking/correlator";
-import { getPredictions } from "@/lib/tracking/predictions";
-import { recordTruePositive } from "@/lib/tracking/metrics";
 import { appendLearningRepo, extractLearningFromComment } from "@/lib/learnings";
+import { correlateIssueToPrediction } from "@/lib/tracking/correlator";
+import { recordTruePositive } from "@/lib/tracking/metrics";
+import { getPredictions } from "@/lib/tracking/predictions";
 
 type WaitUntil = (task: Promise<unknown>) => void;
 
@@ -13,7 +13,7 @@ type WaitUntil = (task: Promise<unknown>) => void;
  */
 export async function handleIssuesEvent(
   body: Record<string, unknown>,
-  waitUntil: WaitUntil
+  waitUntil: WaitUntil,
 ): Promise<Response> {
   const action = body.action as string | undefined;
   if (action !== "opened" && action !== "labeled") {
@@ -37,12 +37,7 @@ export async function handleIssuesEvent(
       owner: ownerLogin,
       repo: repoName,
     });
-    const loaded = await loadRepoConfig(
-      octokit,
-      ownerLogin,
-      repoName,
-      repoData.default_branch
-    );
+    const loaded = await loadRepoConfig(octokit, ownerLogin, repoName, repoData.default_branch);
     cfg = loaded.config;
   } catch {
     // defaults
@@ -56,11 +51,8 @@ export async function handleIssuesEvent(
     ?.map((l) => l.name)
     .filter(Boolean) as string[] | undefined;
   const bugHit =
-    labels?.some((l) =>
-      cfg.tracking.bugLabels.some(
-        (b) => b.toLowerCase() === l.toLowerCase()
-      )
-    ) ?? false;
+    labels?.some((l) => cfg.tracking.bugLabels.some((b) => b.toLowerCase() === l.toLowerCase())) ??
+    false;
   if (!bugHit) {
     return new Response("OK", { status: 200 });
   }
@@ -81,7 +73,7 @@ export async function handleIssuesEvent(
     if (conf >= cfg.tracking.correlationConfidenceThreshold) {
       await recordTruePositive(ownerLogin, repoName);
       const extracted = await extractLearningFromComment(
-        `Bug report correlated with prior ClawGuard finding (confidence ${conf.toFixed(2)}): ${bodyText.slice(0, 1500)}`
+        `Bug report correlated with prior ClawGuard finding (confidence ${conf.toFixed(2)}): ${bodyText.slice(0, 1500)}`,
       );
       if (extracted && cfg.learnings.enabled) {
         await appendLearningRepo(ownerLogin, repoName, {

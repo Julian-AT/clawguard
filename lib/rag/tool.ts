@@ -23,7 +23,7 @@ export const semanticSearchTool: SandboxToolDefinition<z.infer<typeof SemanticSe
         const output = hits
           .map(
             (h) =>
-              `--- ${h.chunk.filePath}:${h.chunk.startLine}-${h.chunk.endLine} (score: ${h.score.toFixed(3)}) ---\n${h.chunk.content}`
+              `--- ${h.chunk.filePath}:${h.chunk.startLine}-${h.chunk.endLine} (score: ${h.score.toFixed(3)}) ---\n${h.chunk.content}`,
           )
           .join("\n\n");
 

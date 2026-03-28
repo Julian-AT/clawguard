@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-export const KnowledgeCategorySchema = z.enum([
-  "pattern",
-  "anti-pattern",
-  "adr",
-]);
+export const KnowledgeCategorySchema = z.enum(["pattern", "anti-pattern", "adr"]);
 export type KnowledgeCategory = z.infer<typeof KnowledgeCategorySchema>;
 
 export const KnowledgeEntrySchema = z.object({

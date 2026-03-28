@@ -1,13 +1,13 @@
 import { Octokit } from "@octokit/rest";
-import { loadRepoConfig } from "@/lib/config";
-import { DEFAULT_CLAWGUARD_CONFIG } from "@/lib/config/defaults";
-import { runAuditPipeline } from "@/lib/github-audit-runner";
 import {
   isAuditCooldownActive,
   releaseAuditLock,
   setAuditCooldown,
   tryAcquireAuditLock,
 } from "@/lib/auto-trigger-redis";
+import { loadRepoConfig } from "@/lib/config";
+import { DEFAULT_CLAWGUARD_CONFIG } from "@/lib/config/defaults";
+import { runAuditPipeline } from "@/lib/github-audit-runner";
 
 type WaitUntil = (task: Promise<unknown>) => void;
 
@@ -16,7 +16,7 @@ type WaitUntil = (task: Promise<unknown>) => void;
  */
 export async function handlePullRequestEvent(
   body: Record<string, unknown>,
-  waitUntil: WaitUntil
+  waitUntil: WaitUntil,
 ): Promise<Response> {
   const action = body.action as string | undefined;
   if (
@@ -41,13 +41,7 @@ export async function handlePullRequestEvent(
   const headSha = head?.sha as string | undefined;
   const headRef = head?.ref as string | undefined;
 
-  if (
-    !ownerLogin ||
-    !repoName ||
-    prNumber == null ||
-    !headSha ||
-    !headRef
-  ) {
+  if (!ownerLogin || !repoName || prNumber == null || !headSha || !headRef) {
     return new Response("OK", { status: 200 });
   }
 
@@ -87,16 +81,13 @@ export async function handlePullRequestEvent(
     return new Response("OK", { status: 200 });
   }
 
-  const lockTtlSeconds = Math.min(
-    7200,
-    Math.ceil(cfg.scanning.timeout / 1000) + 120
-  );
+  const lockTtlSeconds = Math.min(7200, Math.ceil(cfg.scanning.timeout / 1000) + 120);
   const acquired = await tryAcquireAuditLock(
     ownerLogin,
     repoName,
     prNumber,
     headSha,
-    lockTtlSeconds
+    lockTtlSeconds,
   );
   if (!acquired) {
     return new Response("OK", { status: 200 });
@@ -104,12 +95,7 @@ export async function handlePullRequestEvent(
 
   const task = (async () => {
     try {
-      const preloaded = await loadRepoConfig(
-        octokit,
-        ownerLogin,
-        repoName,
-        headRef
-      );
+      const preloaded = await loadRepoConfig(octokit, ownerLogin, repoName, headRef);
       const { data: created } = await octokit.issues.createComment({
         owner: ownerLogin,
         repo: repoName,
@@ -131,12 +117,7 @@ export async function handlePullRequestEvent(
         preloadedConfig: preloaded,
         summaryFormat: "markdown",
       });
-      await setAuditCooldown(
-        ownerLogin,
-        repoName,
-        prNumber,
-        trigger.cooldownSeconds
-      );
+      await setAuditCooldown(ownerLogin, repoName, prNumber, trigger.cooldownSeconds);
     } catch (e) {
       console.error("[webhook] pull_request audit error:", e);
     } finally {

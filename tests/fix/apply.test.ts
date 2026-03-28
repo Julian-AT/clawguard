@@ -1,11 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
-import { resolve } from "path";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
-const source = readFileSync(
-  resolve(__dirname, "../../lib/fix/apply.ts"),
-  "utf-8"
-);
+const source = readFileSync(resolve(__dirname, "../../lib/fix/apply.ts"), "utf-8");
 
 describe("Fix Apply Module", () => {
   it("exports applyStoredFix as an async function", () => {
@@ -30,7 +27,7 @@ describe("Fix Apply Module", () => {
     // 2. Restoring the original content on validation failure
     const writeFilesMatches = source.match(/sandbox\.writeFiles/g);
     expect(writeFilesMatches).not.toBeNull();
-    expect(writeFilesMatches!.length).toBeGreaterThanOrEqual(2);
+    expect(writeFilesMatches?.length).toBeGreaterThanOrEqual(2);
   });
 
   it("handles whitespace normalization with \\r\\n line ending replacement", () => {

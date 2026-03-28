@@ -1,15 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSession } from "@/lib/auth";
 import { listLearningsOrg, listLearningsRepo } from "@/lib/learnings";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 interface PageProps {
   params: Promise<{ owner: string }>;
@@ -25,10 +19,7 @@ export default async function OrgLearningsPage({ params, searchParams }: PagePro
   const { owner } = await params;
   const { repo } = await searchParams;
   const orgLearnings = await listLearningsOrg(owner);
-  const repoLearnings =
-    repo && repo.length > 0
-      ? await listLearningsRepo(owner, repo)
-      : [];
+  const repoLearnings = repo && repo.length > 0 ? await listLearningsRepo(owner, repo) : [];
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
@@ -53,21 +44,14 @@ export default async function OrgLearningsPage({ params, searchParams }: PagePro
         <Card>
           <CardHeader>
             <CardTitle>Organization</CardTitle>
-            <CardDescription>
-              Inherited by repos when enabled in config.
-            </CardDescription>
+            <CardDescription>Inherited by repos when enabled in config.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {orgLearnings.map((l) => (
-              <div
-                key={l.id}
-                className="rounded-lg border border-border p-3 text-sm"
-              >
+              <div key={l.id} className="rounded-lg border border-border p-3 text-sm">
                 <div className="flex flex-wrap gap-2 items-center mb-1">
                   <Badge variant="outline">{l.action}</Badge>
-                  <span className="text-xs text-muted-foreground">
-                    confidence {l.confidence}
-                  </span>
+                  <span className="text-xs text-muted-foreground">confidence {l.confidence}</span>
                 </div>
                 <p className="font-medium">{l.pattern}</p>
                 <p className="text-muted-foreground mt-1">{l.context}</p>
@@ -86,10 +70,7 @@ export default async function OrgLearningsPage({ params, searchParams }: PagePro
           </CardHeader>
           <CardContent className="space-y-3">
             {repoLearnings.map((l) => (
-              <div
-                key={l.id}
-                className="rounded-lg border border-border p-3 text-sm"
-              >
+              <div key={l.id} className="rounded-lg border border-border p-3 text-sm">
                 <div className="flex flex-wrap gap-2 items-center mb-1">
                   <Badge variant="outline">{l.action}</Badge>
                 </div>
@@ -103,8 +84,8 @@ export default async function OrgLearningsPage({ params, searchParams }: PagePro
 
       {orgLearnings.length === 0 && repoLearnings.length === 0 && (
         <p className="text-sm text-muted-foreground">
-          No learnings stored yet. Reply to ClawGuard in a PR with feedback (e.g. false
-          positive) to create one.
+          No learnings stored yet. Reply to ClawGuard in a PR with feedback (e.g. false positive) to
+          create one.
         </p>
       )}
     </div>

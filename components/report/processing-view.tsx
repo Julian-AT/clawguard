@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Shield } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ActivityFeed, type StreamEvent } from "./activity-feed";
 import { AgentStatusPanel } from "./agent-status-panel";
 
@@ -22,18 +22,12 @@ const STAGE_LABEL: Record<string, string> = {
   error: "Error",
 };
 
-async function fetchEtaMs(
-  owner: string,
-  repo: string,
-  pr: string
-): Promise<number | undefined> {
+async function fetchEtaMs(owner: string, repo: string, pr: string): Promise<number | undefined> {
   try {
     const res = await fetch(`/api/report/${owner}/${repo}/${pr}`);
     if (!res.ok) return undefined;
     const data = (await res.json()) as { etaMsEstimate?: number };
-    return typeof data.etaMsEstimate === "number"
-      ? data.etaMsEstimate
-      : undefined;
+    return typeof data.etaMsEstimate === "number" ? data.etaMsEstimate : undefined;
   } catch {
     return undefined;
   }
@@ -44,9 +38,7 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
   const [events, setEvents] = useState<StreamEvent[]>([]);
   const [stage, setStage] = useState<string | undefined>();
   const [elapsed, setElapsed] = useState(0);
-  const [findingCounts, setFindingCounts] = useState<Record<string, number>>(
-    {}
-  );
+  const [findingCounts, setFindingCounts] = useState<Record<string, number>>({});
   const [sseConnected, setSseConnected] = useState(false);
   const [etaMsEstimate, setEtaMsEstimate] = useState<number | undefined>();
   const startTime = useRef(Date.now());
@@ -104,10 +96,7 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
       for (const type of eventTypes) {
         source.addEventListener(type, (e: MessageEvent) => {
           try {
-            const data = JSON.parse(e.data as string) as Record<
-              string,
-              unknown
-            >;
+            const data = JSON.parse(e.data as string) as Record<string, unknown>;
             addEvent(type, data);
             if (type === "pipeline:complete") {
               source?.close();
@@ -161,18 +150,14 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
     return () => clearInterval(poll);
   }, [owner, repo, pr, router, sseConnected]);
 
-  const label = stage ? STAGE_LABEL[stage] ?? stage : "Initializing";
+  const label = stage ? (STAGE_LABEL[stage] ?? stage) : "Initializing";
   const totalFindings = Object.values(findingCounts).reduce((a, b) => a + b, 0);
   const minutes = Math.floor(elapsed / 60);
   const seconds = elapsed % 60;
   const etaRemainingSec =
-    etaMsEstimate != null
-      ? Math.max(0, Math.round(etaMsEstimate / 1000) - elapsed)
-      : undefined;
-  const etaMinutes =
-    etaRemainingSec != null ? Math.floor(etaRemainingSec / 60) : undefined;
-  const etaSeconds =
-    etaRemainingSec != null ? etaRemainingSec % 60 : undefined;
+    etaMsEstimate != null ? Math.max(0, Math.round(etaMsEstimate / 1000) - elapsed) : undefined;
+  const etaMinutes = etaRemainingSec != null ? Math.floor(etaRemainingSec / 60) : undefined;
+  const etaSeconds = etaRemainingSec != null ? etaRemainingSec % 60 : undefined;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 sm:p-8">
@@ -190,9 +175,7 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
             PR #{pr}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs">
-            <span className="text-primary font-medium uppercase tracking-wide">
-              {label}
-            </span>
+            <span className="text-primary font-medium uppercase tracking-wide">{label}</span>
             <span className="text-muted-foreground tabular-nums">
               Elapsed {minutes}:{seconds.toString().padStart(2, "0")}
             </span>
@@ -248,8 +231,8 @@ export function ProcessingView({ owner, repo, pr }: ProcessingViewProps) {
           </div>
 
           <p className="text-[10px] text-muted-foreground text-center">
-            {sseConnected ? "Live streaming" : "Polling"} &middot; This page
-            updates automatically when analysis completes.
+            {sseConnected ? "Live streaming" : "Polling"} &middot; This page updates automatically
+            when analysis completes.
           </p>
         </CardContent>
       </Card>

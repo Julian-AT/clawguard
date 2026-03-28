@@ -1,7 +1,7 @@
 "use client";
 
-import type { PRSummary } from "@/lib/analysis/types";
 import { MermaidDiagram } from "@/components/report/mermaid-diagram";
+import type { PRSummary } from "@/lib/analysis/types";
 
 interface PrSummaryTabProps {
   prSummary: PRSummary | undefined;
@@ -72,14 +72,17 @@ export function PrSummaryTab({ prSummary }: PrSummaryTabProps) {
         <section>
           <h3 className="text-lg font-semibold mb-3">Sequence diagrams</h3>
           <div className="space-y-6">
-            {prSummary.sequenceDiagrams.map((sd, idx) => (
+            {prSummary.sequenceDiagrams.map((sd) => (
               <div
-                key={`${sd.title}-${idx}`}
+                key={`${sd.title}-${sd.mermaidDiagram.slice(0, 48)}`}
                 className="rounded-lg border border-border bg-card p-4"
               >
                 <h4 className="font-semibold text-sm mb-1">{sd.title}</h4>
                 <p className="text-xs text-muted-foreground mb-3">{sd.description}</p>
-                <MermaidDiagram chart={sd.mermaidDiagram} id={`pr-seq-${idx}`} />
+                <MermaidDiagram
+                  chart={sd.mermaidDiagram}
+                  id={`pr-seq-${sd.title.replace(/\W+/g, "-").slice(0, 32)}`}
+                />
               </div>
             ))}
           </div>

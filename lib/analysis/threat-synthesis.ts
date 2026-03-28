@@ -1,15 +1,15 @@
-import { ToolLoopAgent, Output, stepCountIs } from "ai";
 import { gateway } from "@ai-sdk/gateway";
 import type { ToolSet } from "ai";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
+import { z } from "zod";
 import type { ClawGuardConfig } from "@/lib/config/schemas";
 import {
-  FindingSchema,
-  ThreatModelSchema,
   type Finding,
+  FindingSchema,
   type ReconResult,
   type ThreatModel,
+  ThreatModelSchema,
 } from "./types";
-import { z } from "zod";
 
 const ThreatSynthesisOutputSchema = z.object({
   findings: z.array(FindingSchema),
@@ -25,7 +25,7 @@ export async function runThreatSynthesis(
   recon: ReconResult,
   initialFindings: Finding[],
   securityScanSummary: string,
-  config: ClawGuardConfig
+  config: ClawGuardConfig,
 ): Promise<{ findings: Finding[]; threatModel: ThreatModel; summary: string }> {
   const modelRef = `${config.model.provider}/${config.model.model}`;
   const agent = new ToolLoopAgent({

@@ -1,23 +1,21 @@
-import { Chat } from "chat";
-import type { Thread } from "chat";
 import type { GitHubRawMessage } from "@chat-adapter/github";
-import { buildChatAdapters } from "./chat-adapters";
 import { createMemoryState } from "@chat-adapter/state-memory";
 import { createRedisState } from "@chat-adapter/state-redis";
 import { Octokit } from "@octokit/rest";
-import { getAuditResult } from "./redis";
+import type { Thread } from "chat";
+import { Chat } from "chat";
 import { formatPipelineStatusMessage } from "./bot-helpers";
-import { loadRepoConfig, type LoadRepoConfigResult } from "./config";
-import { DEFAULT_CLAWGUARD_CONFIG } from "./config/defaults";
-import { formatErrorForUser } from "./errors";
 import { buildSummaryCard } from "./cards/summary-card";
-import { runAuditPipeline } from "./github-audit-runner";
-import type { AuditResult } from "./analysis/types";
+import { buildChatAdapters } from "./chat-adapters";
+import { loadRepoConfig } from "./config";
+import { DEFAULT_CLAWGUARD_CONFIG } from "./config/defaults";
 import { fixAll, fixFinding } from "./fix";
 import type { FixContext } from "./fix/types";
-import type { Intent } from "./intent-types";
+import { runAuditPipeline } from "./github-audit-runner";
 import { classifyIntentWithLlm } from "./intent-classifier";
+import type { Intent } from "./intent-types";
 import { appendLearningRepo, extractLearningFromComment } from "./learnings";
+import { getAuditResult } from "./redis";
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
@@ -27,9 +25,7 @@ function createStateAdapter() {
   if (process.env.REDIS_URL) {
     return createRedisState();
   }
-  console.warn(
-    "[clawguard] REDIS_URL not set; using in-memory state (single-instance only)"
-  );
+  console.warn("[clawguard] REDIS_URL not set; using in-memory state (single-instance only)");
   return createMemoryState();
 }
 
@@ -49,10 +45,7 @@ export function detectIntent(body: string, botName: string): Intent {
 
   const afterMention = lower.split(mention).pop()?.trim() ?? "";
 
-  if (
-    afterMention.startsWith("fix all") ||
-    afterMention.includes("fix all critical")
-  ) {
+  if (afterMention.startsWith("fix all") || afterMention.includes("fix all critical")) {
     return { type: "fix-all" };
   }
 
@@ -95,14 +88,14 @@ type ThreadPostResult = Awaited<ReturnType<Thread["post"]>>;
 async function handleFeedbackIntent(
   thread: Thread,
   raw: GitHubRawMessage,
-  rawText: string
+  rawText: string,
 ): Promise<void> {
   const owner = raw.repository.owner.login;
   const repo = raw.repository.name;
   const extracted = await extractLearningFromComment(rawText);
   if (!extracted) {
     await thread.post(
-      "I couldn't extract a concrete learning from that. Try rephrasing with what should change next time."
+      "I couldn't extract a concrete learning from that. Try rephrasing with what should change next time.",
     );
     return;
   }
@@ -114,14 +107,14 @@ async function handleFeedbackIntent(
   });
   await thread.post(
     `Understood — I'll factor this into future reviews for **${owner}/${repo}**:\n\n` +
-      `**${extracted.pattern}** (${extracted.action})`
+      `**${extracted.pattern}** (${extracted.action})`,
   );
 }
 
 async function runAuditAndPost(
   _thread: Thread,
   raw: GitHubRawMessage,
-  status: ThreadPostResult
+  status: ThreadPostResult,
 ): Promise<void> {
   const owner = raw.repository.owner.login;
   const repo = raw.repository.name;
@@ -138,7 +131,7 @@ async function runAuditAndPost(
 async function runFixFlow(
   thread: Thread,
   raw: GitHubRawMessage,
-  intent: { type: "fix-all" } | { type: "fix-finding"; target: string }
+  intent: { type: "fix-all" } | { type: "fix-finding"; target: string },
 ): Promise<void> {
   const owner = raw.repository.owner.login;
   const repo = raw.repository.name;
@@ -159,9 +152,7 @@ async function runFixFlow(
   };
 
   if (intent.type === "fix-all") {
-    const status = await thread.post(
-      "Starting auto-fix for all CRITICAL + HIGH findings..."
-    );
+    const status = await thread.post("Starting auto-fix for all CRITICAL + HIGH findings...");
 
     const { results, reauditResult } = await fixAll({
       ...fixContext,
@@ -189,7 +180,7 @@ async function runFixFlow(
     if (reauditResult) {
       summaryLines.push("");
       summaryLines.push(
-        `Re-audit complete. New score: ${reauditResult.score}/100 (${reauditResult.grade}).`
+        `Re-audit complete. New score: ${reauditResult.score}/100 (${reauditResult.grade}).`,
       );
     }
 
@@ -218,20 +209,18 @@ async function runFixFlow(
     }
 
     const finding = auditResult.findings.find(
-      (f) =>
-        f.type.toLowerCase().includes(targetLower) ||
-        f.cweId.toLowerCase() === targetLower
+      (f) => f.type.toLowerCase().includes(targetLower) || f.cweId.toLowerCase() === targetLower,
     );
 
     if (!finding) {
       await thread.post(
-        `Could not find a finding matching "${intent.target}". Available findings: ${auditResult.findings.map((f) => f.type).join(", ")}`
+        `Could not find a finding matching "${intent.target}". Available findings: ${auditResult.findings.map((f) => f.type).join(", ")}`,
       );
       return;
     }
 
     const status = await thread.post(
-      `Fixing: ${finding.type} (${finding.cweId}) in \`${finding.file}:${finding.line}\`...`
+      `Fixing: ${finding.type} (${finding.cweId}) in \`${finding.file}:${finding.line}\`...`,
     );
 
     const { Sandbox } = await import("@vercel/sandbox");
@@ -247,11 +236,7 @@ async function runFixFlow(
     });
 
     try {
-      await sandbox.runCommand("git", [
-        "fetch",
-        "origin",
-        fixContext.prBranch,
-      ]);
+      await sandbox.runCommand("git", ["fetch", "origin", fixContext.prBranch]);
       await sandbox.runCommand("git", ["checkout", fixContext.prBranch]);
       await sandbox.runCommand("npm", ["install", "--ignore-scripts"]);
 
@@ -259,11 +244,11 @@ async function runFixFlow(
 
       if (result.status === "fixed") {
         await status.edit(
-          `Fixed: ${result.finding.type} (${result.finding.cweId}) in \`${result.finding.file}:${result.finding.line}\` -- commit ${result.commitSha?.slice(0, 7)}`
+          `Fixed: ${result.finding.type} (${result.finding.cweId}) in \`${result.finding.file}:${result.finding.line}\` -- commit ${result.commitSha?.slice(0, 7)}`,
         );
       } else {
         await status.edit(
-          `Could not auto-fix: ${result.finding.type} (${result.finding.cweId}) -- ${result.error}`
+          `Could not auto-fix: ${result.finding.type} (${result.finding.cweId}) -- ${result.error}`,
         );
       }
     } finally {
@@ -290,7 +275,7 @@ bot.onNewMention(async (thread, message) => {
   } catch {}
 
   const status = await thread.post(
-    "## 🛡️ ClawGuard Security Audit\n\n⬜ Phase 1: Code Quality Review\n⬜ Phase 2: Vulnerability Scan\n⬜ Phase 3: Threat Model"
+    "## 🛡️ ClawGuard Security Audit\n\n⬜ Phase 1: Code Quality Review\n⬜ Phase 2: Vulnerability Scan\n⬜ Phase 3: Threat Model",
   );
   if (autoSubscribe) await thread.subscribe();
 
@@ -299,7 +284,7 @@ bot.onNewMention(async (thread, message) => {
   } catch (error) {
     console.error("[bot] Review error:", error);
     await status.edit(
-      "## 🛡️ ClawGuard Security Audit\n\n❌ Something went wrong during the security analysis. Please try again."
+      "## 🛡️ ClawGuard Security Audit\n\n❌ Something went wrong during the security analysis. Please try again.",
     );
   }
 });
@@ -326,7 +311,7 @@ bot.onSubscribedMessage(async (thread, message) => {
       await runFixFlow(thread, raw, intent);
     } else if (intent.type === "re-audit") {
       const status = await thread.post(
-        "## 🛡️ ClawGuard Security Audit\n\n⬜ Phase 1: Code Quality Review\n⬜ Phase 2: Vulnerability Scan\n⬜ Phase 3: Threat Model"
+        "## 🛡️ ClawGuard Security Audit\n\n⬜ Phase 1: Code Quality Review\n⬜ Phase 2: Vulnerability Scan\n⬜ Phase 3: Threat Model",
       );
       await runAuditAndPost(thread, raw, status);
     }
@@ -359,14 +344,14 @@ bot.onAction("re-audit", async (event) => {
       stage: "recon",
       status: "running",
       detail: "Re-audit",
-    })
+    }),
   );
   try {
     await runAuditAndPost(thread, raw, status);
   } catch (error) {
     console.error("[bot] onAction re-audit error:", error);
     await thread.post(
-      `❌ Re-audit failed. Please try \`@${botUsername} review\` in a new comment.`
+      `❌ Re-audit failed. Please try \`@${botUsername} review\` in a new comment.`,
     );
   }
 });

@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 import { ReportShell } from "@/components/report/report-shell";
 
 describe("ReportShell (SSR smoke)", () => {
@@ -11,7 +11,7 @@ describe("ReportShell (SSR smoke)", () => {
         repo: "app",
         prNumber: 42,
         children: createElement("div", null, "content"),
-      })
+      }),
     );
     // React SSR inserts comment nodes between text segments
     expect(html).toMatch(/acme.*\/.*app.*#.*42/);

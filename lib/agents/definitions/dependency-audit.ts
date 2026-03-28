@@ -1,10 +1,10 @@
-import { ToolLoopAgent, Output, stepCountIs } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { createBashTool } from "bash-tool";
 import { z } from "zod";
-import { FindingSchema, type Finding } from "@/lib/analysis/types";
-import type { SecurityAgentDefinition, AgentContext, AgentResult } from "@/lib/agents/types";
 import { registerAgent } from "@/lib/agents/registry";
+import type { AgentContext, AgentResult, SecurityAgentDefinition } from "@/lib/agents/types";
+import { type Finding, FindingSchema } from "@/lib/analysis/types";
 import { injectSkills } from "@/lib/skills";
 
 const OutputSchema = z.object({
@@ -46,8 +46,8 @@ function buildPrompt(context: AgentContext): string {
     `Changed manifest/lock paths: ${lockHints || "(none flagged)"}`,
     context.recon.dependencyAuditSnippet
       ? "## Pre-collected audit snippet (may be truncated)\n```json\n" +
-          context.recon.dependencyAuditSnippet +
-          "\n```"
+        context.recon.dependencyAuditSnippet +
+        "\n```"
       : "",
     "",
     "## Diff (for context only)",

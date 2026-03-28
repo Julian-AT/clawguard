@@ -12,9 +12,7 @@ function keyPr(owner: string, repo: string, pr: number): string {
   return `ratelimit:pr:${owner}/${repo}/${pr}`;
 }
 
-export type RateLimitResult =
-  | { ok: true }
-  | { ok: false; reason: string; retryAfterSec?: number };
+export type RateLimitResult = { ok: true } | { ok: false; reason: string; retryAfterSec?: number };
 
 /**
  * Best-effort rate limits using INCR + TTL (Upstash REST).

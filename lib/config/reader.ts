@@ -1,12 +1,12 @@
-import { parse as parseYaml } from "yaml";
 import type { Octokit } from "@octokit/rest";
+import { parse as parseYaml } from "yaml";
 import { ConfigError } from "@/lib/errors";
 import { DEFAULT_CLAWGUARD_CONFIG } from "./defaults";
 import {
+  type ClawGuardConfig,
   ClawGuardConfigFileSchema,
   ClawGuardConfigSchema,
   PoliciesFileSchema,
-  type ClawGuardConfig,
   type PolicyRule,
 } from "./schemas";
 
@@ -15,7 +15,7 @@ async function getRepoFileContent(
   owner: string,
   repo: string,
   path: string,
-  ref: string
+  ref: string,
 ): Promise<string | null> {
   try {
     const { data } = await octokit.repos.getContent({
@@ -34,7 +34,7 @@ async function getRepoFileContent(
 }
 
 function mergeConfig(
-  parsed: ReturnType<typeof ClawGuardConfigFileSchema.safeParse>["data"]
+  parsed: ReturnType<typeof ClawGuardConfigFileSchema.safeParse>["data"],
 ): ClawGuardConfig {
   const base = structuredClone(DEFAULT_CLAWGUARD_CONFIG);
   if (!parsed) return ClawGuardConfigSchema.parse(base);
@@ -54,9 +54,7 @@ function mergeConfig(
       ...parsed.thresholds,
     },
     ignorePaths:
-      parsed.ignorePaths && parsed.ignorePaths.length > 0
-        ? parsed.ignorePaths
-        : base.ignorePaths,
+      parsed.ignorePaths && parsed.ignorePaths.length > 0 ? parsed.ignorePaths : base.ignorePaths,
     report: {
       ...base.report,
       ...parsed.report,
@@ -69,8 +67,7 @@ function mergeConfig(
     scanning: {
       ...base.scanning,
       ...parsed.scanning,
-      maxSteps:
-        parsed.scanning?.maxSteps ?? model.maxSteps ?? base.scanning.maxSteps,
+      maxSteps: parsed.scanning?.maxSteps ?? model.maxSteps ?? base.scanning.maxSteps,
     },
     notifications: {
       ...base.notifications,
@@ -115,24 +112,18 @@ export async function loadRepoConfig(
   octokit: Octokit,
   owner: string,
   repo: string,
-  ref: string
+  ref: string,
 ): Promise<LoadRepoConfigResult> {
   let configSource: "repo" | "defaults" = "defaults";
   let policiesSource: "repo" | "defaults" = "defaults";
 
-  const configYaml = await getRepoFileContent(
-    octokit,
-    owner,
-    repo,
-    ".clawguard/config.yml",
-    ref
-  );
+  const configYaml = await getRepoFileContent(octokit, owner, repo, ".clawguard/config.yml", ref);
   const policiesYaml = await getRepoFileContent(
     octokit,
     owner,
     repo,
     ".clawguard/policies.yml",
-    ref
+    ref,
   );
 
   let config: ClawGuardConfig = structuredClone(DEFAULT_CLAWGUARD_CONFIG);

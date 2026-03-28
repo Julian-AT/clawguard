@@ -1,11 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AuditResult } from "../lib/analysis/types";
 
 // Use vi.hoisted for mock variables used in vi.mock factories
 const { mockRunSecurityPipeline } = vi.hoisted(() => {
   const mockAuditResult: AuditResult = {
     summary: "Clean bill of health",
-    threatModel: { attackSurfaces: [], attackPaths: [] },
+    threatModel: {
+      attackSurfaces: [],
+      attackPaths: [],
+      strideCategorization: [],
+      trustBoundaries: [],
+      riskMatrix: [],
+    },
     phases: [
       { phase: "code-quality", summary: "No quality issues", findings: [] },
       { phase: "vulnerability-scan", summary: "No vulnerabilities", findings: [] },
@@ -16,9 +22,7 @@ const { mockRunSecurityPipeline } = vi.hoisted(() => {
     grade: "A",
   };
 
-  const mockRunSecurityPipeline = vi
-    .fn()
-    .mockResolvedValue(mockAuditResult);
+  const mockRunSecurityPipeline = vi.fn().mockResolvedValue(mockAuditResult);
 
   return { mockRunSecurityPipeline };
 });
@@ -64,7 +68,7 @@ describe("Review Pipeline", () => {
         prBranch: "feature/test",
         baseBranch: "main",
       },
-      onProgress
+      onProgress,
     );
 
     expect(mockRunSecurityPipeline).toHaveBeenCalledWith(
@@ -74,7 +78,7 @@ describe("Review Pipeline", () => {
         prBranch: "feature/test",
         baseBranch: "main",
       },
-      onProgress
+      onProgress,
     );
   });
 
@@ -92,7 +96,7 @@ describe("Review Pipeline", () => {
         owner: "test-owner",
         repo: "test-repo",
       }),
-      undefined
+      undefined,
     );
   });
 });

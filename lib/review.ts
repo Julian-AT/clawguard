@@ -1,16 +1,15 @@
 import {
-  runSecurityPipeline,
-  type ProgressCallback,
   type PipelineInput,
+  type ProgressCallback,
+  runSecurityPipeline,
 } from "./analysis/pipeline";
 import type { AuditResult } from "./analysis/types";
 
-export type { PipelineInput as ReviewInput };
-export type { ProgressCallback };
+export type { PipelineInput as ReviewInput, ProgressCallback };
 
 export async function reviewPullRequest(
   input: PipelineInput,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
 ): Promise<AuditResult> {
   return runSecurityPipeline(input, onProgress);
 }

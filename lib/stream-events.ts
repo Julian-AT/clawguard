@@ -3,7 +3,7 @@ import { redis } from "@/lib/redis";
 export async function pushStreamEvent(
   channelKey: string,
   event: string,
-  payload: unknown
+  payload: unknown,
 ): Promise<void> {
   await redis.rpush(channelKey, JSON.stringify({ event, payload }));
   await redis.expire(channelKey, 3600);

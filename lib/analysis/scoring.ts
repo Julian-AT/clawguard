@@ -1,15 +1,12 @@
+import { GRADE_THRESHOLDS, SEVERITY_DEDUCTIONS } from "@/lib/constants";
 import type { Finding, Severity } from "./types";
-import {
-  GRADE_THRESHOLDS,
-  SEVERITY_DEDUCTIONS,
-} from "@/lib/constants";
 
 export { GRADE_THRESHOLDS };
 
 export function calculateScore(findings: Finding[]): number {
   const totalDeduction = findings.reduce(
     (sum, f) => sum + (SEVERITY_DEDUCTIONS[f.severity] || 0),
-    0
+    0,
   );
   return Math.max(0, 100 - totalDeduction);
 }

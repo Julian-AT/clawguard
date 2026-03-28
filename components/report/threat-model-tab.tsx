@@ -1,8 +1,8 @@
 "use client";
 
-import type { ThreatModel } from "@/lib/analysis/types";
 import { AttackSurfaceTable } from "@/components/report/attack-surface-table";
 import { MermaidDiagram } from "@/components/report/mermaid-diagram";
+import type { ThreatModel } from "@/lib/analysis/types";
 
 interface ThreatModelTabProps {
   threatModel: ThreatModel | undefined;
@@ -25,9 +25,7 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
         <section className="grid gap-4 sm:grid-cols-2">
           {threatModel.overallRisk && (
             <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
-              <h3 className="text-xs font-semibold uppercase text-amber-400 mb-1">
-                Overall risk
-              </h3>
+              <h3 className="text-xs font-semibold uppercase text-amber-400 mb-1">Overall risk</h3>
               <p className="text-sm">{threatModel.overallRisk}</p>
             </div>
           )}
@@ -41,50 +39,40 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
           )}
           {threatModel.compoundRiskSummary && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 sm:col-span-2">
-              <h3 className="text-xs font-semibold uppercase text-red-400 mb-1">
-                Compound risk
-              </h3>
+              <h3 className="text-xs font-semibold uppercase text-red-400 mb-1">Compound risk</h3>
               <p className="text-sm">{threatModel.compoundRiskSummary}</p>
             </div>
           )}
         </section>
       )}
 
-      {threatModel.strideCategorization &&
-        threatModel.strideCategorization.length > 0 && (
-          <section>
-            <h3 className="text-lg font-semibold mb-3">STRIDE</h3>
-            <ul className="space-y-2 text-sm">
-              {threatModel.strideCategorization.map((s, i) => (
-                <li
-                  key={`${s.label}-${i}`}
-                  className="rounded-md border border-border bg-card/40 px-3 py-2"
-                >
-                  <span className="font-mono text-xs text-primary mr-2">
-                    [{s.stride}]
-                  </span>
-                  <span className="font-medium">{s.label}</span>
-                  <span className="text-muted-foreground"> — {s.description}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+      {threatModel.strideCategorization && threatModel.strideCategorization.length > 0 && (
+        <section>
+          <h3 className="text-lg font-semibold mb-3">STRIDE</h3>
+          <ul className="space-y-2 text-sm">
+            {threatModel.strideCategorization.map((s) => (
+              <li
+                key={`${s.stride}-${s.label}`}
+                className="rounded-md border border-border bg-card/40 px-3 py-2"
+              >
+                <span className="font-mono text-xs text-primary mr-2">[{s.stride}]</span>
+                <span className="font-medium">{s.label}</span>
+                <span className="text-muted-foreground"> — {s.description}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {threatModel.trustBoundaries && threatModel.trustBoundaries.length > 0 && (
         <section>
           <h3 className="text-lg font-semibold mb-3">Trust boundaries</h3>
           <div className="space-y-4">
             {threatModel.trustBoundaries.map((tb, idx) => (
-              <div
-                key={tb.name}
-                className="rounded-lg border border-border bg-card p-4"
-              >
+              <div key={tb.name} className="rounded-lg border border-border bg-card p-4">
                 <h4 className="font-semibold text-sm">{tb.name}</h4>
                 <p className="text-sm text-muted-foreground mt-1">{tb.description}</p>
-                {tb.mermaidDiagram && (
-                  <MermaidDiagram chart={tb.mermaidDiagram} id={`tb-${idx}`} />
-                )}
+                {tb.mermaidDiagram && <MermaidDiagram chart={tb.mermaidDiagram} id={`tb-${idx}`} />}
               </div>
             ))}
           </div>
@@ -105,8 +93,11 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
                 </tr>
               </thead>
               <tbody>
-                {threatModel.riskMatrix.map((r, i) => (
-                  <tr key={`${r.topic}-${i}`} className="border-b border-border/60">
+                {threatModel.riskMatrix.map((r) => (
+                  <tr
+                    key={`${r.topic}-${r.likelihood}-${r.impact}-${r.notes}`}
+                    className="border-b border-border/60"
+                  >
                     <td className="p-2">{r.topic}</td>
                     <td className="p-2 capitalize">{r.likelihood}</td>
                     <td className="p-2 capitalize">{r.impact}</td>
@@ -131,18 +122,10 @@ export function ThreatModelTab({ threatModel }: ThreatModelTabProps) {
           <h3 className="text-lg font-semibold mb-3">Attack Paths</h3>
           <div className="space-y-6">
             {threatModel.attackPaths.map((path, idx) => (
-              <div
-                key={path.name}
-                className="rounded-lg border border-border bg-card p-4"
-              >
+              <div key={path.name} className="rounded-lg border border-border bg-card p-4">
                 <h4 className="font-semibold text-sm mb-2">{path.name}</h4>
-                <MermaidDiagram
-                  chart={path.mermaidDiagram}
-                  id={`attack-path-${idx}`}
-                />
-                <p className="text-sm text-muted-foreground mt-2">
-                  {path.riskAssessment}
-                </p>
+                <MermaidDiagram chart={path.mermaidDiagram} id={`attack-path-${idx}`} />
+                <p className="text-sm text-muted-foreground mt-2">{path.riskAssessment}</p>
               </div>
             ))}
           </div>

@@ -1,22 +1,22 @@
-export {
-  loadRepoConfig,
-  type LoadRepoConfigResult,
-} from "./reader";
 export { DEFAULT_CLAWGUARD_CONFIG } from "./defaults";
+export {
+  type LoadRepoConfigResult,
+  loadRepoConfig,
+} from "./reader";
 export {
   AdaptersConfigSchema,
   AnalysisConfigSchema,
   BotConfigSchema,
-  ClawGuardConfigSchema,
+  type ClawGuardConfig,
   ClawGuardConfigFileSchema,
+  ClawGuardConfigSchema,
   LearningsConfigSchema,
   NotificationsConfigSchema,
   PoliciesFileSchema,
+  type PolicyRule,
   PolicyRuleSchema,
   ScanningConfigSchema,
   SeverityThresholdSchema,
   TrackingConfigSchema,
   TriggerConfigSchema,
-  type ClawGuardConfig,
-  type PolicyRule,
 } from "./schemas";

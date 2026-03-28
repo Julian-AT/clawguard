@@ -1,11 +1,11 @@
+import { gateway } from "@ai-sdk/gateway";
 import type { Sandbox } from "@vercel/sandbox";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
+import { createBashTool } from "bash-tool";
+import { z } from "zod";
 import type { Finding } from "@/lib/analysis/types";
 import type { ApplyResult } from "@/lib/fix/types";
 import { runValidation } from "@/lib/fix/validate";
-import { ToolLoopAgent, Output, stepCountIs } from "ai";
-import { gateway } from "@ai-sdk/gateway";
-import { createBashTool } from "bash-tool";
-import { z } from "zod";
 
 const FixOutputSchema = z.object({
   fixedCode: z.string().describe("The complete fixed file content"),
@@ -16,7 +16,7 @@ export async function generateFixWithAgent(
   sandbox: Sandbox,
   finding: Finding,
   previousErrors: string,
-  options?: { reconSnippet?: string }
+  options?: { reconSnippet?: string },
 ): Promise<ApplyResult> {
   try {
     const filePath = finding.file;
@@ -65,9 +65,7 @@ export async function generateFixWithAgent(
 
     const fixedCode = result.output.fixedCode;
 
-    await sandbox.writeFiles([
-      { path: filePath, content: Buffer.from(fixedCode) },
-    ]);
+    await sandbox.writeFiles([{ path: filePath, content: Buffer.from(fixedCode) }]);
 
     const validation = await runValidation(sandbox);
 
@@ -79,9 +77,7 @@ export async function generateFixWithAgent(
       };
     }
 
-    await sandbox.writeFiles([
-      { path: filePath, content: Buffer.from(originalContent) },
-    ]);
+    await sandbox.writeFiles([{ path: filePath, content: Buffer.from(originalContent) }]);
 
     return {
       valid: false,

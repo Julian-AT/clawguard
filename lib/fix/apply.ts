@@ -8,11 +8,7 @@ function normalizeLineEndings(text: string): string {
 }
 
 /** Line-by-line fuzzy replace when exact `fix.before` substring is not in file. */
-function fuzzyReplace(
-  content: string,
-  search: string,
-  replacement: string
-): string | null {
+function fuzzyReplace(content: string, search: string, replacement: string): string | null {
   const contentLines = content.split("\n");
   const searchLines = search
     .replace(/\r\n/g, "\n")
@@ -33,10 +29,7 @@ function fuzzyReplace(
 
     if (match) {
       const leadingWhitespace = contentLines[i].match(/^(\s*)/)?.[1] ?? "";
-      const replacementLines = replacement
-        .replace(/\r\n/g, "\n")
-        .trim()
-        .split("\n");
+      const replacementLines = replacement.replace(/\r\n/g, "\n").trim().split("\n");
       const indentedReplacement = replacementLines
         .map((line) => leadingWhitespace + line.trim())
         .join("\n");
@@ -50,10 +43,7 @@ function fuzzyReplace(
   return null;
 }
 
-export async function applyStoredFix(
-  sandbox: Sandbox,
-  finding: Finding
-): Promise<ApplyResult> {
+export async function applyStoredFix(sandbox: Sandbox, finding: Finding): Promise<ApplyResult> {
   const filePath = finding.file;
 
   if (!finding.fix) {
@@ -79,7 +69,7 @@ export async function applyStoredFix(
     const fuzzyResult = fuzzyReplace(
       normalizeLineEndings(originalContent),
       finding.fix.before,
-      finding.fix.after
+      finding.fix.after,
     );
 
     if (fuzzyResult === null) {
@@ -101,16 +91,12 @@ export async function applyStoredFix(
     };
   }
 
-  await sandbox.writeFiles([
-    { path: filePath, content: Buffer.from(fixedContent) },
-  ]);
+  await sandbox.writeFiles([{ path: filePath, content: Buffer.from(fixedContent) }]);
 
   const validation = await runValidation(sandbox);
 
   if (!validation.passed) {
-    await sandbox.writeFiles([
-      { path: filePath, content: Buffer.from(originalContent) },
-    ]);
+    await sandbox.writeFiles([{ path: filePath, content: Buffer.from(originalContent) }]);
 
     return {
       valid: false,

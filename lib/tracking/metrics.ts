@@ -25,10 +25,7 @@ export async function recordFalsePositive(owner: string, repo: string): Promise<
   await redis.set(key, JSON.stringify(m));
 }
 
-export async function readMetrics(
-  owner: string,
-  repo: string
-): Promise<TrackingMetrics> {
+export async function readMetrics(owner: string, repo: string): Promise<TrackingMetrics> {
   const key = `${METRICS_PREFIX}${owner}/${repo}`;
   const raw = await redis.get<string>(key);
   if (!raw) {

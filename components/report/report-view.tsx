@@ -1,16 +1,16 @@
-import type { AuditResult } from "@/lib/analysis/types";
-import { countBySeverity } from "@/lib/analysis/scoring";
+import { ComplianceTab } from "@/components/report/compliance-tab";
+import { FindingsList } from "@/components/report/findings-list";
+import { OwaspChart } from "@/components/report/owasp-chart";
+import { PrSummaryTab } from "@/components/report/pr-summary-tab";
 import { ReportHeader } from "@/components/report/report-header";
 import { ReportShell } from "@/components/report/report-shell";
 import { ScoreGauge } from "@/components/report/score-gauge";
 import { SeverityBadges } from "@/components/report/severity-badges";
-import { OwaspChart } from "@/components/report/owasp-chart";
-import { FindingsList } from "@/components/report/findings-list";
 import { ThreatModelTab } from "@/components/report/threat-model-tab";
-import { ComplianceTab } from "@/components/report/compliance-tab";
-import { PrSummaryTab } from "@/components/report/pr-summary-tab";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { countBySeverity } from "@/lib/analysis/scoring";
+import type { AuditResult } from "@/lib/analysis/types";
 
 interface ReportViewProps {
   result: AuditResult;
@@ -53,8 +53,7 @@ export function ReportView({
             role="alert"
             className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-100"
           >
-            <strong className="font-semibold">Partial result:</strong>{" "}
-            {partialWarning}
+            <strong className="font-semibold">Partial result:</strong> {partialWarning}
           </div>
         )}
 
@@ -71,8 +70,8 @@ export function ReportView({
             <SeverityBadges counts={counts} />
             <p className="text-xs text-muted-foreground">
               {result.findings.length} finding
-              {result.findings.length !== 1 ? "s" : ""} across{" "}
-              {result.phases?.length ?? 0} pipeline stage(s)
+              {result.findings.length !== 1 ? "s" : ""} across {result.phases?.length ?? 0} pipeline
+              stage(s)
             </p>
             <OwaspChart findings={result.findings} />
           </div>
@@ -82,9 +81,7 @@ export function ReportView({
 
         <Tabs defaultValue="findings">
           <TabsList>
-            <TabsTrigger value="findings">
-              Findings ({result.findings.length})
-            </TabsTrigger>
+            <TabsTrigger value="findings">Findings ({result.findings.length})</TabsTrigger>
             <TabsTrigger value="pr-summary">PR Summary</TabsTrigger>
             <TabsTrigger value="threat-model">Threat Model</TabsTrigger>
             <TabsTrigger value="compliance">Compliance</TabsTrigger>

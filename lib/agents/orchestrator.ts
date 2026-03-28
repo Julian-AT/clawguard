@@ -1,11 +1,16 @@
-import type { AgentContext, AgentResult, OrchestratorResult, SecurityAgentDefinition } from "./types";
+import { randomUUID } from "node:crypto";
 import type { Sandbox } from "@vercel/sandbox";
-import type { ClawGuardConfig, PolicyRule } from "@/lib/config/schemas";
 import type { ReconResult } from "@/lib/analysis/types";
+import type { ClawGuardConfig, PolicyRule } from "@/lib/config/schemas";
+import { handleError } from "@/lib/error-handler";
 import { PipelineMemory } from "./memory";
 import { getAgent, getAllAgents } from "./registry";
-import { handleError } from "@/lib/error-handler";
-import { randomUUID } from "crypto";
+import type {
+  AgentContext,
+  AgentResult,
+  OrchestratorResult,
+  SecurityAgentDefinition,
+} from "./types";
 
 interface OrchestratorInput {
   runId: string;
@@ -30,7 +35,7 @@ function buildExecutionLayers(agents: SecurityAgentDefinition[]): SecurityAgentD
     inDegree.set(agent.name, deps.length);
     for (const dep of deps) {
       if (!graph.has(dep)) graph.set(dep, []);
-      graph.get(dep)!.push(agent.name);
+      graph.get(dep)?.push(agent.name);
     }
   }
 
@@ -140,7 +145,8 @@ export class AgentOrchestrator {
         }
         // rejected should not happen (caught above), but handle just in case
         if (result.status === "rejected") {
-          const msg = result.reason instanceof Error ? result.reason.message : String(result.reason);
+          const msg =
+            result.reason instanceof Error ? result.reason.message : String(result.reason);
           errors.push({ agent: "unknown", error: msg });
         }
       }

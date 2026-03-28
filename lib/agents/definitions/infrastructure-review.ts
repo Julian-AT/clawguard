@@ -1,10 +1,10 @@
-import { ToolLoopAgent, Output, stepCountIs } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { createBashTool } from "bash-tool";
 import { z } from "zod";
-import { FindingSchema, type Finding, type ReconResult } from "@/lib/analysis/types";
-import type { SecurityAgentDefinition, AgentContext, AgentResult } from "@/lib/agents/types";
 import { registerAgent } from "@/lib/agents/registry";
+import type { AgentContext, AgentResult, SecurityAgentDefinition } from "@/lib/agents/types";
+import { type Finding, FindingSchema, type ReconResult } from "@/lib/analysis/types";
 import { injectSkills } from "@/lib/skills";
 
 const OutputSchema = z.object({
@@ -21,7 +21,8 @@ const INFRA_PATH_RE =
 function infraExcerpts(recon: ReconResult): string {
   if (!recon.fileExcerpts) return "(No excerpts; use tools to read infra files.)";
   const entries = Object.entries(recon.fileExcerpts).filter(([path]) => INFRA_PATH_RE.test(path));
-  if (entries.length === 0) return "(No infra-tagged excerpts; use tools to locate Docker, k8s, Terraform, CI configs.)";
+  if (entries.length === 0)
+    return "(No infra-tagged excerpts; use tools to locate Docker, k8s, Terraform, CI configs.)";
   return entries.map(([path, content]) => `### ${path}\n\`\`\`\n${content}\n\`\`\``).join("\n\n");
 }
 
@@ -34,7 +35,9 @@ function buildPrompt(context: AgentContext): string {
     "Use tools to read full files when excerpts are incomplete.",
     "",
     "## Likely changed infra paths",
-    paths.length ? paths.join(", ") : "(none matched heuristics — search repo with tools if needed)",
+    paths.length
+      ? paths.join(", ")
+      : "(none matched heuristics — search repo with tools if needed)",
     "",
     "## Excerpts",
     infraExcerpts(context.recon),

@@ -10,12 +10,9 @@ const ESLINT_CONFIGS = [
   ".eslintrc.yml",
 ];
 
-const DEFAULT_TEST_STUB =
-  'echo "Error: no test specified" && exit 1';
+const DEFAULT_TEST_STUB = 'echo "Error: no test specified" && exit 1';
 
-export async function runValidation(
-  sandbox: Sandbox
-): Promise<ValidationResult> {
+export async function runValidation(sandbox: Sandbox): Promise<ValidationResult> {
   const detected: string[] = [];
   const errors: string[] = [];
 
@@ -36,11 +33,7 @@ export async function runValidation(
       const check = await sandbox.runCommand("ls", [config]);
       if (check.exitCode === 0) {
         detected.push("eslint");
-        const eslint = await sandbox.runCommand("npx", [
-          "eslint",
-          "--no-warn-ignored",
-          ".",
-        ]);
+        const eslint = await sandbox.runCommand("npx", ["eslint", "--no-warn-ignored", "."]);
         if (eslint.exitCode !== 0) {
           const stderr = await eslint.stderr();
           errors.push(`eslint: ${stderr}`);
@@ -67,10 +60,7 @@ export async function runValidation(
     if (pkgCheck.exitCode === 0) {
       const stdout = await pkgCheck.stdout();
       const pkg = JSON.parse(stdout);
-      if (
-        pkg.scripts?.test &&
-        pkg.scripts.test !== DEFAULT_TEST_STUB
-      ) {
+      if (pkg.scripts?.test && pkg.scripts.test !== DEFAULT_TEST_STUB) {
         detected.push("test");
         const test = await sandbox.runCommand("npm", ["test"]);
         if (test.exitCode !== 0) {

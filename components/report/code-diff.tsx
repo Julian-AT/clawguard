@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import { codeToHtml } from "shiki";
 
 const ReactDiffViewer = dynamic(() => import("react-diff-viewer-continued"), {
   ssr: false,
-  loading: () => (
-    <div className="h-32 animate-pulse bg-zinc-800 rounded" />
-  ),
+  loading: () => <div className="h-32 animate-pulse bg-zinc-800 rounded" />,
 });
 
 interface CodeDiffProps {
@@ -97,16 +95,12 @@ export function CodeDiff({ fix }: CodeDiffProps) {
       )}
       <div className="grid md:grid-cols-2 gap-0 divide-x divide-zinc-800">
         <div className="overflow-x-auto text-xs [&_pre]:m-0 [&_pre]:bg-transparent!">
-          <div
-            className="p-2"
-            dangerouslySetInnerHTML={{ __html: beforeHtml }}
-          />
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: HTML from Shiki highlighter (trusted pipeline output) */}
+          <div className="p-2" dangerouslySetInnerHTML={{ __html: beforeHtml }} />
         </div>
         <div className="overflow-x-auto text-xs [&_pre]:m-0 [&_pre]:bg-transparent!">
-          <div
-            className="p-2"
-            dangerouslySetInnerHTML={{ __html: afterHtml }}
-          />
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: HTML from Shiki highlighter (trusted pipeline output) */}
+          <div className="p-2" dangerouslySetInnerHTML={{ __html: afterHtml }} />
         </div>
       </div>
     </div>

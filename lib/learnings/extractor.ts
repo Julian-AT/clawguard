@@ -1,5 +1,5 @@
-import { generateObject } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { generateObject } from "ai";
 import { z } from "zod";
 import type { LearningAction } from "./types";
 
@@ -15,7 +15,7 @@ const MODEL = process.env.CLAWGUARD_LEARNING_MODEL ?? "openai/gpt-4o-mini";
  * Turn a natural-language PR comment into a structured learning row.
  */
 export async function extractLearningFromComment(
-  comment: string
+  comment: string,
 ): Promise<{ pattern: string; context: string; action: LearningAction } | null> {
   const trimmed = comment.trim();
   if (trimmed.length < 8) return null;

@@ -1,11 +1,11 @@
-import { ToolLoopAgent, Output, stepCountIs } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import { createBashTool } from "bash-tool";
 import { z } from "zod";
-import { FindingSchema, type Finding, type ReconResult } from "@/lib/analysis/types";
-import type { PolicyRule } from "@/lib/config/schemas";
-import type { SecurityAgentDefinition, AgentContext, AgentResult } from "@/lib/agents/types";
 import { registerAgent } from "@/lib/agents/registry";
+import type { AgentContext, AgentResult, SecurityAgentDefinition } from "@/lib/agents/types";
+import { type Finding, FindingSchema, type ReconResult } from "@/lib/analysis/types";
+import type { PolicyRule } from "@/lib/config/schemas";
 import { injectSkills } from "@/lib/skills";
 
 const OutputSchema = z.object({
@@ -15,9 +15,7 @@ const OutputSchema = z.object({
 
 function policiesBlock(policies: PolicyRule[]): string {
   if (policies.length === 0) return "(No custom policies in .clawguard/policies.yml)";
-  return policies
-    .map((p) => `- [${p.severity}] ${p.name}: ${p.rule}`)
-    .join("\n");
+  return policies.map((p) => `- [${p.severity}] ${p.name}: ${p.rule}`).join("\n");
 }
 
 function reconContextBlock(recon: ReconResult): string {
@@ -30,7 +28,7 @@ function reconContextBlock(recon: ReconResult): string {
   const extra: string[] = [];
   if (recon.dependencyAuditSnippet) {
     extra.push(
-      "## Dependency audit (npm/pnpm)\n```json\n" + recon.dependencyAuditSnippet + "\n```",
+      `## Dependency audit (npm/pnpm)\n\`\`\`json\n${recon.dependencyAuditSnippet}\n\`\`\``,
     );
   }
   if (recon.secretPatternHints?.length) {
@@ -40,7 +38,7 @@ function reconContextBlock(recon: ReconResult): string {
     );
   }
   if (recon.optionalSarifSnippet) {
-    extra.push("## Semgrep SARIF excerpt\n```\n" + recon.optionalSarifSnippet + "\n```");
+    extra.push(`## Semgrep SARIF excerpt\n\`\`\`\n${recon.optionalSarifSnippet}\n\`\`\``);
   }
 
   return [

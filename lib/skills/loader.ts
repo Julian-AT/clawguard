@@ -1,13 +1,13 @@
-import type { SkillDefinition } from "@/lib/skills/types";
-import { owaspWebSecurity } from "@/lib/skills/definitions/owasp-web-security";
-import { codeQuality } from "@/lib/skills/definitions/code-quality";
-import { pentestMethodology } from "@/lib/skills/definitions/pentest-methodology";
-import { dependencyAudit } from "@/lib/skills/definitions/dependency-audit";
-import { secretScanning } from "@/lib/skills/definitions/secret-scanning";
 import { apiSecurity } from "@/lib/skills/definitions/api-security";
+import { codeQuality } from "@/lib/skills/definitions/code-quality";
+import { dependencyAudit } from "@/lib/skills/definitions/dependency-audit";
 import { infrastructureReview } from "@/lib/skills/definitions/infrastructure-review";
-import { reporting } from "@/lib/skills/definitions/reporting";
 import { orchestration } from "@/lib/skills/definitions/orchestration";
+import { owaspWebSecurity } from "@/lib/skills/definitions/owasp-web-security";
+import { pentestMethodology } from "@/lib/skills/definitions/pentest-methodology";
+import { reporting } from "@/lib/skills/definitions/reporting";
+import { secretScanning } from "@/lib/skills/definitions/secret-scanning";
+import type { SkillDefinition } from "@/lib/skills/types";
 
 const ALL_SKILLS: SkillDefinition[] = [
   owaspWebSecurity,

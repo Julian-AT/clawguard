@@ -1,13 +1,13 @@
 import "./definitions";
 
+export { PipelineMemory } from "./memory";
+export { AgentOrchestrator } from "./orchestrator";
+export { getAgent, getAllAgents, registerAgent } from "./registry";
 export type {
-  SecurityAgentDefinition,
   AgentContext,
-  AgentResult,
   AgentMemory,
+  AgentResult,
   AgentStatus,
   OrchestratorResult,
+  SecurityAgentDefinition,
 } from "./types";
-export { registerAgent, getAgent, getAllAgents } from "./registry";
-export { AgentOrchestrator } from "./orchestrator";
-export { PipelineMemory } from "./memory";

@@ -3,7 +3,7 @@ import { getAuditResult } from "@/lib/redis";
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ owner: string; repo: string; pr: string }> }
+  { params }: { params: Promise<{ owner: string; repo: string; pr: string }> },
 ) {
   const { owner, repo, pr } = await params;
   const key = `${owner}/${repo}/pr/${pr}`;

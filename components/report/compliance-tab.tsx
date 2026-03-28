@@ -16,9 +16,7 @@ function renderMapping(values: string[] | undefined): React.ReactNode {
 export function ComplianceTab({ findings }: ComplianceTabProps) {
   const withCompliance = findings
     .filter((f) => f.complianceMapping)
-    .sort(
-      (a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]
-    );
+    .sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]);
 
   if (withCompliance.length === 0) {
     return (
@@ -50,9 +48,7 @@ export function ComplianceTab({ findings }: ComplianceTabProps) {
             >
               <td className="py-2 px-3">
                 <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${SEVERITY_BADGE_CLASS[f.severity]} text-[10px] shrink-0`}
-                  >
+                  <Badge className={`${SEVERITY_BADGE_CLASS[f.severity]} text-[10px] shrink-0`}>
                     {f.severity}
                   </Badge>
                   <span className="text-xs">{f.type}</span>

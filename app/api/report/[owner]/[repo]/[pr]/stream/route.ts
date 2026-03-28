@@ -11,7 +11,7 @@ interface Params {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<Params> }
+  { params }: { params: Promise<Params> },
 ): Promise<Response> {
   const { owner, repo, pr } = await params;
   const channelKey = `stream:${owner}/${repo}/pr/${pr}`;
@@ -24,9 +24,7 @@ export async function GET(
     async start(controller) {
       const send = (event: string, data: unknown) => {
         if (closed) return;
-        controller.enqueue(
-          encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
-        );
+        controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
       };
 
       const poll = async () => {
@@ -76,16 +74,19 @@ export async function GET(
         closed = true;
       });
 
-      setTimeout(() => {
-        if (!closed) {
-          closed = true;
-          try {
-            controller.close();
-          } catch {
-            /* already closed */
+      setTimeout(
+        () => {
+          if (!closed) {
+            closed = true;
+            try {
+              controller.close();
+            } catch {
+              /* already closed */
+            }
           }
-        }
-      }, 10 * 60 * 1000);
+        },
+        10 * 60 * 1000,
+      );
 
       void poll();
     },

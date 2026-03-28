@@ -86,7 +86,9 @@ tests/                    # Vitest (bot, webhook, redis, analysis, fix, cards)
 "dev": "next dev",
 "build": "next build",
 "start": "next start",
-"lint": "eslint",
+"lint": "biome check",
+"lint:fix": "biome check --write",
+"format": "biome format --write",
 "test": "vitest run",
 "test:watch": "vitest",
 "v0:generate": "tsx scripts/v0-generate.ts"

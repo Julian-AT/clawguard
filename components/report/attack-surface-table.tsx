@@ -8,7 +8,7 @@ interface AttackSurfaceTableProps {
 
 export function AttackSurfaceTable({ surfaces }: AttackSurfaceTableProps) {
   const sorted = [...surfaces].sort(
-    (a, b) => SEVERITY_ORDER[a.riskLevel] - SEVERITY_ORDER[b.riskLevel]
+    (a, b) => SEVERITY_ORDER[a.riskLevel] - SEVERITY_ORDER[b.riskLevel],
   );
 
   return (
@@ -25,21 +25,12 @@ export function AttackSurfaceTable({ surfaces }: AttackSurfaceTableProps) {
         </thead>
         <tbody>
           {sorted.map((surface) => (
-            <tr
-              key={surface.name}
-              className="border-b border-zinc-800/50 hover:bg-zinc-900/50"
-            >
+            <tr key={surface.name} className="border-b border-zinc-800/50 hover:bg-zinc-900/50">
               <td className="py-2 px-3 font-medium">{surface.name}</td>
-              <td className="py-2 px-3 text-muted-foreground">
-                {surface.type}
-              </td>
-              <td className="py-2 px-3 text-muted-foreground">
-                {surface.exposure}
-              </td>
+              <td className="py-2 px-3 text-muted-foreground">{surface.type}</td>
+              <td className="py-2 px-3 text-muted-foreground">{surface.exposure}</td>
               <td className="py-2 px-3">
-                <Badge
-                  className={`${SEVERITY_BADGE_CLASS[surface.riskLevel]} text-xs`}
-                >
+                <Badge className={`${SEVERITY_BADGE_CLASS[surface.riskLevel]} text-xs`}>
                   {surface.riskLevel}
                 </Badge>
               </td>

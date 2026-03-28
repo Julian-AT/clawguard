@@ -92,11 +92,11 @@ const COMMON_PAIR_WEIGHTS: ReadonlyMap<string, number> = new Map(
     "\n\t",
     "\t ",
     " \n",
-    " \"",
-    "\" ",
+    ' "',
+    '" ',
     " '",
     "' ",
-  ].map((pair, i) => [pair, 20 + (i % 80)])
+  ].map((pair, i) => [pair, 20 + (i % 80)]),
 );
 
 /**

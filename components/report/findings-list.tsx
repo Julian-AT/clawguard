@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Finding, Severity } from "@/lib/analysis/types";
-import { Accordion } from "@/components/ui/accordion";
 import { FindingCard } from "@/components/report/finding-card";
+import { Accordion } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import type { Finding, Severity } from "@/lib/analysis/types";
 import { SEVERITY_ORDER_LIST } from "@/lib/constants";
 
 interface FindingsListProps {
@@ -13,17 +13,13 @@ interface FindingsListProps {
 
 function sortBySeverity(findings: Finding[]): Finding[] {
   return [...findings].sort(
-    (a, b) =>
-      SEVERITY_ORDER_LIST.indexOf(a.severity) -
-      SEVERITY_ORDER_LIST.indexOf(b.severity)
+    (a, b) => SEVERITY_ORDER_LIST.indexOf(a.severity) - SEVERITY_ORDER_LIST.indexOf(b.severity),
   );
 }
 
 export function FindingsList({ findings }: FindingsListProps) {
   const sorted = sortBySeverity(findings);
-  const [visible, setVisible] = useState<Set<Severity>>(
-    () => new Set(SEVERITY_ORDER_LIST)
-  );
+  const [visible, setVisible] = useState<Set<Severity>>(() => new Set(SEVERITY_ORDER_LIST));
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -83,9 +79,7 @@ export function FindingsList({ findings }: FindingsListProps) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4">
-          No findings match the current filters.
-        </p>
+        <p className="text-sm text-muted-foreground py-4">No findings match the current filters.</p>
       ) : (
         <Accordion type="multiple" className="space-y-2">
           {filtered.map((finding, idx) => (

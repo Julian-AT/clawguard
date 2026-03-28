@@ -1,12 +1,9 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
-import { resolve } from "path";
-import { severityEmoji, SEVERITY_ORDER } from "@/lib/cards/summary-card";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+import { SEVERITY_ORDER, severityEmoji } from "@/lib/cards/summary-card";
 
-const cardSource = readFileSync(
-  resolve(__dirname, "../../lib/cards/summary-card.tsx"),
-  "utf-8"
-);
+const cardSource = readFileSync(resolve(__dirname, "../../lib/cards/summary-card.tsx"), "utf-8");
 
 describe("Summary Card Builder", () => {
   describe("severityEmoji", () => {

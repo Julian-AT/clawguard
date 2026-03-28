@@ -1,11 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "fs";
-import { resolve } from "path";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
-const indexSource = readFileSync(
-  resolve(__dirname, "../../lib/fix/index.ts"),
-  "utf-8"
-);
+const indexSource = readFileSync(resolve(__dirname, "../../lib/fix/index.ts"), "utf-8");
 
 describe("fixFinding orchestration", () => {
   it("exports fixFinding function", () => {

@@ -1,5 +1,5 @@
-import { embed, embedMany } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { embed, embedMany } from "ai";
 
 export interface CodeChunk {
   fileId: number;

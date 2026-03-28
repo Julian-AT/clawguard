@@ -1,21 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
-import {
-  listReposWithAudits,
-  listPrAuditKeys,
-  loadAuditDataForKeys,
-} from "@/lib/redis-queries";
-import { buttonVariants } from "@/lib/button-variants";
-import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getSession } from "@/lib/auth";
+import { buttonVariants } from "@/lib/button-variants";
+import { listPrAuditKeys, listReposWithAudits, loadAuditDataForKeys } from "@/lib/redis-queries";
+import { cn } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -30,9 +20,7 @@ export default async function DashboardPage() {
       const loaded = await loadAuditDataForKeys(keys);
       const complete = loaded.filter((x) => x.data.status === "complete" && x.data.result);
       const sorted = [...complete].sort(
-        (a, b) =>
-          new Date(b.data.timestamp).getTime() -
-          new Date(a.data.timestamp).getTime()
+        (a, b) => new Date(b.data.timestamp).getTime() - new Date(a.data.timestamp).getTime(),
       );
       const latest = sorted[0];
       return {
@@ -42,7 +30,7 @@ export default async function DashboardPage() {
         latestGrade: latest?.data.result?.grade,
         latestAt: latest?.data.timestamp,
       };
-    })
+    }),
   );
 
   return (
@@ -70,9 +58,7 @@ export default async function DashboardPage() {
             Repositories with stored PR audits (from Upstash).
           </p>
           <Link
-            href={
-              process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? "https://github.com/apps"
-            }
+            href={process.env.NEXT_PUBLIC_GITHUB_APP_URL ?? "https://github.com/apps"}
             target="_blank"
             rel="noreferrer"
             className={cn(buttonVariants())}
@@ -86,8 +72,8 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle>No audits yet</CardTitle>
               <CardDescription>
-                @mention ClawGuard on a PR to generate your first report. Audits
-                appear here automatically.
+                @mention ClawGuard on a PR to generate your first report. Audits appear here
+                automatically.
               </CardDescription>
             </CardHeader>
           </Card>
@@ -107,20 +93,14 @@ export default async function DashboardPage() {
                   <CardContent className="flex items-center gap-3">
                     {r.latestScore != null ? (
                       <>
-                        <span className="text-2xl font-bold tabular-nums">
-                          {r.latestScore}
-                        </span>
+                        <span className="text-2xl font-bold tabular-nums">{r.latestScore}</span>
                         <Badge variant="secondary">{r.latestGrade ?? "?"}</Badge>
                         <span className="text-xs text-muted-foreground">
-                          {r.latestAt
-                            ? new Date(r.latestAt).toLocaleDateString()
-                            : ""}
+                          {r.latestAt ? new Date(r.latestAt).toLocaleDateString() : ""}
                         </span>
                       </>
                     ) : (
-                      <span className="text-sm text-muted-foreground">
-                        No completed audits
-                      </span>
+                      <span className="text-sm text-muted-foreground">No completed audits</span>
                     )}
                   </CardContent>
                 </Card>

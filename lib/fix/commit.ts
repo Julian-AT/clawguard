@@ -11,7 +11,7 @@ export async function commitFixToGitHub(
     filePath: string;
     content: string;
     finding: Finding;
-  }
+  },
 ): Promise<string> {
   const { data: currentFile } = await octokit.repos.getContent({
     owner: params.owner,
@@ -24,21 +24,19 @@ export async function commitFixToGitHub(
     throw new Error("Path is a directory, not a file");
   }
 
-  const { data: commitResult } = await octokit.repos.createOrUpdateFileContents(
-    {
-      owner: params.owner,
-      repo: params.repo,
-      path: params.filePath,
-      message: `fix(security): ${params.finding.type} (${params.finding.cweId})\n\nAuto-fix applied by ClawGuard for ${params.finding.severity} finding.\nLocation: ${params.filePath}:${params.finding.line}`,
-      content: Buffer.from(params.content).toString("base64"),
-      sha: currentFile.sha,
-      branch: params.branch,
-      committer: {
-        name: "ClawGuard Bot",
-        email: "clawguard[bot]@users.noreply.github.com",
-      },
-    }
-  );
+  const { data: commitResult } = await octokit.repos.createOrUpdateFileContents({
+    owner: params.owner,
+    repo: params.repo,
+    path: params.filePath,
+    message: `fix(security): ${params.finding.type} (${params.finding.cweId})\n\nAuto-fix applied by ClawGuard for ${params.finding.severity} finding.\nLocation: ${params.filePath}:${params.finding.line}`,
+    content: Buffer.from(params.content).toString("base64"),
+    sha: currentFile.sha,
+    branch: params.branch,
+    committer: {
+      name: "ClawGuard Bot",
+      email: "clawguard[bot]@users.noreply.github.com",
+    },
+  });
 
   return commitResult.commit.sha ?? "";
 }
@@ -51,7 +49,7 @@ export async function commitBatchFixesToGitHub(
     branch: string;
     files: Map<string, string>;
     findings: Finding[];
-  }
+  },
 ): Promise<string> {
   const { owner, repo, branch, files, findings } = params;
   if (files.size === 0) {
@@ -90,10 +88,7 @@ export async function commitBatchFixesToGitHub(
   const message = [
     `fix(security): ClawGuard batch auto-fix (${findings.length} finding(s))`,
     "",
-    ...findings.map(
-      (f) =>
-        `- ${f.type} (${f.cweId}) ${f.severity} @ ${f.file}:${f.line}`
-    ),
+    ...findings.map((f) => `- ${f.type} (${f.cweId}) ${f.severity} @ ${f.file}:${f.line}`),
   ].join("\n");
 
   const { data: created } = await octokit.git.createCommit({

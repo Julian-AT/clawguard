@@ -7,7 +7,7 @@ import type { StoredPrediction } from "./predictions";
 export function correlateIssueToPrediction(
   issueTitle: string,
   issueBody: string,
-  prediction: StoredPrediction
+  prediction: StoredPrediction,
 ): number {
   const text = `${issueTitle}\n${issueBody}`.toLowerCase();
   if (text.length < 10) return 0;

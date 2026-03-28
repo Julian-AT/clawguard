@@ -1,5 +1,5 @@
-import type { AuditResult, Finding } from "./types";
 import { calculateScore, getGrade } from "./scoring";
+import type { AuditResult, Finding } from "./types";
 
 const mockFindings: Finding[] = [
   {
@@ -11,8 +11,10 @@ const mockFindings: Finding[] = [
     line: 42,
     cweId: "CWE-89",
     owaspCategory: "A03:2021-Injection",
-    description: "User-supplied input is concatenated directly into a SQL query string without parameterization, allowing attackers to inject arbitrary SQL commands.",
-    attackScenario: "An attacker sends a crafted username parameter like `admin' OR '1'='1' --` to bypass authentication and extract all user records from the database.",
+    description:
+      "User-supplied input is concatenated directly into a SQL query string without parameterization, allowing attackers to inject arbitrary SQL commands.",
+    attackScenario:
+      "An attacker sends a crafted username parameter like `admin' OR '1'='1' --` to bypass authentication and extract all user records from the database.",
     confidence: "HIGH",
     dataFlow: {
       nodes: [
@@ -20,11 +22,14 @@ const mockFindings: Finding[] = [
         { label: "String concatenation", type: "transform" },
         { label: "db.query()", type: "sink" },
       ],
-      description: "User input flows from request parameter through string concatenation directly into database query execution",
+      description:
+        "User input flows from request parameter through string concatenation directly into database query execution",
     },
     fix: {
-      before: "const result = await db.query(`SELECT * FROM users WHERE username = '${req.params.username}'`);",
-      after: "const result = await db.query('SELECT * FROM users WHERE username = $1', [req.params.username]);",
+      before:
+        "const result = await db.query(`SELECT * FROM users WHERE username = '${req.params.username}'`);",
+      after:
+        "const result = await db.query('SELECT * FROM users WHERE username = $1', [req.params.username]);",
       file: "src/routes/users.ts",
       startLine: 42,
       endLine: 42,
@@ -46,8 +51,10 @@ const mockFindings: Finding[] = [
     line: 8,
     cweId: "CWE-798",
     owaspCategory: "A02:2021-Cryptographic Failures",
-    description: "The JWT signing secret is hardcoded as a string literal in the source code. Anyone with repository access can forge valid tokens.",
-    attackScenario: "An attacker with read access to the repository extracts the JWT secret and forges authentication tokens to impersonate any user.",
+    description:
+      "The JWT signing secret is hardcoded as a string literal in the source code. Anyone with repository access can forge valid tokens.",
+    attackScenario:
+      "An attacker with read access to the repository extracts the JWT secret and forges authentication tokens to impersonate any user.",
     confidence: "HIGH",
     dataFlow: {
       nodes: [
@@ -80,12 +87,15 @@ const mockFindings: Finding[] = [
     line: 15,
     cweId: "CWE-307",
     owaspCategory: "A07:2021-Identification and Authentication Failures",
-    description: "The login endpoint accepts unlimited authentication attempts with no rate limiting, delay, or account lockout mechanism.",
-    attackScenario: "An attacker performs a brute-force attack against the login endpoint, trying thousands of password combinations per minute until finding valid credentials.",
+    description:
+      "The login endpoint accepts unlimited authentication attempts with no rate limiting, delay, or account lockout mechanism.",
+    attackScenario:
+      "An attacker performs a brute-force attack against the login endpoint, trying thousands of password combinations per minute until finding valid credentials.",
     confidence: "HIGH",
     fix: {
       before: "app.post('/login', async (req, res) => {",
-      after: "app.post('/login', rateLimiter({ windowMs: 15 * 60 * 1000, max: 5 }), async (req, res) => {",
+      after:
+        "app.post('/login', rateLimiter({ windowMs: 15 * 60 * 1000, max: 5 }), async (req, res) => {",
       file: "src/routes/auth.ts",
       startLine: 15,
       endLine: 15,
@@ -107,8 +117,10 @@ const mockFindings: Finding[] = [
     line: 28,
     cweId: "CWE-22",
     owaspCategory: "A01:2021-Broken Access Control",
-    description: "User-supplied filename is used directly in a file path without sanitization, allowing directory traversal attacks.",
-    attackScenario: "An attacker requests filename `../../etc/passwd` to read sensitive system files outside the intended directory.",
+    description:
+      "User-supplied filename is used directly in a file path without sanitization, allowing directory traversal attacks.",
+    attackScenario:
+      "An attacker requests filename `../../etc/passwd` to read sensitive system files outside the intended directory.",
     confidence: "MEDIUM",
     dataFlow: {
       nodes: [
@@ -119,7 +131,8 @@ const mockFindings: Finding[] = [
     },
     fix: {
       before: "const filePath = path.join(uploadDir, req.query.filename);",
-      after: "const safeName = path.basename(req.query.filename);\nconst filePath = path.join(uploadDir, safeName);",
+      after:
+        "const safeName = path.basename(req.query.filename);\nconst filePath = path.join(uploadDir, safeName);",
       file: "src/routes/files.ts",
       startLine: 28,
       endLine: 28,
@@ -141,12 +154,15 @@ const mockFindings: Finding[] = [
     line: 5,
     cweId: "CWE-693",
     owaspCategory: "A05:2021-Security Misconfiguration",
-    description: "The application does not set X-Content-Type-Options header, which could allow MIME type sniffing attacks.",
-    attackScenario: "A browser interprets an uploaded file as a different MIME type, potentially executing malicious content.",
+    description:
+      "The application does not set X-Content-Type-Options header, which could allow MIME type sniffing attacks.",
+    attackScenario:
+      "A browser interprets an uploaded file as a different MIME type, potentially executing malicious content.",
     confidence: "HIGH",
     fix: {
       before: "res.setHeader('X-Frame-Options', 'DENY');",
-      after: "res.setHeader('X-Frame-Options', 'DENY');\nres.setHeader('X-Content-Type-Options', 'nosniff');",
+      after:
+        "res.setHeader('X-Frame-Options', 'DENY');\nres.setHeader('X-Content-Type-Options', 'nosniff');",
       file: "src/middleware/headers.ts",
       startLine: 5,
       endLine: 5,
@@ -168,8 +184,10 @@ const mockFindings: Finding[] = [
     line: 32,
     cweId: "CWE-532",
     owaspCategory: "A09:2021-Security Logging and Monitoring Failures",
-    description: "User credentials are logged to console.log which may appear in application logs accessible to operations staff.",
-    attackScenario: "An attacker with access to application logs can read plaintext passwords from log entries.",
+    description:
+      "User credentials are logged to console.log which may appear in application logs accessible to operations staff.",
+    attackScenario:
+      "An attacker with access to application logs can read plaintext passwords from log entries.",
     confidence: "MEDIUM",
     fix: {
       before: "console.log('Login attempt:', { username, password });",
@@ -203,7 +221,13 @@ export const mockAuditResult: AuditResult = {
     {
       phase: "vulnerability-scan",
       findings: mockFindings.filter((f) =>
-        ["SQL Injection", "Hardcoded Secret", "Path Traversal", "Missing Security Headers", "Console Logging"].includes(f.type)
+        [
+          "SQL Injection",
+          "Hardcoded Secret",
+          "Path Traversal",
+          "Missing Security Headers",
+          "Console Logging",
+        ].includes(f.type),
       ),
       summary: "Found 5 vulnerabilities including 2 critical issues requiring immediate attention.",
     },
@@ -221,7 +245,8 @@ export const mockAuditResult: AuditResult = {
         type: "API",
         exposure: "Public Internet",
         riskLevel: "HIGH",
-        description: "Login endpoint accepts credentials over HTTPS but lacks rate limiting and account lockout.",
+        description:
+          "Login endpoint accepts credentials over HTTPS but lacks rate limiting and account lockout.",
       },
       {
         name: "File Upload Service",
@@ -235,19 +260,24 @@ export const mockAuditResult: AuditResult = {
         type: "Internal",
         exposure: "Internal Network",
         riskLevel: "CRITICAL",
-        description: "SQL queries constructed from unsanitized user input via string concatenation.",
+        description:
+          "SQL queries constructed from unsanitized user input via string concatenation.",
       },
     ],
     attackPaths: [
       {
         name: "Authentication Bypass via SQL Injection",
-        mermaidDiagram: "graph LR\n  A[Attacker] -->|Crafted username| B[Login Form]\n  B -->|Unsanitized input| C[SQL Query]\n  C -->|Injected SQL| D[Database]\n  D -->|All records| E[Data Exfiltration]",
-        riskAssessment: "CRITICAL: Direct path from public endpoint to database compromise. No input validation at any stage.",
+        mermaidDiagram:
+          "graph LR\n  A[Attacker] -->|Crafted username| B[Login Form]\n  B -->|Unsanitized input| C[SQL Query]\n  C -->|Injected SQL| D[Database]\n  D -->|All records| E[Data Exfiltration]",
+        riskAssessment:
+          "CRITICAL: Direct path from public endpoint to database compromise. No input validation at any stage.",
       },
       {
         name: "Credential Theft via Log Access",
-        mermaidDiagram: "graph LR\n  A[User] -->|Login| B[Auth Endpoint]\n  B -->|console.log| C[Application Logs]\n  C -->|Log access| D[Insider/Attacker]\n  D -->|Plaintext creds| E[Account Takeover]",
-        riskAssessment: "MEDIUM: Requires access to application logs, but plaintext credentials enable full account compromise.",
+        mermaidDiagram:
+          "graph LR\n  A[User] -->|Login| B[Auth Endpoint]\n  B -->|console.log| C[Application Logs]\n  C -->|Log access| D[Insider/Attacker]\n  D -->|Plaintext creds| E[Account Takeover]",
+        riskAssessment:
+          "MEDIUM: Requires access to application logs, but plaintext credentials enable full account compromise.",
       },
     ],
     strideCategorization: [
@@ -288,7 +318,8 @@ export const mockAuditResult: AuditResult = {
     breakingChanges: [],
     complexity: "medium",
   },
-  summary: "Security audit found 6 issues across 4 severity levels. 2 CRITICAL findings require immediate remediation: SQL injection in user queries and hardcoded JWT secret. The authentication system also lacks rate limiting (HIGH) and file handling has a path traversal vulnerability (MEDIUM).",
+  summary:
+    "Security audit found 6 issues across 4 severity levels. 2 CRITICAL findings require immediate remediation: SQL injection in user queries and hardcoded JWT secret. The authentication system also lacks rate limiting (HIGH) and file handling has a path traversal vulnerability (MEDIUM).",
 };
 
 export const mockAuditData = {

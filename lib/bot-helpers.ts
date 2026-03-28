@@ -16,9 +16,7 @@ const LABELS: Record<(typeof ORDER)[number], string> = {
   "post-processing": "Finalizing",
 };
 
-export function formatPipelineStatusMessage(
-  progress: PipelineProgress | null
-): string {
+export function formatPipelineStatusMessage(progress: PipelineProgress | null): string {
   if (progress?.stage === "error") {
     return `## 🛡️ ClawGuard Security Audit\n\n❌ **Error:** ${progress.error}`;
   }
@@ -27,9 +25,7 @@ export function formatPipelineStatusMessage(
     return `## 🛡️ ClawGuard Security Audit\n\n⏳ Starting…`;
   }
 
-  const currentIdx = ORDER.indexOf(
-    progress.stage as (typeof ORDER)[number]
-  );
+  const currentIdx = ORDER.indexOf(progress.stage as (typeof ORDER)[number]);
   const isRunning = progress.status === "running";
 
   const lines = ORDER.map((key, i) => {
@@ -42,9 +38,7 @@ export function formatPipelineStatusMessage(
       icon = isRunning ? "⏳" : "✅";
     }
     const detail =
-      "detail" in progress &&
-      progress.stage === key &&
-      progress.detail
+      "detail" in progress && progress.stage === key && progress.detail
         ? ` _${progress.detail}_`
         : "";
     return `${icon} **${LABELS[key]}**${detail}`;

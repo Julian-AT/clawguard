@@ -1,8 +1,8 @@
 import micromatch from "micromatch";
 import type { ClawGuardConfig } from "@/lib/config/schemas";
 import { SEVERITY_ORDER } from "@/lib/constants";
-import type { Finding, ReconResult, ThreatModel } from "./types";
 import { calculateScore, getGrade } from "./scoring";
+import type { Finding, ReconResult, ThreatModel } from "./types";
 import { FindingSchema } from "./types";
 
 function ensureFindingIds(findings: Finding[]): Finding[] {
@@ -12,15 +12,10 @@ function ensureFindingIds(findings: Finding[]): Finding[] {
   }));
 }
 
-export function filterIgnoredPaths(
-  findings: Finding[],
-  ignorePaths: string[]
-): Finding[] {
+export function filterIgnoredPaths(findings: Finding[], ignorePaths: string[]): Finding[] {
   if (ignorePaths.length === 0) return findings;
   return findings.filter((f) => {
-    const hit = ignorePaths.some((pattern) =>
-      micromatch.isMatch(f.file, pattern, { dot: true })
-    );
+    const hit = ignorePaths.some((pattern) => micromatch.isMatch(f.file, pattern, { dot: true }));
     return !hit;
   });
 }

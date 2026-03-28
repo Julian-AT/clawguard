@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import { ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ReportHeaderProps {
   owner: string;
@@ -24,13 +24,7 @@ function formatRelativeTime(dateString: string): string {
   return "just now";
 }
 
-export function ReportHeader({
-  owner,
-  repo,
-  prNumber,
-  prTitle,
-  timestamp,
-}: ReportHeaderProps) {
+export function ReportHeader({ owner, repo, prNumber, prTitle, timestamp }: ReportHeaderProps) {
   return (
     <div className="flex items-start justify-between">
       <div className="space-y-1.5">
@@ -53,9 +47,7 @@ export function ReportHeader({
       <div className="text-right text-xs text-muted-foreground">
         <div>Audited</div>
         <div className="font-medium">{formatRelativeTime(timestamp)}</div>
-        <div className="text-[10px] mt-0.5">
-          {new Date(timestamp).toLocaleString()}
-        </div>
+        <div className="text-[10px] mt-0.5">{new Date(timestamp).toLocaleString()}</div>
       </div>
     </div>
   );

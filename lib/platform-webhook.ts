@@ -4,7 +4,7 @@ type Platform = "slack" | "discord" | "teams" | "linear";
 
 export async function handleChatPlatformWebhook(
   request: Request,
-  platform: Platform
+  platform: Platform,
 ): Promise<Response> {
   const { bot } = await import("@/lib/bot");
   const handler = bot.webhooks[platform];
@@ -15,7 +15,7 @@ export async function handleChatPlatformWebhook(
     waitUntil: (task) => {
       after(() => {
         Promise.resolve(task).catch((err) =>
-          console.error(`[webhook] ${platform} background error:`, err)
+          console.error(`[webhook] ${platform} background error:`, err),
         );
       });
     },

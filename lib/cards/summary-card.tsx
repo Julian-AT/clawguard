@@ -1,21 +1,11 @@
 /** @jsxImportSource chat */
-import {
-  Card,
-  CardText,
-  Actions,
-  Button,
-  LinkButton,
-  Fields,
-  Field,
-  Divider,
-  Table,
-} from "chat";
-import type { AuditResult, Finding } from "@/lib/analysis/types";
+import { Actions, Button, Card, CardText, Divider, Field, Fields, LinkButton, Table } from "chat";
 import { countBySeverity } from "@/lib/analysis/scoring";
-import { severityEmoji, SEVERITY_ORDER } from "@/lib/constants";
+import type { AuditResult, Finding } from "@/lib/analysis/types";
+import { SEVERITY_ORDER, severityEmoji } from "@/lib/constants";
 import { getPublicBaseUrl } from "@/lib/env";
 
-export { severityEmoji, SEVERITY_ORDER };
+export { SEVERITY_ORDER, severityEmoji };
 
 function reportUrl(owner: string, repo: string, number: number): string {
   const base = getPublicBaseUrl();
@@ -24,22 +14,19 @@ function reportUrl(owner: string, repo: string, number: number): string {
 
 export function buildSummaryCard(
   audit: AuditResult,
-  pr: { owner: string; repo: string; number: number }
+  pr: { owner: string; repo: string; number: number },
 ) {
   const counts = countBySeverity(audit.findings);
 
   const fixableCount = audit.findings.filter((f: Finding) =>
-    ["CRITICAL", "HIGH"].includes(f.severity)
+    ["CRITICAL", "HIGH"].includes(f.severity),
   ).length;
 
   const topFindings = audit.findings
-    .filter((f: Finding) =>
-      ["CRITICAL", "HIGH", "MEDIUM"].includes(f.severity)
-    )
+    .filter((f: Finding) => ["CRITICAL", "HIGH", "MEDIUM"].includes(f.severity))
     .sort(
       (a: Finding, b: Finding) =>
-        (SEVERITY_ORDER[a.severity] ?? 99) -
-        (SEVERITY_ORDER[b.severity] ?? 99)
+        (SEVERITY_ORDER[a.severity] ?? 99) - (SEVERITY_ORDER[b.severity] ?? 99),
     )
     .slice(0, 3);
 
@@ -81,9 +68,7 @@ export function buildSummaryCard(
         <Button id="re-audit" style="default">
           Re-audit
         </Button>
-        <LinkButton url={reportUrl(pr.owner, pr.repo, pr.number)}>
-          View full report
-        </LinkButton>
+        <LinkButton url={reportUrl(pr.owner, pr.repo, pr.number)}>View full report</LinkButton>
       </Actions>
     </Card>
   );
@@ -92,20 +77,17 @@ export function buildSummaryCard(
 /** GitHub Issues/PR comment API only accepts markdown — use this for auto-trigger comments. */
 export function buildSummaryMarkdown(
   audit: AuditResult,
-  pr: { owner: string; repo: string; number: number }
+  pr: { owner: string; repo: string; number: number },
 ): string {
   const counts = countBySeverity(audit.findings);
   const fixableCount = audit.findings.filter((f: Finding) =>
-    ["CRITICAL", "HIGH"].includes(f.severity)
+    ["CRITICAL", "HIGH"].includes(f.severity),
   ).length;
   const topFindings = audit.findings
-    .filter((f: Finding) =>
-      ["CRITICAL", "HIGH", "MEDIUM"].includes(f.severity)
-    )
+    .filter((f: Finding) => ["CRITICAL", "HIGH", "MEDIUM"].includes(f.severity))
     .sort(
       (a: Finding, b: Finding) =>
-        (SEVERITY_ORDER[a.severity] ?? 99) -
-        (SEVERITY_ORDER[b.severity] ?? 99)
+        (SEVERITY_ORDER[a.severity] ?? 99) - (SEVERITY_ORDER[b.severity] ?? 99),
     )
     .slice(0, 3);
   const summaryText =
@@ -125,7 +107,7 @@ export function buildSummaryMarkdown(
     lines.push("| Severity | Finding | Location |", "|----------|---------|----------|");
     for (const f of topFindings) {
       lines.push(
-        `| ${f.severity} | ${(f.title ?? f.type).replace(/\|/g, "\\|")} | \`${f.file}:${f.line}\` |`
+        `| ${f.severity} | ${(f.title ?? f.type).replace(/\|/g, "\\|")} | \`${f.file}:${f.line}\` |`,
       );
     }
     lines.push("");
@@ -134,7 +116,7 @@ export function buildSummaryMarkdown(
   if (fixableCount > 0) {
     lines.push(
       "",
-      `Reply \`@clawguard fix all\` to auto-fix ${fixableCount} CRITICAL+HIGH finding(s), or \`@clawguard fix <type>\` for a specific issue.`
+      `Reply \`@clawguard fix all\` to auto-fix ${fixableCount} CRITICAL+HIGH finding(s), or \`@clawguard fix <type>\` for a specific issue.`,
     );
   }
   return lines.join("\n");

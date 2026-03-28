@@ -1,14 +1,14 @@
-import { generateObject } from "ai";
 import { gateway } from "@ai-sdk/gateway";
+import { generateObject } from "ai";
 import type { ClawGuardConfig } from "@/lib/config/schemas";
-import { PRSummarySchema, type PRSummary, type ReconResult } from "./types";
+import { type PRSummary, PRSummarySchema, type ReconResult } from "./types";
 
 /**
  * High-level PR summary: narrative, Mermaid sequence diagrams, dependency impact, breaking changes.
  */
 export async function runChangeAnalysis(
   recon: ReconResult,
-  config: ClawGuardConfig
+  config: ClawGuardConfig,
 ): Promise<PRSummary> {
   if (!config.analysis.generatePRSummary) {
     return {

@@ -1,12 +1,6 @@
 import { z } from "zod";
 
-export const SeverityThresholdSchema = z.enum([
-  "CRITICAL",
-  "HIGH",
-  "MEDIUM",
-  "LOW",
-  "INFO",
-]);
+export const SeverityThresholdSchema = z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]);
 
 export const BotConfigSchema = z.object({
   verbosity: z.enum(["minimal", "normal", "verbose"]),

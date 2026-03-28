@@ -1,23 +1,12 @@
 import { z } from "zod";
 
-export const SeveritySchema = z.enum([
-  "CRITICAL",
-  "HIGH",
-  "MEDIUM",
-  "LOW",
-  "INFO",
-]);
+export const SeveritySchema = z.enum(["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]);
 export type Severity = z.infer<typeof SeveritySchema>;
 
 export const ConfidenceSchema = z.enum(["HIGH", "MEDIUM", "LOW"]);
 export type Confidence = z.infer<typeof ConfidenceSchema>;
 
-export const RemediationEffortSchema = z.enum([
-  "trivial",
-  "small",
-  "medium",
-  "large",
-]);
+export const RemediationEffortSchema = z.enum(["trivial", "small", "medium", "large"]);
 export type RemediationEffort = z.infer<typeof RemediationEffortSchema>;
 
 export const DataFlowNodeSchema = z.object({
@@ -76,9 +65,7 @@ export const FindingSchema = z.object({
 export type Finding = z.infer<typeof FindingSchema>;
 
 export const PhaseResultSchema = z.object({
-  phase: z
-    .enum(["code-quality", "vulnerability-scan", "threat-model", "security-scan"])
-    .optional(),
+  phase: z.enum(["code-quality", "vulnerability-scan", "threat-model", "security-scan"]).optional(),
   findings: z.array(FindingSchema),
   summary: z.string(),
 });
@@ -101,7 +88,7 @@ export const ThreatModelSchema = z.object({
         name: z.string(),
         mermaidDiagram: z.string(),
         riskAssessment: z.string(),
-      })
+      }),
     )
     .default([]),
   overallRisk: z.string().optional(),
@@ -113,7 +100,7 @@ export const ThreatModelSchema = z.object({
         label: z.string(),
         stride: StrideCategorySchema,
         description: z.string(),
-      })
+      }),
     )
     .default([]),
   trustBoundaries: z
@@ -122,7 +109,7 @@ export const ThreatModelSchema = z.object({
         name: z.string(),
         description: z.string(),
         mermaidDiagram: z.string().optional(),
-      })
+      }),
     )
     .default([]),
   riskMatrix: z
@@ -132,7 +119,7 @@ export const ThreatModelSchema = z.object({
         impact: z.enum(["low", "medium", "high"]),
         topic: z.string(),
         notes: z.string(),
-      })
+      }),
     )
     .default([]),
 });
@@ -145,14 +132,14 @@ export const PRSummarySchema = z.object({
       title: z.string(),
       mermaidDiagram: z.string(),
       description: z.string(),
-    })
+    }),
   ),
   dependencyImpact: z.array(
     z.object({
       file: z.string(),
       impactedBy: z.array(z.string()),
       impactType: z.enum(["direct", "transitive"]),
-    })
+    }),
   ),
   breakingChanges: z.array(z.string()),
   complexity: z.enum(["trivial", "small", "medium", "large", "very-large"]),
@@ -166,7 +153,7 @@ export const DependencyGraphSchema = z.object({
       imports: z.array(z.string()),
       importedBy: z.array(z.string()),
       exportsUsedElsewhere: z.array(z.string()),
-    })
+    }),
   ),
   securitySensitiveAPIs: z.array(z.string()),
   envVarsTouched: z.array(z.string()),
@@ -177,7 +164,7 @@ export const ReconResultSchema = z.object({
   changedFiles: z.array(
     z.object({
       path: z.string(),
-    })
+    }),
   ),
   languages: z.array(z.string()),
   packageManager: z.string().optional(),

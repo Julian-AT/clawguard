@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { getAuditResult } from "@/lib/redis";
-import { AuditResultSchema } from "@/lib/analysis/types";
-import { ReportView } from "@/components/report/report-view";
-import { ProcessingView } from "@/components/report/processing-view";
 import { ErrorView } from "@/components/report/error-view";
+import { ProcessingView } from "@/components/report/processing-view";
+import { ReportView } from "@/components/report/report-view";
+import { AuditResultSchema } from "@/lib/analysis/types";
+import { getAuditResult } from "@/lib/redis";
 
 interface ReportPageProps {
   params: Promise<{ owner: string; repo: string; pr: string }>;
@@ -23,14 +23,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
   }
 
   if (auditData.status === "error") {
-    return (
-      <ErrorView
-        owner={owner}
-        repo={repo}
-        pr={pr}
-        message={auditData.errorMessage}
-      />
-    );
+    return <ErrorView owner={owner} repo={repo} pr={pr} message={auditData.errorMessage} />;
   }
 
   if (!auditData.result) {
@@ -48,9 +41,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
       prTitle={auditData.pr.title}
       timestamp={auditData.timestamp}
       partialWarning={
-        auditData.status === "partial_error"
-          ? auditData.partialErrorMessage
-          : undefined
+        auditData.status === "partial_error" ? auditData.partialErrorMessage : undefined
       }
     />
   );

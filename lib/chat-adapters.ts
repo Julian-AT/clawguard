@@ -1,7 +1,7 @@
 import { createGitHubAdapter } from "@chat-adapter/github";
+import { createLinearAdapter } from "@chat-adapter/linear";
 import { createSlackAdapter } from "@chat-adapter/slack";
 import { createTeamsAdapter } from "@chat-adapter/teams";
-import { createLinearAdapter } from "@chat-adapter/linear";
 
 /**
  * Registers Chat SDK platform adapters based on environment variables.

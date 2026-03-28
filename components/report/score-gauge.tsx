@@ -1,6 +1,6 @@
 "use client";
 
-import { RadialBarChart, RadialBar, PolarAngleAxis } from "recharts";
+import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts";
 
 interface ScoreGaugeProps {
   score: number;
@@ -33,12 +33,7 @@ export function ScoreGauge({ score, grade }: ScoreGaugeProps) {
         startAngle={180}
         endAngle={0}
       >
-        <PolarAngleAxis
-          type="number"
-          domain={[0, 100]}
-          angleAxisId={0}
-          tick={false}
-        />
+        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
         <RadialBar
           background={{ fill: "oklch(0.269 0 0)" }}
           dataKey="value"

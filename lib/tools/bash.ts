@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { SandboxToolDefinition } from "./types";
 import { ToolError } from "@/lib/errors";
+import type { SandboxToolDefinition } from "./types";
 
 const BLOCKED_PATTERNS = [
   /rm\s+(-[rfRF]+\s+)?\/(?!tmp)/,
