@@ -252,5 +252,5 @@ MIT — see [LICENSE](LICENSE).
 ---
 
 <p align="center">
-  Built for <strong>OpenClaw Hack_001</strong> — Vienna · OpenClaw &amp; Agents · Cybersecurity
+  Built for <strong>OpenClaw Hack_001</strong> — Vienna · OpenClaw &amp; Agents · Cybersecurity 
 </p>
